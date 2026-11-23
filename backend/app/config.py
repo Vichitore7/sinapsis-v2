@@ -1,0 +1,39 @@
+"""Configuración por variables de entorno (ver .env.example). Nada secreto se escribe en el código."""
+from __future__ import annotations
+
+import os
+import secrets
+import warnings
+from pathlib import Path
+
+
+def _cargar_env() -> None:
+    """Carga backend/.env si existe (sin dependencias extra). Las variables reales del sistema mandan."""
+    ruta = Path(__file__).resolve().parent.parent / ".env"
+    if not ruta.exists():
+        return
+    for linea in ruta.read_text(encoding="utf-8").splitlines():
+        linea = linea.strip()
+        if not linea or linea.startswith("#") or "=" not in linea:
+            continue
+        clave, valor = linea.split("=", 1)
+        os.environ.setdefault(clave.strip(), valor.strip().strip('"').strip("'"))
+
+
+_cargar_env()
+
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./selva.db")
+ENTORNO = os.environ.get("ENTORNO", "desarrollo")  # desarrollo | produccion
+
+SECRET_KEY = os.environ.get("SECRET_KEY", "")
+if not SECRET_KEY:
+    if ENTORNO == "produccion":
+        raise RuntimeError("Falta SECRET_KEY en producción.")
+    warnings.warn("SECRET_KEY no definida: se usa una temporal (las sesiones se cierran al reiniciar).")
+    SECRET_KEY = secrets.token_urlsafe(32)
+
+# Orígenes permitidos para CORS (separados por coma). En desarrollo el frontend usa el proxy de Vite.
+CORS_ORIGENES = [o.strip() for o in os.environ.get("CORS_ORIGENES", "http://localhost:5173").split(",") if o.strip()]
+
+SESION_DIAS = int(os.environ.get("SESION_DIAS", "30"))
+COOKIE_SEGURA = ENTORNO == "produccion"  # cookie solo por HTTPS en producción

@@ -1,6 +1,8 @@
 import { useJuego } from './estado/store.jsx';
 import { useRuta, ir } from './ruta.js';
 import Icono from './componentes/Iconos.jsx';
+import Ajolote from './componentes/Ajolote.jsx';
+import Cuenta from './pantallas/Cuenta.jsx';
 import Inicio from './pantallas/Inicio.jsx';
 import Mapa from './pantallas/Mapa.jsx';
 import Reto from './pantallas/Reto.jsx';
@@ -8,51 +10,78 @@ import Mochila from './pantallas/Mochila.jsx';
 import Logros from './pantallas/Logros.jsx';
 import Escaner from './pantallas/Escaner.jsx';
 import ModoAula from './pantallas/ModoAula.jsx';
+import Aulas from './pantallas/Aulas.jsx';
+import Perfil from './pantallas/Perfil.jsx';
 
-const NAV = [
-  { id: 'inicio', texto: 'Inicio', icono: 'inicio' },
-  { id: 'mapa', texto: 'Mapa', icono: 'mapa' },
-  { id: 'escaner', texto: 'Escáner', icono: 'escaner' },
-  { id: 'aula', texto: 'Modo Aula', icono: 'aula' },
-  { id: 'mochila', texto: 'Mochila', icono: 'mochila' },
-  { id: 'logros', texto: 'Logros', icono: 'logros' },
-];
+// Cada rol ve su propio menú. El primero de la lista es su pantalla de inicio.
+const NAV = {
+  alumno: [
+    { id: 'inicio', texto: 'Inicio', icono: 'inicio' },
+    { id: 'mapa', texto: 'Mapa', icono: 'mapa' },
+    { id: 'escaner', texto: 'Escáner', icono: 'escaner' },
+    { id: 'mochila', texto: 'Mochila', icono: 'mochila' },
+    { id: 'logros', texto: 'Logros', icono: 'logros' },
+    { id: 'perfil', texto: 'Perfil', icono: 'perfil' },
+  ],
+  profesor: [
+    { id: 'aulas', texto: 'Mis aulas', icono: 'aula' },
+    { id: 'modo-aula', texto: 'Modo Aula', icono: 'mapa' },
+    { id: 'escaner', texto: 'Escáner', icono: 'escaner' },
+    { id: 'perfil', texto: 'Perfil', icono: 'perfil' },
+  ],
+};
 
-function Pantalla({ pantalla, param }) {
-  switch (pantalla) {
-    case 'mapa': return <Mapa />;
-    case 'reto': return <Reto key={param} retoId={param} />;
-    case 'mochila': return <Mochila />;
-    case 'logros': return <Logros />;
-    case 'escaner': return <Escaner />;
-    case 'aula': return <ModoAula />;
-    default: return <Inicio />;
-  }
-}
+const PANTALLAS = {
+  alumno: { inicio: Inicio, mapa: Mapa, reto: Reto, mochila: Mochila, logros: Logros, escaner: Escaner, perfil: Perfil },
+  profesor: { aulas: Aulas, 'modo-aula': ModoAula, escaner: Escaner, perfil: Perfil },
+};
 
 export default function App() {
-  const { estado } = useJuego();
+  const { usuario, cargando, estado } = useJuego();
   const { pantalla, param } = useRuta();
-  const activa = pantalla === 'reto' ? 'mapa' : pantalla;
+
+  if (cargando) {
+    return (
+      <div className="pantalla-carga" role="status">
+        <Ajolote estado="feliz" tamano={120} />
+        <p className="cuerpo-fuerte">Abriendo la selva…</p>
+      </div>
+    );
+  }
+
+  if (!usuario) {
+    return <main className="contenido contenido-solo"><Cuenta /></main>;
+  }
+
+  const rol = usuario.rol === 'profesor' ? 'profesor' : 'alumno';
+  const nav = NAV[rol];
+  const pantallas = PANTALLAS[rol];
+  const id = pantallas[pantalla] ? pantalla : nav[0].id;
+  const Pantalla = pantallas[id];
+  const activa = id === 'reto' ? 'mapa' : id;
 
   return (
     <div className="app">
       <header className="barra-superior">
         <a href="#/" className="marca-app">Selva Matemática</a>
-        <button className="sm-chip sm-chip-sol chip-estrellas" onClick={() => ir('/mochila')} aria-label={`${estado.estrellas} estrellas. Ir a la mochila`}>
-          ★ {estado.estrellas}
-        </button>
+        {rol === 'alumno' ? (
+          <button className="sm-chip sm-chip-sol chip-estrellas" onClick={() => ir('/mochila')} aria-label={`${estado.estrellas} estrellas. Ir a la mochila`}>
+            ★ {estado.estrellas}
+          </button>
+        ) : (
+          <span className="sm-chip">{usuario.apodo}</span>
+        )}
       </header>
 
       <main className="contenido" id="contenido">
-        <Pantalla pantalla={pantalla} param={param} />
+        <Pantalla key={id === 'reto' ? param : id} retoId={param} />
       </main>
 
-      <nav className="nav-inferior" aria-label="Navegación principal">
-        {NAV.map((n) => (
+      <nav className={`nav-inferior nav-${nav.length}`} aria-label="Navegación principal">
+        {nav.map((n, i) => (
           <a
             key={n.id}
-            href={`#/${n.id === 'inicio' ? '' : n.id}`}
+            href={`#/${i === 0 ? '' : n.id}`}
             className={`nav-item${activa === n.id ? ' activo' : ''}`}
             aria-current={activa === n.id ? 'page' : undefined}
           >

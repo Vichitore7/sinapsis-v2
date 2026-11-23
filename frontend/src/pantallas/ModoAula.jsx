@@ -5,7 +5,7 @@ import { useJuego } from '../estado/store.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import ModeloVisual from '../componentes/ModeloVisual.jsx';
 import { Barra, Marcas } from '../componentes/Comunes.jsx';
-import { ERRORES_TIPICOS, MUNDOS, buscarMundo, buscarReto, formatoNumero } from '../contenido/mundos.js';
+import { ERRORES_TIPICOS, buscarMundo, buscarReto, formatoNumero } from '../contenido/mundos.js';
 import { VALORES, hoy } from '../logica/juego.js';
 import {
   aulaInicial, iniciarSesion, limpiarApodos, marcar, progresoAlumno, resumenSesion, siguienteReto, terminarSesion,
@@ -57,8 +57,9 @@ function MetaSalon({ aula }) {
   );
 }
 
-function PanelMaestro({ sesion, aula }) {
-  const r = resumenSesion(sesion, aula.apodos);
+function PanelMaestro({ sesion, aula, mundos }) {
+  const r = resumenSesion(sesion, aula.apodos, mundos);
+  if (!r.mundo) return null;
   const maxErr = Math.max(1, ...r.errores.map((e) => e.alumnos));
   return (
     <section className="sm-card">
@@ -124,9 +125,9 @@ function PanelMaestro({ sesion, aula }) {
   );
 }
 
-function Registro({ aula, onMarcar, onSiguiente }) {
+function Registro({ aula, mundos, onMarcar, onSiguiente }) {
   const s = aula.sesionActual;
-  const reto = buscarReto(s.retos[s.indice]);
+  const reto = buscarReto(mundos, s.retos[s.indice]);
   const marcas = s.marcas[reto.id] || {};
   const marcados = aula.apodos.filter((a) => marcas[a]).length;
   const aciertos = aula.apodos.filter((a) => marcas[a]?.ok).length;
@@ -171,9 +172,9 @@ function Registro({ aula, onMarcar, onSiguiente }) {
   );
 }
 
-function Proyectar({ aula, onRevelar }) {
+function Proyectar({ aula, mundos, onRevelar }) {
   const s = aula.sesionActual;
-  const reto = buscarReto(s.retos[s.indice]);
+  const reto = buscarReto(mundos, s.retos[s.indice]);
   return (
     <section className="sm-card proyectable">
       <div className="fila-entre" style={{ marginBottom: 'var(--espacio-3)' }}>
@@ -190,9 +191,9 @@ function Proyectar({ aula, onRevelar }) {
   );
 }
 
-function Revelado({ aula }) {
+function Revelado({ aula, mundos }) {
   const s = aula.sesionActual;
-  const reto = buscarReto(s.retos[s.indice]);
+  const reto = buscarReto(mundos, s.retos[s.indice]);
   const sumas = Array.from({ length: reto.a }, () => reto.b).join(' + ');
   return (
     <section className="sm-acierto">
@@ -204,13 +205,13 @@ function Revelado({ aula }) {
 }
 
 export default function ModoAula() {
-  const { estado, actualizar } = useJuego();
+  const { estado, mundos, actualizar } = useJuego();
   const aula = estado.aula;
   const [editando, setEditando] = useState(false);
   const [revelado, setRevelado] = useState(false);
   const [verSesion, setVerSesion] = useState(null);
-  const mundosConRetos = MUNDOS.filter((m) => m.retos.length > 0);
-  const [mundoId, setMundoId] = useState(mundosConRetos[0].id);
+  const mundosConRetos = mundos.filter((m) => m.retos.length > 0);
+  const [mundoId, setMundoId] = useState(mundosConRetos[0]?.id);
 
   const guardarAula = (fn) => actualizar((s) => ({ ...s, aula: fn(s.aula) }));
 
@@ -234,12 +235,13 @@ export default function ModoAula() {
       <div className="pila aula-sesion">
         <MetaSalon aula={aula} />
         {!revelado ? (
-          <Proyectar aula={aula} onRevelar={() => setRevelado(true)} />
+          <Proyectar aula={aula} mundos={mundos} onRevelar={() => setRevelado(true)} />
         ) : (
           <>
-            <Revelado aula={aula} />
+            <Revelado aula={aula} mundos={mundos} />
             <Registro
               aula={aula}
+              mundos={mundos}
               onMarcar={(apodo, m) => guardarAula((a) => marcar(a, apodo, m))}
               onSiguiente={() => {
                 const r = siguienteReto(aula);
@@ -270,7 +272,7 @@ export default function ModoAula() {
 
       <section className="sm-card">
         <h2 className="subtitulo" style={{ margin: '0 0 var(--espacio-2)' }}>Nueva prueba</h2>
-        <p className="cuerpo texto-suave" style={{ marginTop: 0 }}>Un reto a la vez, a tu ritmo. Sin rankings.</p>
+        <p className="cuerpo texto-suave" style={{ marginTop: 0 }}>Un reto a la vez, a tu ritmo. Sin rankings. Funciona sin internet: todo se guarda en este dispositivo.</p>
         <div className="col-3">
           <label className="cuerpo-fuerte" htmlFor="mundo">Mundo</label>
           <select id="mundo" className="sm-select" value={mundoId} onChange={(e) => setMundoId(e.target.value)}>
@@ -279,7 +281,7 @@ export default function ModoAula() {
             ))}
           </select>
           <div className="acciones">
-            <button className="sm-btn" onClick={() => { guardarAula((a) => iniciarSesion(a, mundoId, hoy())); setRevelado(false); }}>
+            <button className="sm-btn" onClick={() => { guardarAula((a) => iniciarSesion(a, buscarMundo(mundos, mundoId), hoy())); setRevelado(false); }}>
               Empezar prueba
             </button>
             <button className="sm-btn sm-btn-suave" onClick={() => setEditando(true)}>Editar grupo</button>
@@ -287,7 +289,7 @@ export default function ModoAula() {
         </div>
       </section>
 
-      {sesion && <PanelMaestro sesion={sesion} aula={aula} />}
+      {sesion && <PanelMaestro sesion={sesion} aula={aula} mundos={mundos} />}
 
       {aula.sesiones.length > 1 && (
         <section className="sm-card">
@@ -295,7 +297,7 @@ export default function ModoAula() {
           <div className="chips">
             {aula.sesiones.map((s, i) => (
               <button key={i} className={`tip${sesion === s ? ' sel-magia' : ''}`} onClick={() => setVerSesion(i)}>
-                {s.fecha} · {buscarMundo(s.mundoId)?.nombre}
+                {s.fecha} · {buscarMundo(mundos, s.mundoId)?.nombre}
               </button>
             ))}
           </div>

@@ -1,71 +1,92 @@
 # Selva Matemática (sinapsis-v2)
 
-**IA que enseña a pensar.** Plataforma gamificada de matemáticas básicas para alumnas y alumnos de 9 a 15 años en México. Se explora una selva de mundos y retos junto a **Kiko**, un ajolote guía que nunca castiga el error: lo convierte en una pista.
+**IA que enseña a pensar.** Plataforma gamificada de matemáticas básicas para alumnas y alumnos de 9 a 15 años en México. Se explora una selva de mundos y retos junto a un ajolote guía que nunca castiga el error: lo convierte en una pista.
 
 Proyecto para UniconHub Hack / Claude Build Day (28 de noviembre de 2026).
 
-## Cómo correrla
+## Cómo correrla (dos terminales)
 
-Necesitas Node 20 o más reciente.
+Necesitas Node 20 o más reciente y [uv](https://docs.astral.sh/uv/) para Python.
 
+**1. Backend (FastAPI)**
+```bash
+cd backend
+cp .env.example .env                       # y pon una SECRET_KEY (el archivo explica cómo)
+uv sync
+uv run python -m app.semilla --demo        # base de datos + usuarios de prueba
+uv run uvicorn app.main:app --reload       # http://localhost:8000/docs  ← documentación de la API (Swagger)
+uv run pytest                              # pruebas
+```
+
+**2. Frontend (React + Vite)**
 ```bash
 cd frontend
 npm install
-npm run dev        # http://localhost:5173 (también se abre desde el celular en la misma red)
-npm test           # pruebas de la lógica del juego
-npm run build      # versión para publicar (incluye el modo sin conexión)
+npm run dev                                # http://localhost:5173  (también se abre desde el celular en la misma red)
+npm test
 ```
+En desarrollo Vite manda `/api` al backend, así que no hay que configurar CORS.
 
-## Qué funciona ya
+**Usuarios de prueba** (contraseña `selva123`): `profe_demo` (maestro, con el aula "5.º B") y `luna_demo`, `teo_demo`, `sol_demo` (alumnos). El código del aula aparece al correr la semilla y en "Mis aulas".
 
-| Pantalla | Qué hace |
-|---|---|
-| **Inicio** | Pide un apodo, saluda (con mensaje especial si regresas después de días), muestra el reto del día y el bienestar de Kiko. |
-| **Mapa** | 3 mundos con nodos completados, actual y bloqueados, y un cofre al final de cada mundo. El mundo 3 está marcado como "próximamente". |
-| **Reto** | Tarjeta del reto con apoyo visual (monedas, bolsitas o barras), "Comprobar", hasta 3 pistas socráticas y luego un ejemplo parecido. Si hay error, muestra "¡Casi!" con la senda de pasos. La primera misión abre con el ejemplo del ajolote. |
-| **Mochila** | Cuidados de Kiko: medidores de comida, pecera y alegría, y las acciones alimentar, jugar, limpiar y descansar. |
-| **Logros** | Álbum de stickers, logros y constancia "sin valor curricular". |
-| **Escáner** | Captura (cámara o galería), recorte, compresión a menos de 300 KB, confirmación de lo leído y diagnóstico con la senda de pasos. Sin internet, guarda la foto "en la mochila" y hace las 3 preguntas generales. La foto se borra al confirmar. |
-| **Modo Aula** | El maestro arma el grupo con apodos, proyecta un reto a la vez, revela la respuesta y marca ✓/✗ con errores típicos opcionales. Incluye la meta colectiva de estrellas y el panel del maestro (errores comunes, qué reforzar, alumnos que necesitan apoyo y progreso). |
+## Qué hay
 
-Todo se guarda en el dispositivo (`localStorage`). Todavía no hay backend.
+| | Alumno | Maestro |
+|---|---|---|
+| **Cuenta** | Usuario + contraseña + **código de recuperación** (sin correo). Se muestra una sola vez. | Igual. |
+| **Juego** | Mapa de mundos, retos con apoyo visual, 3 pistas socráticas, "¡Casi!" con la senda de pasos, cofres con stickers, estrellas, nivel y racha. | — |
+| **Ajolote** | Medidores de comida, pecera y alegría. Se cuidan con estrellas y se le puede cambiar el nombre. | — |
+| **Aulas** | Se une con un código tipo `X7K-92B` y ve las misiones asignadas. | Crea aulas, comparte y regenera el código, asigna mundos con fecha límite, quita alumnos y ve el **panel**: quién necesita apoyo, errores más comunes, qué reforzar y el detalle de cada alumno. |
+| **Modo Aula** | — | Prueba en el salón con un solo dispositivo **sin internet** (se guarda en el dispositivo). |
+| **Escáner** | Foto → recorte → confirmar lectura → senda de pasos. | Igual. |
+| **Ajustes** | Tema Día, Noche o como el dispositivo. | Igual. |
+
+### Seguridad
+- Contraseñas con **argon2**. El código de recuperación se guarda solo como hash (HMAC).
+- Sesión con **JWT en cookie httpOnly**. Recuperar la cuenta o cambiar la contraseña cierra las demás sesiones.
+- **Freno a intentos** en el inicio de sesión y en la recuperación.
+- **Las respuestas nunca llegan al navegador**: el servidor valida cada intento y solo devuelve la senda de pasos.
+- **Autorización por recurso**: un maestro solo ve sus aulas (las demás dan 404) y un alumno solo su progreso.
+- Validación de entradas con **Pydantic**, ORM (**SQLAlchemy**), CORS limitado al frontend y `.env` fuera de Git.
 
 ## Estructura
 
 ```
-docs/selva-matematica/   Sistema de diseño original (tokens, reglas y componentes). Es la referencia: léanlo.
+docs/selva-matematica/     Sistema de diseño (la referencia de cómo se ve y se comporta todo)
+backend/
+  app/main.py              App, CORS, errores con forma {"error": "..."}
+  app/modelos.py           Tablas: usuarios, aulas, aula_alumnos, asignaciones, unidades, lecciones,
+                           ejercicios, intentos, progreso, estado_juego, mascotas, ajustes_usuario
+  app/seguridad.py         Contraseñas, códigos, JWT, freno a intentos, roles
+  app/juego.py             REGLAS del juego (VALORES iniciales arriba) + diagnóstico de la senda
+  app/contenido.py         Contenido semilla + generador de retos de multiplicación
+  app/servicio.py          Lógica del alumno (intentos, cofres, cuidados, mapa)
+  app/rutas/               auth · juego · aulas · ajustes
+  tests/                   pytest
 frontend/
-  src/contenido/mundos.js    Mundos, retos y errores típicos. Para agregar contenido se edita SOLO este archivo.
-  src/logica/                Reglas puras y con pruebas:
-    juego.js                 Estrellas, bienestar, mapa, escalera de apoyo, logros (VALORES iniciales arriba)
-    diagnostico.js           Senda de pasos: dónde se torció el procedimiento (sin IA)
-    pistas.js                Pistas socráticas y ejemplo parecido
-    aula.js                  Modo Aula: marcas, meta del salón y resumen del panel
-    lector.js                Lectura de la foto del escáner (PENDIENTE: conectar backend)
-    imagen.js                Recorte y compresión de la foto
-    logica.test.js           Pruebas (npm test)
-  src/componentes/           Ajolote, íconos sticker, ModeloVisual, SendaPasos, MensajeCasi...
-  src/pantallas/             Una pantalla por archivo
-  src/estado/store.jsx       Estado global guardado en el dispositivo
-  src/styles/                tokens.css (del sistema de diseño) y app.css
-  public/sw.js               Service worker para funcionar sin internet
+  src/api.js               Cliente de la API + adaptadores
+  src/estado/store.jsx     Sesión y estado (el servidor es la fuente de verdad)
+  src/pantallas/           Cuenta, Inicio, Mapa, Reto, Mochila, Logros, Perfil, Aulas, ModoAula, Escaner
+  src/logica/              Ayudas de vista, diagnóstico del escáner y Modo Aula sin internet
 ```
+
+**Para agregar retos:** se edita `backend/app/contenido.py` y se corre `uv run python -m app.semilla`.
+**Para cambiar a PostgreSQL:** se cambia `DATABASE_URL` en `.env` y se instala el driver (`uv add "psycopg[binary]"`).
 
 ## Reglas que no se rompen (del sistema de diseño)
 
-- **El error nunca es rojo** ni quita vidas, puntos o estrellas. Se usa `casi` (durazno) y siempre lleva a una pista o a reintentar.
+- **El error nunca es rojo** ni quita vidas, puntos o estrellas. Por eso no hay vidas ni corazones.
+- **Sin rankings ni tabla de posiciones.** Las listas del maestro van en orden alfabético.
+- **El ajolote es la única mascota** y sus medidores **solo bajan al jugar**: si la app no se usa, nada baja y nada se rompe.
 - **Nunca se muestra la respuesta del mismo reto** en las pistas. Después de 3 pistas viene un ejemplo con otros números.
-- **El apoyo visual nunca muestra el total** del reto; solo el ejemplo del ajolote lo muestra.
-- **Sin rankings.** En el Modo Aula hay apodos, nunca nombres completos, y la lista de apoyo va en orden alfabético.
-- **Colores, radios y espacios solo con tokens** (`var(--selva)`, `var(--radio-md)`…).
-- Texto en español de México, tuteando, sin emojis en la interfaz.
+- Apodos en lugar de nombres completos. Colores solo con tokens. Español de México, sin emojis en la interfaz.
 
 ## Pendiente (para repartir)
 
-- [ ] **Backend + IA del escáner**: implementar `frontend/src/logica/lector.js` contra un endpoint del backend. La API key va solo en el backend.
-- [ ] **Revisión pedagógica** de los retos y las pistas con la maestra o el maestro. Todo el contenido es borrador.
-- [ ] Mundo 3 (fracciones): apoyos visuales para división y fracciones (pendiente en `Apoyo-visual.md`).
-- [ ] Cuentas y sincronización: vincular el apodo del Modo Aula con la cuenta de cada alumno, más el aviso privado de progreso.
-- [ ] Ilustración final del ajolote y los stickers por parte del equipo de diseño. Los actuales son los dibujos de referencia del sistema.
-- [ ] Probar los VALORES iniciales con alumnos (`frontend/src/logica/juego.js`).
-- [ ] Privacidad: consentimiento de madres y padres para usar la cámara, y borrado de datos al terminar el ciclo escolar.
+- [ ] **IA del escáner**: endpoint que lea la foto. En el frontend, `frontend/src/logica/lector.js` ya está listo para conectarlo.
+- [ ] **Tutor con IA** (pistas personalizadas), con límite de pistas y freno a solicitudes. La API key va solo en `.env`.
+- [ ] **Diagnóstico inicial** (examen corto por tema) y nivel estimado por tema.
+- [ ] **Revisión pedagógica** del contenido, que todo está en borrador. Faltan las unidades de División y Fracciones.
+- [ ] Modo sin conexión para el alumno: guardar intentos y enviarlos al volver el internet.
+- [ ] Revisar el tema Noche con diseño: el sistema solo define el tema Día.
+- [ ] Despliegue (Railway, Render o servidor propio) con `ENTORNO=produccion` y HTTPS.

@@ -3,7 +3,8 @@ import { useJuego } from '../estado/store.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import Icono from '../componentes/Iconos.jsx';
 import { Marcas } from '../componentes/Comunes.jsx';
-import { CUIDADOS, cuidar, estadoAjolote, loQuePide } from '../logica/juego.js';
+import { api } from '../api.js';
+import { VALORES, estadoAjolote, loQuePide } from '../logica/juego.js';
 
 const MEDIDORES = [
   { id: 'comida', nombre: 'Comida' },
@@ -13,22 +14,43 @@ const MEDIDORES = [
 
 const BOTONES = [
   { id: 'alimentar', texto: 'Alimentar', gracias: '¡Ñam! Una lombriz deliciosa.' },
-  { id: 'jugar', texto: 'Jugar', gracias: '¡Qué divertido! Kiko nada en círculos.' },
+  { id: 'jugar', texto: 'Jugar', gracias: '¡Qué divertido! Tu ajolote nada en círculos.' },
   { id: 'limpiar', texto: 'Limpiar', gracias: '¡Pecera limpiecita!' },
-  { id: 'descansar', texto: 'Descansar', gracias: 'Kiko se fue a dormir. Hasta la próxima aventura.' },
+  { id: 'descansar', texto: 'Descansar', gracias: 'Tu ajolote se fue a dormir. Hasta la próxima aventura.' },
 ];
 
+function RenombrarAjolote() {
+  const { estado, aplicarServidor } = useJuego();
+  const [nombre, setNombre] = useState(estado.nombreAjolote);
+  const cambio = nombre.trim() && nombre.trim() !== estado.nombreAjolote;
+  return (
+    <form className="acciones" style={{ marginBottom: 'var(--espacio-3)' }}
+      onSubmit={async (e) => { e.preventDefault(); aplicarServidor(await api.renombrarMascota(nombre.trim())); }}>
+      <input className="sm-input sm-input-texto input-codigo" value={nombre} onChange={(e) => setNombre(e.target.value)}
+        maxLength={20} aria-label="Nombre de tu ajolote" />
+      <button className="sm-btn sm-btn-suave" disabled={!cambio}>Cambiar nombre</button>
+    </form>
+  );
+}
+
 export default function Mochila() {
-  const { estado, actualizar } = useJuego();
+  const { estado, aplicarServidor, actualizar } = useJuego();
   const [mensaje, setMensaje] = useState(null);
+  const [ocupado, setOcupado] = useState(false);
   const pide = loQuePide(estado.bienestar);
   const animo = estadoAjolote(estado);
 
-  const accion = (b) => {
-    const r = cuidar(estado, b.id);
-    if (!r.ok) return;
-    actualizar(() => r.estado);
-    setMensaje(b.gracias);
+  const accion = async (b) => {
+    setOcupado(true);
+    try {
+      aplicarServidor(await api.cuidar(b.id));
+      actualizar((s) => ({ ...s, celebrando: false }));
+      setMensaje(b.gracias);
+    } catch (e) {
+      setMensaje(e.message);
+    } finally {
+      setOcupado(false);
+    }
   };
 
   return (
@@ -36,6 +58,7 @@ export default function Mochila() {
       <div className="cuidados">
         <section className="sm-card">
           <h2 className="subtitulo" style={{ margin: '0 0 var(--espacio-3)' }}>Bienestar de {estado.nombreAjolote}</h2>
+          <RenombrarAjolote />
           {MEDIDORES.map((m) => {
             const v = estado.bienestar[m.id];
             const pideEste = v <= 2;
@@ -53,7 +76,7 @@ export default function Mochila() {
 
           <div className="acciones" style={{ marginTop: 'var(--espacio-3)' }}>
             {BOTONES.map((b) => {
-              const costo = CUIDADOS[b.id].costo();
+              const costo = VALORES.costos[b.id];
               const faltan = Math.max(0, costo - estado.estrellas);
               const gratis = costo === 0;
               return (
@@ -61,7 +84,7 @@ export default function Mochila() {
                   key={b.id}
                   className={`sm-btn${gratis ? ' sm-btn-suave' : ''}`}
                   onClick={() => accion(b)}
-                  disabled={faltan > 0}
+                  disabled={faltan > 0 || ocupado}
                 >
                   {b.texto} · {gratis ? 'gratis' : `★ ${costo}`}
                   {faltan > 0 && <span className="etiqueta"> (faltan {faltan})</span>}
@@ -88,7 +111,7 @@ export default function Mochila() {
           <li>Acertar a la primera: ★ 3</li>
           <li>Acertar después de pistas: ★ 2. Pedir ayuda nunca se castiga.</li>
           <li>Reto del día: ★ 5 de bono</li>
-          <li>Abrir el cofre de un mundo: ★ 10 y un sticker para Kiko</li>
+          <li>Abrir el cofre de un mundo: ★ 10 y un sticker para tu ajolote</li>
         </ul>
       </section>
     </div>

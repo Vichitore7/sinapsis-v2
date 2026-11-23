@@ -4,8 +4,8 @@ import { ir } from '../ruta.js';
 import Ajolote from '../componentes/Ajolote.jsx';
 import Icono from '../componentes/Iconos.jsx';
 import { MisionCumplida } from '../componentes/Comunes.jsx';
-import { MUNDOS, STICKERS } from '../contenido/mundos.js';
-import { abrirCofre, nodosDeMundo, retosCompletadosDe, VALORES } from '../logica/juego.js';
+import { api } from '../api.js';
+import { nodosDeMundo, retosCompletadosDe } from '../logica/juego.js';
 
 function Nodo({ nodo, indice }) {
   const { reto, estado } = nodo;
@@ -31,14 +31,20 @@ function Nodo({ nodo, indice }) {
 }
 
 export default function Mapa() {
-  const { estado, actualizar } = useJuego();
+  const { estado, mundos, actualizar, aplicarServidor } = useJuego();
   const [premio, setPremio] = useState(null);
+  const [error, setError] = useState(null);
 
-  const abrir = (mundo) => {
-    const r = abrirCofre(estado, mundo.id);
-    if (!r.ok) return;
-    actualizar(() => r.estado);
-    setPremio(mundo);
+  const abrir = async (mundo) => {
+    setError(null);
+    try {
+      const r = await api.abrirCofre(mundo.id);
+      aplicarServidor(r.estado);
+      actualizar((s) => ({ ...s, celebrando: true }));
+      setPremio({ mundo, estrellas: r.estrellas, sticker: r.sticker_nombre });
+    } catch (e) {
+      setError(e.message);
+    }
   };
 
   if (premio) {
@@ -48,7 +54,7 @@ export default function Mapa() {
           <Ajolote estado="celebrando" tamano={160} mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} />
         </div>
         <MisionCumplida
-          texto={`¡Superaste ${premio.nombre}! Ganaste ★ ${VALORES.estrellasMundo} y un sticker nuevo: ${STICKERS[premio.sticker].nombre}. Las branquias de Kiko ganaron un color.`}
+          texto={`¡Superaste ${premio.mundo.nombre}! Ganaste ★ ${premio.estrellas} y un sticker nuevo: ${premio.sticker}. Las branquias de ${estado.nombreAjolote} ganaron un color.`}
           textoBoton="Seguir explorando"
           onPremio={() => {
             actualizar((s) => ({ ...s, celebrando: false }));
@@ -61,7 +67,8 @@ export default function Mapa() {
 
   return (
     <div className="pila">
-      {MUNDOS.map((mundo) => {
+      {error && <div className="sm-casi" role="alert">{error}</div>}
+      {mundos.map((mundo) => {
         const { nodos, cofre, abierto } = nodosDeMundo(estado, mundo);
         const hechos = retosCompletadosDe(estado, mundo);
         return (

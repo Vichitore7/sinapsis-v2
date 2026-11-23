@@ -59,6 +59,12 @@ const FORMAS = {
       <path d="M12 24 Q32 36 52 24 M12 42 Q32 30 52 42" fill="none" stroke="var(--magia)" strokeWidth="5" strokeLinecap="round" />
     </>
   ),
+  perfil: (
+    <>
+      <circle cx="32" cy="22" r="12" fill="var(--ajolote-rosa)" {...T} />
+      <path d="M10 56 Q10 36 32 36 Q54 36 54 56 Z" fill="var(--magia)" {...T} />
+    </>
+  ),
   candado: (
     <>
       <rect x="14" y="28" width="36" height="28" rx="6" fill="var(--superficie)" {...T} />

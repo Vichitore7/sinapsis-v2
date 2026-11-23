@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useJuego } from '../estado/store.jsx';
+import { api } from '../api.js';
 import { ir } from '../ruta.js';
 import ModeloVisual from '../componentes/ModeloVisual.jsx';
 import SendaPasos from '../componentes/SendaPasos.jsx';
 import { DiceAjolote, MensajeCasi, MisionCumplida } from '../componentes/Comunes.jsx';
 import { buscarReto, formatoNumero } from '../contenido/mundos.js';
-import { diagnosticar } from '../logica/diagnostico.js';
 import { MAX_PISTAS, ejemploParecido, pistasDe } from '../logica/pistas.js';
-import { etapaParaReto, resolverReto, retoJugable, siguientePaso } from '../logica/juego.js';
+import { etapaParaReto, retoJugable, siguientePaso } from '../logica/juego.js';
 
 function EjemploAjolote({ reto, onListo }) {
   const { a, b } = reto.ejemplo;
@@ -21,7 +21,7 @@ function EjemploAjolote({ reto, onListo }) {
           <h2 className="subtitulo" style={{ margin: 0 }}>Ejemplo del ajolote</h2>
           <span className="sm-chip sm-chip-pista">Tutorial</span>
         </div>
-        <p className="cuerpo">Kiko compra {a} dulces de {formatoNumero(b, reto.moneda)}. Junta {a} montones de {b} monedas:</p>
+        <p className="cuerpo">El ajolote compra {a} dulces de {formatoNumero(b, reto.moneda)}. Junta {a} montones de {b} monedas:</p>
         <ModeloVisual etapa={1} a={a} b={b} moneda={reto.moneda} mostrarTotal />
         <p className="numero-reto" style={{ margin: 'var(--espacio-3) 0' }}>
           {a} × {formatoNumero(b, reto.moneda)} = <span className="texto-selva">{formatoNumero(a * b, reto.moneda)}</span>
@@ -55,8 +55,11 @@ function EjemploParecido({ reto }) {
 }
 
 export default function Reto({ retoId }) {
-  const { estado, actualizar } = useJuego();
-  const reto = buscarReto(retoId);
+  const { estado, mundos, actualizar, aplicarServidor } = useJuego();
+  const reto = buscarReto(mundos, retoId);
+  const inicio = useRef(Date.now());
+  const [enviando, setEnviando] = useState(false);
+  const [errorRed, setErrorRed] = useState(null);
 
   const [respuesta, setRespuesta] = useState('');
   const [fase, setFase] = useState('resolviendo'); // resolviendo | casi | cumplida
@@ -65,7 +68,7 @@ export default function Reto({ retoId }) {
   const [diag, setDiag] = useState(null);
   const [resultado, setResultado] = useState(null);
 
-  if (!reto || !retoJugable(estado, retoId)) {
+  if (!reto || !retoJugable(estado, reto)) {
     return (
       <div className="pila">
         <DiceAjolote estado="curioso">Este sendero todavía está cerrado. Sigue el mapa para llegar aquí.</DiceAjolote>
@@ -79,7 +82,10 @@ export default function Reto({ retoId }) {
     return (
       <EjemploAjolote
         reto={reto}
-        onListo={() => actualizar((s) => ({ ...s, ejemplosVistos: [...s.ejemplosVistos, reto.mundo.id], celebrando: false, dormido: false }))}
+        onListo={async () => {
+          actualizar((s) => ({ ...s, celebrando: false }));
+          try { aplicarServidor(await api.ejemploVisto(reto.mundo.id)); } catch (e) { setErrorRed(e.message); }
+        }}
       />
     );
   }
@@ -88,7 +94,6 @@ export default function Reto({ retoId }) {
   const etapa = etapaParaReto(reto, estado.etapaApoyo);
   const pistas = pistasDe(reto);
   const indice = reto.mundo.retos.findIndex((r) => r.id === reto.id) + 1;
-  const numero = Number(respuesta.replace(/[^0-9]/g, ''));
   const hayRespuesta = /[0-9]/.test(respuesta);
 
   const pedirPista = () => {
@@ -96,20 +101,33 @@ export default function Reto({ retoId }) {
     setFase('resolviendo');
   };
 
-  const comprobar = (e) => {
+  // La respuesta se valida en el SERVIDOR: el navegador nunca conoce la respuesta correcta.
+  const comprobar = async (e) => {
     e.preventDefault();
-    if (!hayRespuesta) return;
-    const d = diagnosticar({ a: reto.a, op: '×', b: reto.b, c: numero, moneda: reto.moneda });
-    if (d.correcto) {
-      const conAyuda = pistasUsadas > 0 || errores > 0;
-      const r = resolverReto(estado, reto.id, { conAyuda, pistas: Math.min(pistasUsadas, MAX_PISTAS) });
-      actualizar(() => r.estado);
-      setResultado(r);
-      setFase('cumplida');
-    } else {
-      setErrores((n) => n + 1);
-      setDiag(d);
-      setFase('casi');
+    if (!hayRespuesta || enviando) return;
+    setEnviando(true);
+    setErrorRed(null);
+    try {
+      const r = await api.intentar(reto.id, {
+        respuesta: respuesta.trim().slice(0, 20),
+        pistas_usadas: pistasUsadas,
+        tiempo_ms: Date.now() - inicio.current,
+      });
+      aplicarServidor(r.estado);
+      if (r.correcto) {
+        actualizar((s) => ({ ...s, celebrando: true }));
+        setResultado({ ...r.recompensa, respuesta: r.respuesta, explicacion: r.explicacion });
+        setFase('cumplida');
+      } else {
+        const d = r.diagnostico;
+        setErrores((n) => n + 1);
+        setDiag({ pasos: d.pasos, pasoTorcido: d.paso_torcido, pregunta: d.pregunta });
+        setFase('casi');
+      }
+    } catch (err) {
+      setErrorRed(err.message);
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -120,7 +138,7 @@ export default function Reto({ retoId }) {
 
   const terminar = () => {
     actualizar((s) => ({ ...s, celebrando: false }));
-    const paso = siguientePaso({ ...estado, celebrando: false });
+    const paso = siguientePaso(estado, mundos);
     if (paso?.tipo === 'reto' && paso.mundo.id === reto.mundo.id) ir(`/reto/${paso.reto.id}`);
     else ir('/mapa');
   };
@@ -131,14 +149,14 @@ export default function Reto({ retoId }) {
     if (resultado.repaso) texto = '¡Lo resolviste otra vez! Los repasos hacen más fuerte al explorador.';
     else {
       texto = errores === 0 && pistasUsadas === 0
-        ? `Lo descubriste tú solo, explorador. Ganaste ${resultado.ganadas} estrellas para Kiko.`
-        : `¡Lo lograste! Pedir ayuda también es de exploradores. Ganaste ${resultado.ganadas} estrellas para Kiko.`;
+        ? `Lo descubriste tú solo, explorador. Ganaste ${resultado.ganadas} estrellas para ${estado.nombreAjolote}.`
+        : `¡Lo lograste! Pedir ayuda también es de exploradores. Ganaste ${resultado.ganadas} estrellas para ${estado.nombreAjolote}.`;
       if (resultado.bono) texto += ` Y ★ ${resultado.bono} más por el reto del día.`;
     }
     return (
       <div className="pila">
         <DiceAjolote estado="celebrando" mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers}>
-          ¡Misión cumplida! {reto.a} × {formatoNumero(reto.b, reto.moneda)} = {formatoNumero(reto.a * reto.b, reto.moneda)}
+          ¡Misión cumplida! {reto.a} × {formatoNumero(reto.b, reto.moneda)} = {formatoNumero(resultado.respuesta, reto.moneda)}
         </DiceAjolote>
         <MisionCumplida
           texto={texto}
@@ -206,7 +224,7 @@ export default function Reto({ retoId }) {
 
         {fase === 'resolviendo' && (
           <div className="acciones">
-            <button className="sm-btn" type="submit" disabled={!hayRespuesta}>Comprobar</button>
+            <button className="sm-btn" type="submit" disabled={!hayRespuesta || enviando}>{enviando ? 'Revisando…' : 'Comprobar'}</button>
             {!pistasAgotadas && (
               <button className="sm-btn sm-btn-pista" type="button" onClick={pedirPista}>? Pista</button>
             )}
@@ -215,6 +233,7 @@ export default function Reto({ retoId }) {
             )}
           </div>
         )}
+        {errorRed && <p className="etiqueta texto-casi" role="alert" style={{ margin: 'var(--espacio-3) 0 0' }}>{errorRed}</p>}
       </form>
      </div>
 

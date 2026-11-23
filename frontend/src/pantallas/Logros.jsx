@@ -1,16 +1,11 @@
 import { useJuego } from '../estado/store.jsx';
 import Icono from '../componentes/Iconos.jsx';
 import { STICKERS } from '../contenido/mundos.js';
-import { logros } from '../logica/juego.js';
 
 export default function Logros() {
-  const { estado, reiniciar } = useJuego();
-  const lista = logros(estado);
+  const { estado } = useJuego();
+  const lista = estado.logros || [];
   const hechos = lista.filter((l) => l.hecho).length;
-
-  const borrar = () => {
-    if (window.confirm('¿Borrar todo el progreso de este dispositivo? No se puede deshacer.')) reiniciar();
-  };
 
   return (
     <div className="pila dos-columnas">
@@ -57,7 +52,6 @@ export default function Logros() {
         <p className="etiqueta texto-suave" style={{ margin: 'var(--espacio-2) 0 0' }}>Sin valor curricular.</p>
       </section>
 
-      <button className="sm-btn sm-btn-suave" onClick={borrar}>Borrar progreso de este dispositivo</button>
     </div>
   );
 }

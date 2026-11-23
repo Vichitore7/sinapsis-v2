@@ -1,6 +1,6 @@
 // Modo Aula (Modo-aula.md): un dispositivo del maestro, sin ranking, apodos en vez de nombres.
 import { VALORES } from './juego.js';
-import { ERRORES_TIPICOS, buscarMundo } from '../contenido/mundos.js';
+import { ERRORES_TIPICOS } from '../contenido/mundos.js';
 
 export function aulaInicial(grupo, apodos) {
   return {
@@ -20,11 +20,11 @@ export function limpiarApodos(lista) {
     .filter((a) => a && !vistos.has(a.toLowerCase()) && vistos.add(a.toLowerCase()));
 }
 
-export function iniciarSesion(aula, mundoId, fecha) {
-  const mundo = buscarMundo(mundoId);
+/** mundo: un mundo del contenido (con sus retos). */
+export function iniciarSesion(aula, mundo, fecha) {
   return {
     ...aula,
-    sesionActual: { fecha, mundoId, retos: mundo.retos.map((r) => r.id), indice: 0, marcas: {} },
+    sesionActual: { fecha, mundoId: mundo.id, retos: mundo.retos.map((r) => r.id), indice: 0, marcas: {} },
   };
 }
 
@@ -64,9 +64,9 @@ export function terminarSesion(aula) {
   return { ...aula, sesiones: [...aula.sesiones, aula.sesionActual], sesionActual: null };
 }
 
-/** Resumen del panel del maestro para una sesión. */
-export function resumenSesion(sesion, apodos) {
-  const mundo = buscarMundo(sesion.mundoId);
+/** Resumen del panel del maestro para una sesión. mundos: el contenido (de la API o de la caché). */
+export function resumenSesion(sesion, apodos, mundos) {
+  const mundo = mundos.find((m) => m.id === sesion.mundoId);
   const retos = mundo.retos.filter((r) => sesion.retos.includes(r.id));
   let aciertos = 0;
   let fallos = 0;
