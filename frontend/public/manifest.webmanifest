@@ -1,0 +1,10 @@
+{
+  "name": "Selva Matemática",
+  "short_name": "Selva",
+  "lang": "es-MX",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f1ff",
+  "theme_color": "#1fa971",
+  "icons": [{ "src": "/icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

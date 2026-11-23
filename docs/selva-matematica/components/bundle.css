@@ -1,0 +1,39 @@
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@400;700;800&display=swap");
+
+body { margin: 0; font-family: var(--font-body); background: var(--fondo); color: var(--tinta); }
+.sm-row { display: flex; flex-wrap: wrap; gap: var(--espacio-3); align-items: center; padding: var(--espacio-4); }
+.sm-stack { display: flex; flex-direction: column; gap: var(--espacio-3); padding: var(--espacio-4); }
+
+/* Botón 3D */
+.sm-btn { font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 24px; min-height: 52px; padding: 0 var(--espacio-4); display: inline-flex; align-items: center; justify-content: center; gap: var(--espacio-2); border: 2px solid var(--tinta); border-radius: var(--radio-md); background: var(--selva); color: var(--tinta); box-shadow: var(--sombra-boton); cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
+.sm-btn:active, .sm-btn.is-pressed { transform: translateY(4px); box-shadow: none; }
+.sm-btn:focus-visible { outline: 3px solid var(--pista); outline-offset: 3px; }
+.sm-btn-magia { background: var(--magia); color: var(--superficie); box-shadow: 0 4px 0 var(--magia-profundo); }
+.sm-btn-sol { background: var(--sol); box-shadow: 0 4px 0 var(--sol-profundo); }
+.sm-btn-pista { background: var(--pista-suave); color: var(--pista-texto); border-color: var(--pista-texto); box-shadow: 0 4px 0 var(--pista-texto); }
+.sm-btn-suave { background: var(--superficie); box-shadow: 0 4px 0 var(--tinta-suave); }
+.sm-btn:disabled { background: var(--bloqueado); color: var(--tinta); box-shadow: none; cursor: not-allowed; }
+
+/* Tarjeta de reto */
+.sm-card { background: var(--superficie); border: 2px solid var(--tinta); border-radius: var(--radio-lg); box-shadow: var(--sombra-tarjeta); padding: var(--espacio-4); }
+.sm-chip { display: inline-flex; align-items: center; gap: var(--espacio-1); font-size: 14px; line-height: 20px; font-weight: 700; padding: var(--espacio-1) var(--espacio-2); border-radius: var(--radio-pill); background: var(--magia-suave); color: var(--magia-profundo); }
+.sm-chip-sol { background: var(--sol); color: var(--tinta); }
+.sm-input { font-family: var(--font-body); font-weight: 800; font-size: 32px; width: 120px; height: 56px; text-align: center; border: 2px solid var(--tinta); border-radius: var(--radio-sm); background: var(--fondo); color: var(--tinta); }
+.sm-input:focus-visible { outline: 3px solid var(--pista); outline-offset: 3px; }
+
+/* Estados pedagógicos */
+.sm-casi { background: var(--casi-suave); border: 3px solid var(--casi); border-radius: var(--radio-lg); padding: var(--espacio-4); }
+.sm-acierto { background: var(--selva-suave); border: 3px solid var(--selva); border-radius: var(--radio-lg); padding: var(--espacio-4); }
+.sm-bubble { position: relative; background: var(--pista-suave); border: 2px solid var(--pista-texto); border-radius: var(--radio-lg); padding: var(--espacio-3); font-weight: 700; font-size: 18px; line-height: 26px; }
+
+/* Senda de pasos */
+.sm-senda { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--espacio-2); }
+.sm-paso { display: flex; align-items: flex-start; gap: var(--espacio-3); padding: var(--espacio-2) var(--espacio-3); border: 2px solid var(--tinta); border-radius: var(--radio-sm); background: var(--superficie); font-size: 18px; line-height: 26px; }
+.sm-paso-ok { background: var(--selva-suave); }
+.sm-paso-casi { background: var(--casi-suave); border-color: var(--casi); border-width: 3px; }
+.sm-paso-pendiente { background: var(--fondo); color: var(--tinta-suave); border-style: dashed; }
+.sm-paso-marca { flex: none; width: 28px; height: 28px; border-radius: var(--radio-pill); display: grid; place-items: center; font-weight: 800; font-size: 14px; border: 2px solid var(--tinta); background: var(--superficie); }
+.sm-paso-ok .sm-paso-marca { background: var(--selva); }
+.sm-paso-casi .sm-paso-marca { background: var(--casi); }
+
+@media (prefers-reduced-motion: reduce) { .sm-btn { transition: none; } .sm-btn:active { transform: none; } }
