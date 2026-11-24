@@ -7,7 +7,7 @@ import { DiceAjolote } from '../componentes/Comunes.jsx';
 import SendaPasos from '../componentes/SendaPasos.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import { leerArchivo, recortarYComprimir } from '../logica/imagen.js';
-import { leerOperacion, pistasEscaner } from '../logica/lector.js';
+import { leerOperacion, pistasEscaner, responderFoto } from '../logica/lector.js';
 import { diagnosticar } from '../logica/diagnostico.js';
 import { ejemploParecido } from '../logica/pistas.js';
 import { hoy } from '../logica/juego.js';
@@ -278,9 +278,16 @@ function resultadoDe({ a, op, b }) {
   return a - b;
 }
 
-function ChatTutor({ mensajes, onEnviar, onPista, onEjemplo, hayOperacion, onReiniciar }) {
+function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacion, onReiniciar }) {
   const [texto, setTexto] = useState('');
   const fin = useRef(null);
+  const camara = useRef(null);
+  const galeria = useRef(null);
+  const elegirFoto = (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (f) onFoto(f);
+  };
   useEffect(() => { fin.current?.scrollIntoView({ block: 'nearest' }); }, [mensajes.length]);
   const enviar = (e) => {
     e.preventDefault();
@@ -314,7 +321,9 @@ function ChatTutor({ mensajes, onEnviar, onPista, onEjemplo, hayOperacion, onRei
           ) : (
             <div key={i} className="msg msg-yo">
               <span className="msg-autor">Tú</span>
-              <div className="msg-globo">{m.texto}</div>
+              <div className={`msg-globo${m.foto ? ' msg-foto' : ''}`}>
+                {m.foto ? <img src={m.foto} alt="Foto que enviaste a Kiko" /> : m.texto}
+              </div>
             </div>
           )
         ))}
@@ -325,7 +334,10 @@ function ChatTutor({ mensajes, onEnviar, onPista, onEjemplo, hayOperacion, onRei
         <button className="chip-sug" onClick={onEjemplo} disabled={!hayOperacion}>🧩 Dibújalo con bloques</button>
       </div>
       <form className="chat-entrada" onSubmit={enviar}>
-        <span className="boton-redondo" aria-hidden="true"><I n="micro" /></span>
+        <button type="button" className="boton-redondo" onClick={() => camara.current.click()} aria-label="Tomar foto para Kiko"><I n="camara" /></button>
+        <button type="button" className="boton-redondo" onClick={() => galeria.current.click()} aria-label="Subir imagen para Kiko"><I n="galeria" /></button>
+        <input ref={camara} type="file" accept="image/*" capture="environment" hidden onChange={elegirFoto} />
+        <input ref={galeria} type="file" accept="image/*" hidden onChange={elegirFoto} />
         <input className="entrada" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe tu deducción a Kiko…" aria-label="Mensaje para Kiko" maxLength={200} />
         <button className="btn btn-naranja btn-cuadrado" aria-label="Enviar"><I n="enviar" /></button>
       </form>
@@ -425,6 +437,20 @@ export default function Escaner() {
     decir({ de: 'kiko', op: `${e.suma} = ${e.total}`, texto: `Mira este ejemplo parecido: ${e.a} bloques de ${e.b} son ${e.total}. Usa la misma idea con tu operación en el cuaderno.` });
   };
 
+  // Foto enviada desde el chat: se comprime, se muestra como mensaje y Kiko responde.
+  // La foto vive solo en la conversación abierta: no se guarda en el dispositivo ni en el servidor.
+  const alFoto = async (archivo) => {
+    let comprimida;
+    try {
+      comprimida = await recortarYComprimir(await leerArchivo(archivo), { x: 0, y: 0, w: 1, h: 1 });
+    } catch {
+      decir({ de: 'kiko', texto: 'No pude abrir esa imagen. Prueba con otra foto.' });
+      return;
+    }
+    decir({ de: 'yo', foto: comprimida });
+    decir({ de: 'kiko', texto: await responderFoto(comprimida) });
+  };
+
   const alEscribir = (texto) => {
     decir({ de: 'yo', texto });
     if (!operacion) {
@@ -471,6 +497,7 @@ export default function Escaner() {
           <ChatTutor
             mensajes={mensajes}
             onEnviar={alEscribir}
+            onFoto={alFoto}
             onPista={otraPista}
             onEjemplo={ejemplo}
             hayOperacion={!!operacion}
