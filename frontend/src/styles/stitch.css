@@ -39,6 +39,10 @@
   --st-sombra: 0 1px 2px rgba(40, 33, 87, 0.05), 0 4px 16px rgba(40, 33, 87, 0.05);
   --st-radio: 20px;
   --st-radio-sm: 14px;
+  --st-globo: #eef2ff;          /* globo de diálogo del ajolote */
+  --st-globo-borde: #818cf8;
+  --st-visor: #f8f6ef;          /* fondo cuadriculado del escáner */
+  --st-ambar-texto: #92400e;    /* texto sobre ámbar claro */
 
   /* Tokens viejos → paleta nueva */
   --fondo: var(--st-fondo);
@@ -70,23 +74,28 @@
   --text-etiqueta: 700 13px/18px var(--font-body);
 }
 
-/* Tema Noche: misma lógica que app.css, con la paleta nueva. */
+/* Tema Noche: "noche en la selva" (azul-morado profundo, no café), acentos naranja/verde intactos.
+   Mismo disparador que app.css: data-tema="oscuro", o "sistema" + prefers-color-scheme.
+   --st-tinta-2 solo se usa como FONDO con texto blanco (chips activos, avatar, globos),
+   por eso en noche es un morado medio y no un color claro. */
 :root[data-tema="oscuro"] {
-  --st-fondo: #16110d; --st-superficie: #221a14; --st-cont: #2c221b; --st-cont-alto: #352920; --st-cont-max: #42332a; --st-cont-bajo: #1d1611;
-  --st-tinta: #fbeee4; --st-tinta-2: #ffe3cf; --st-suave: #d3c0b2; --st-tenue: #6b5546;
-  --st-naranja: #ffb98a; --st-naranja-claro: #4a2a14; --st-naranja-suave: #3a2416; --st-verde-texto: #4edea3; --st-verde-claro: #0f3a2b;
-  --st-ambar-claro: #3a2e0f; --st-rosa-claro: #3d1830; --st-fuego: #ff8a80;
-  --st-sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+  --st-fondo: #141124; --st-superficie: #1f1b38; --st-cont: #2a2550; --st-cont-alto: #332d5e; --st-cont-max: #3f3870; --st-cont-bajo: #19152e;
+  --st-tinta: #f4f1ff; --st-tinta-2: #4f43a8; --st-suave: #b9b4dc; --st-tenue: #4c457e;
+  --st-naranja: #ffb98a; --st-naranja-claro: #4a2c48; --st-naranja-suave: #2b2140; --st-verde-texto: #4edea3; --st-verde-claro: #113a30;
+  --st-ambar-claro: #3a3016; --st-rosa-claro: #3d1a3a; --st-fuego: #ff8a80;
+  --st-sombra: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(0, 0, 0, 0.3);
   --casi-suave: #40261a; --casi-texto: #ffb48c; --pista-suave: #11304f; --pista-texto: #9ccbff;
+  --st-globo: #2a2550; --st-globo-borde: #6d62c9; --st-visor: #221d3f; --st-ambar-texto: #fcd34d;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) {
-    --st-fondo: #16110d; --st-superficie: #221a14; --st-cont: #2c221b; --st-cont-alto: #352920; --st-cont-max: #42332a; --st-cont-bajo: #1d1611;
-    --st-tinta: #fbeee4; --st-tinta-2: #ffe3cf; --st-suave: #d3c0b2; --st-tenue: #6b5546;
-    --st-naranja: #ffb98a; --st-naranja-claro: #4a2a14; --st-naranja-suave: #3a2416; --st-verde-texto: #4edea3; --st-verde-claro: #0f3a2b;
-    --st-ambar-claro: #3a2e0f; --st-rosa-claro: #3d1830; --st-fuego: #ff8a80;
-    --st-sombra: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.25);
+    --st-fondo: #141124; --st-superficie: #1f1b38; --st-cont: #2a2550; --st-cont-alto: #332d5e; --st-cont-max: #3f3870; --st-cont-bajo: #19152e;
+    --st-tinta: #f4f1ff; --st-tinta-2: #4f43a8; --st-suave: #b9b4dc; --st-tenue: #4c457e;
+    --st-naranja: #ffb98a; --st-naranja-claro: #4a2c48; --st-naranja-suave: #2b2140; --st-verde-texto: #4edea3; --st-verde-claro: #113a30;
+    --st-ambar-claro: #3a3016; --st-rosa-claro: #3d1a3a; --st-fuego: #ff8a80;
+    --st-sombra: 0 1px 2px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(0, 0, 0, 0.3);
     --casi-suave: #40261a; --casi-texto: #ffb48c; --pista-suave: #11304f; --pista-texto: #9ccbff;
+    --st-globo: #2a2550; --st-globo-borde: #6d62c9; --st-visor: #221d3f; --st-ambar-texto: #fcd34d;
   }
 }
 
@@ -296,10 +305,9 @@ button.pastilla { cursor: pointer; }
 :root .sm-btn-suave { background: var(--st-cont-alto); color: var(--st-tinta); box-shadow: 0 3px 0 var(--st-tenue); }
 :root .sm-btn:disabled { background: var(--st-cont-max); color: var(--st-suave); box-shadow: none; }
 :root .sm-chip { background: var(--st-naranja-claro); color: var(--st-naranja); }
-:root .sm-chip-sol { background: var(--st-ambar-claro); color: #92400e; }
+:root .sm-chip-sol { background: var(--st-ambar-claro); color: var(--st-ambar-texto); }
 .sm-input, .sm-textarea, .sm-select { border-color: var(--st-cont-max); background: var(--st-superficie); }
-.sm-bubble { background: #eef2ff; border: 1.5px solid #818cf8; color: var(--st-tinta); }
-:root[data-tema="oscuro"] .sm-bubble { background: var(--st-naranja-claro); }
+.sm-bubble { background: var(--st-globo); border: 1.5px solid var(--st-globo-borde); color: var(--st-tinta); }
 .titulo-mundo { color: var(--st-naranja); }
 
 /* ---------- Formularios ---------- */
@@ -493,13 +501,12 @@ a.nodo-s:hover, button.nodo-s:hover { transform: scale(1.06); }
 .banda-pedagogia { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 18px; }
 .escaner-tarjeta { display: flex; flex-direction: column; gap: 16px; }
 .visor-stitch { position: relative; min-height: 300px; border-radius: 18px; overflow: hidden; display: grid; place-items: center;
-  background-color: #f8f6ef; background-image: linear-gradient(rgba(86, 68, 208, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(86, 68, 208, .08) 1px, transparent 1px); background-size: 22px 22px; }
-:root[data-tema="oscuro"] .visor-stitch { background-color: #26223f; }
+  background-color: var(--st-visor); background-image: linear-gradient(rgba(86, 68, 208, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(86, 68, 208, .08) 1px, transparent 1px); background-size: 22px 22px; }
 .visor-stitch .esq { border-color: var(--st-verde); width: 34px; height: 34px; border-width: 4px; }
 .visor-stitch .esq.a { top: 22%; left: 10%; } .visor-stitch .esq.b { top: 22%; right: 10%; }
 .visor-stitch .esq.c { bottom: 14%; left: 10%; } .visor-stitch .esq.d { bottom: 14%; right: 10%; }
 .visor-chip { position: absolute; top: 14%; left: 50%; transform: translateX(-50%); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; background: var(--st-tinta-2); color: #fff; font: 700 13px/16px var(--font-body); }
-.visor-centro { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 22px; border-radius: 16px; background: rgba(255, 255, 255, .92); border: 2px solid var(--st-verde-2); }
+.visor-centro { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 22px; border-radius: 16px; background: color-mix(in srgb, var(--st-superficie) 92%, transparent); border: 2px solid var(--st-verde-2); }
 .visor-op { font: 800 32px/40px var(--font-display); color: var(--st-naranja); }
 .visor-op b { color: var(--st-fuego); }
 .visor-listo { position: absolute; bottom: 4%; left: 50%; transform: translateX(-50%); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; background: #fff; color: #130942; font: 700 14px/18px var(--font-body); box-shadow: var(--st-sombra); }
@@ -580,7 +587,7 @@ a.nodo-s:hover, button.nodo-s:hover { transform: scale(1.06); }
 .pestanas { border: 0; background: var(--st-cont-alto); }
 .tip { border-color: var(--st-cont-max); }
 .tip.sel-magia { background: var(--st-naranja-2); color: var(--st-sobre-naranja); border-color: var(--st-naranja-2); }
-.codigo-secreto { border: 0; background: var(--st-ambar-claro); color: #130942; }
+.codigo-secreto { border: 0; background: var(--st-ambar-claro); color: var(--st-tinta); }
 .aviso-red { border-radius: 999px; }
 
 /* ---------- Inicio de sesión (Kiko al centro) ---------- */

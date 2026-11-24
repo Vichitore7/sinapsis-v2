@@ -4,7 +4,7 @@
 function Moneda({ x, y }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <circle r="7" fill="var(--sol)" stroke="var(--tinta)" strokeWidth="1.5" />
+      <circle r="7" fill="var(--sol)" stroke="var(--contorno)" strokeWidth="1.5" />
       <circle r="3.4" fill="none" stroke="var(--sol-profundo)" strokeWidth="1.5" />
     </g>
   );
@@ -53,9 +53,9 @@ function Bolsitas({ a, b, moneda }) {
         const x = i * 110;
         return (
           <g key={i}>
-            <rect x={x + 35} y="2" width="40" height="12" rx="4" fill="var(--magia)" stroke="var(--tinta)" strokeWidth="1.6" />
-            <rect x={x + 15} y="12" width="80" height="58" rx="22" fill="var(--sol)" stroke="var(--tinta)" strokeWidth="1.6" />
-            <text x={x + 55} y="49" textAnchor="middle" className="svg-grande">{moneda ? '$' : ''}{b}</text>
+            <rect x={x + 35} y="2" width="40" height="12" rx="4" fill="var(--magia)" stroke="var(--contorno)" strokeWidth="1.6" />
+            <rect x={x + 15} y="12" width="80" height="58" rx="22" fill="var(--sol)" stroke="var(--contorno)" strokeWidth="1.6" />
+            <text x={x + 55} y="49" textAnchor="middle" className="svg-grande sobre-color">{moneda ? '$' : ''}{b}</text>
           </g>
         );
       })}
@@ -78,8 +78,8 @@ function Barras({ a, b, moneda }) {
         </g>
       ))}
       <path d={`M1 50 L1 58 L${ancho - 5} 58 L${ancho - 5} 50`} fill="none" stroke="var(--tinta)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={ancho / 2} cy="72" r="11" fill="var(--sol)" stroke="var(--tinta)" strokeWidth="1.6" />
-      <text x={ancho / 2} y="78" textAnchor="middle" className="svg-grande">?</text>
+      <circle cx={ancho / 2} cy="72" r="11" fill="var(--sol)" stroke="var(--contorno)" strokeWidth="1.6" />
+      <text x={ancho / 2} y="78" textAnchor="middle" className="svg-grande sobre-color">?</text>
     </svg>
   );
 }
