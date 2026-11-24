@@ -46,6 +46,10 @@ export const api = {
   cuidar: (accion) => pedir('POST', '/mascota/cuidar', { accion }),
   despertar: () => pedir('POST', '/mascota/despertar'),
   renombrarMascota: (nombre) => pedir('PATCH', '/mascota', { nombre }),
+  vestir: (traje) => pedir('PUT', '/mascota/traje', { traje }),
+
+  // Tutor de IA (Kiko en el chat del escáner). Regresa { respuesta, origen: 'claude' | 'reglas' }.
+  tutor: (d) => pedir('POST', '/tutor', d),
 
   // Aulas
   aulas: () => pedir('GET', '/aulas'),
@@ -90,6 +94,12 @@ export function adaptarMundos(mundos) {
       etapaMin: r.etapa_min,
       ejemplo: r.ejemplo || null,
       pistas: r.pistas,
+      tipo: r.tipo || 'numerica',
+      opciones: r.opciones || null,
+      visual: r.visual || null,
+      nivel: r.nivel || null,
+      nivelTema: r.nivel_tema || null,
+      nivelTitulo: r.nivel_titulo || null,
       mundo,
     }));
     return mundo;
@@ -118,6 +128,8 @@ export function adaptarEstado(r) {
     nombreAjolote: r.mascota.nombre,
     bienestar: { comida: r.mascota.comida, pecera: r.mascota.pecera, alegria: r.mascota.alegria },
     dormido: r.mascota.dormido,
+    trajes: r.mascota.trajes || [],
+    traje: r.mascota.traje || null,
     logros: r.logros,
     mapa: r.mapa,
     diagnosticoHecho: r.diagnostico_hecho,

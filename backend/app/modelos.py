@@ -17,6 +17,10 @@ def ahora() -> datetime:
     return datetime.now(timezone.utc)
 
 
+# Regalo de bienvenida: dos stickers de traje típico de las trajineras de Xochimilco.
+TRAJES_BIENVENIDA = ("trajinero", "trajinera")
+
+
 # ---------------- Usuarios ----------------
 
 class Usuario(Base):
@@ -205,6 +209,9 @@ class Mascota(Base):
     dormido: Mapped[bool] = mapped_column(Boolean, default=False)
     retos_desde_bajada: Mapped[int] = mapped_column(Integer, default=0)
     turno_medidor: Mapped[int] = mapped_column(Integer, default=0)
+    # Trajes típicos que el alumno tiene (regalo de bienvenida al crear la cuenta) y el que trae puesto.
+    trajes: Mapped[list] = mapped_column(JSON, default=lambda: list(TRAJES_BIENVENIDA))
+    traje: Mapped[str | None] = mapped_column(String(20), nullable=True)
     actualizado: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora, onupdate=ahora)
 
 

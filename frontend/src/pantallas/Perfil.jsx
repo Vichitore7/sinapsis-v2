@@ -1,9 +1,10 @@
 // Usuario: logros, medallas, stickers, diplomas y personalizar (alumno). El profesor solo ve personalizar.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useJuego } from '../estado/store.jsx';
 import { MostrarCodigo } from './Cuenta.jsx';
 import I from '../componentes/IconosUI.jsx';
+import Ajolote from '../componentes/Ajolote.jsx';
 import { SeccionDiplomas, SeccionLogros, SeccionMedallas, SeccionStickers } from './Logros.jsx';
 
 const PESTANAS = [
@@ -14,10 +15,13 @@ const PESTANAS = [
   ['personalizar', 'Personalizar', 'ajustes'],
 ];
 
-export default function Perfil() {
+// La ruta #/perfil/<pestaña> abre esa pestaña directo (p. ej. #/perfil/stickers desde la notificación de bienvenida).
+export default function Perfil({ retoId: pestanaRuta }) {
   const { usuario, salir, tema, cambiarTema, estado, mundos, entrar } = useJuego();
   const alumno = usuario.rol === 'alumno';
-  const [pestana, setPestana] = useState(alumno ? 'logros' : 'personalizar');
+  const inicial = alumno ? (PESTANAS.some(([id]) => id === pestanaRuta) ? pestanaRuta : 'logros') : 'personalizar';
+  const [pestana, setPestana] = useState(inicial);
+  useEffect(() => { setPestana(inicial); }, [inicial]);
   const [codigoNuevo, setCodigoNuevo] = useState(null);
   const [pass, setPass] = useState({ actual: '', nueva: '' });
   const [mensajePass, setMensajePass] = useState(null);
@@ -108,7 +112,7 @@ export default function Perfil() {
   return (
     <div className="pila-lg">
       <section className="tarjeta cabecera-pantalla">
-        <span className="kiko-cabeza chica"><I n="perfil" tamano={30} /></span>
+        <span className="kiko-cabeza chica"><Ajolote estado="feliz" tamano={56} cabeza traje={estado.traje} etiqueta={`${estado.nombreAjolote}, tu ajolote`} /></span>
         <div style={{ flex: 1 }}>
           <h1 className="t-lg" style={{ margin: 0 }}>{estado.apodo} <span className="chip">Nivel {estado.nivel}</span></h1>
           <p className="cuerpo-md texto-suave" style={{ margin: '2px 0 0' }}>★ {estado.estrellas} estrellas · racha de {estado.rachaDias} día{estado.rachaDias === 1 ? '' : 's'}</p>

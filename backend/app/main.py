@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 
 from . import config
 from .db import Base, SesionLocal, engine, migrar_columnas
-from .rutas import ajustes, auth, aulas, diagnostico, juego
+from .rutas import ajustes, auth, aulas, diagnostico, juego, tutor
 from .semilla import cargar_contenido
 
 
@@ -60,5 +60,5 @@ def salud() -> dict:
     return {"ok": True}
 
 
-for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router):
+for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router, tutor.router):
     app.include_router(r, prefix="/api")

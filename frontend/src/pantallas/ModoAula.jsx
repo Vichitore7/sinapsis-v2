@@ -210,7 +210,8 @@ export default function ModoAula() {
   const [editando, setEditando] = useState(false);
   const [revelado, setRevelado] = useState(false);
   const [verSesion, setVerSesion] = useState(null);
-  const mundosConRetos = mundos.filter((m) => m.retos.length > 0);
+  // El Modo Aula sin internet usa los mundos de multiplicación (monedas y montones).
+  const mundosConRetos = mundos.filter((m) => m.retos.length > 0 && m.retos.every((r) => r.op === '×'));
   const [mundoId, setMundoId] = useState(mundosConRetos[0]?.id);
 
   const guardarAula = (fn) => actualizar((s) => ({ ...s, aula: fn(s.aula) }));

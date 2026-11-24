@@ -8,8 +8,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .. import esquemas
+from ..contenido import TRAJES
 from ..db import get_db
-from ..modelos import AjustesUsuario, Usuario, ahora
+from ..modelos import TRAJES_BIENVENIDA, AjustesUsuario, Mascota, Usuario, ahora
 from ..seguridad import (
     freno_login, hash_password, hash_recuperacion, normalizar_usuario, nuevo_codigo_recuperacion,
     poner_cookie, quitar_cookie, usuario_actual, verificar_password,
@@ -36,10 +37,18 @@ def registro(datos: esquemas.Registro, resp: Response, db: Session = Depends(get
     db.add(u)
     db.flush()
     db.add(AjustesUsuario(usuario_id=u.id))
+    salida = {"usuario": perfil(u), "codigo_recuperacion": codigo}
+    if u.rol == "alumno":
+        # Regalo de bienvenida: el ajolote nace con los dos trajes de trajinera.
+        db.add(Mascota(alumno_id=u.id, trajes=list(TRAJES_BIENVENIDA)))
+        salida["bienvenida"] = {
+            "logro": "Inicio de la aventura",
+            "trajes": [{"id": t, "nombre": TRAJES[t]} for t in TRAJES_BIENVENIDA],
+        }
     db.commit()
     poner_cookie(resp, u)
     # El código de recuperación se muestra UNA sola vez. No se puede volver a consultar.
-    return {"usuario": perfil(u), "codigo_recuperacion": codigo}
+    return salida
 
 
 @router.post("/login")

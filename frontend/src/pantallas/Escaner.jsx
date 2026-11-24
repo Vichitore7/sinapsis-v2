@@ -11,6 +11,7 @@ import { leerOperacion, pistasEscaner, responderFoto } from '../logica/lector.js
 import { diagnosticar } from '../logica/diagnostico.js';
 import { ejemploParecido } from '../logica/pistas.js';
 import { hoy } from '../logica/juego.js';
+import { api } from '../api.js';
 
 const MAX_PENDIENTES = 5;
 
@@ -451,12 +452,30 @@ export default function Escaner() {
     decir({ de: 'kiko', texto: await responderFoto(comprimida) });
   };
 
-  const alEscribir = (texto) => {
+  // Kiko contesta con el tutor de IA del backend (Claude). Si no hay internet o el servidor falla,
+  // contesta aquí mismo con las pistas por reglas de siempre.
+  const alEscribir = async (texto) => {
+    const historial = mensajes.filter((m) => m.texto && !m.pensando).map((m) => ({ de: m.de, texto: m.texto }));
     decir({ de: 'yo', texto });
     if (!operacion) {
       decir({ de: 'kiko', texto: 'Primero escanea o escribe tu operación, así sé de qué estamos platicando. 📸' });
       return;
     }
+    if (enLinea) {
+      decir({ de: 'kiko', texto: 'Kiko está pensando… 🤔', pensando: true });
+      const sinPensando = (xs) => xs.filter((m) => !m.pensando);
+      try {
+        const r = await api.tutor({ operacion, mensaje: texto, historial });
+        setMensajes((xs) => [...sinPensando(xs), { de: 'kiko', texto: r.respuesta }]);
+        return;
+      } catch {
+        setMensajes(sinPensando);
+      }
+    }
+    respuestaLocal(texto);
+  };
+
+  const respuestaLocal = (texto) => {
     const d = diagnosticar(operacion);
     const numeros = (texto.match(/\d+/g) || []).map(Number);
     if (numeros.includes(resultadoDe(operacion)) && !d.correcto) {

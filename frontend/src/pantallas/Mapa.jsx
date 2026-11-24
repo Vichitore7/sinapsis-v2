@@ -3,10 +3,11 @@ import { useJuego } from '../estado/store.jsx';
 import { ir } from '../ruta.js';
 import Ajolote from '../componentes/Ajolote.jsx';
 import I from '../componentes/IconosUI.jsx';
-import { MisionCumplida, Proximamente } from '../componentes/Comunes.jsx';
+import { CabezaKiko, MisionCumplida, Proximamente } from '../componentes/Comunes.jsx';
 import { api } from '../api.js';
 import { hoy, nodosDeMundo, retosCompletadosDe, siguientePaso } from '../logica/juego.js';
 import { STICKERS } from '../contenido/mundos.js';
+import { COLORES_NIVEL, ChinampaIsla, Lirio, PecesNivel, TrajineraNivel } from '../componentes/Canal.jsx';
 
 // Posición horizontal de cada nodo para dibujar el sendero en zigzag.
 const ZIGZAG = [12, 52, 22, 58, 30, 64];
@@ -16,6 +17,13 @@ const CONSEJOS = [
   'Si te equivocas, mira la senda de pasos: ahí se ve dónde se torció el camino.',
   'Pedir una pista no te quita nada. ¡Los exploradores valientes preguntan!',
   'Cuenta de 5 en 5 o de 10 en 10 para llegar más rápido al total.',
+];
+
+const CONSEJOS_CANAL = [
+  'Para contar sin perderte, toca cada flor con tu dedo.',
+  'Cuenta de 10 en 10 los ramos y luego las flores sueltas.',
+  'Sumar es juntar; restar es quitar. ¡Usa tus dedos!',
+  'Cada trajinera lleva 3 peces: resuelve sus 3 ejercicios para llenarla.',
 ];
 
 function Estrellas({ llenas }) {
@@ -54,7 +62,7 @@ function Sendero({ mundo, estado, onCofre }) {
         return (
           <li key={reto.id} className="paso-sendero" style={{ marginLeft: izquierda }}>
             {e === 'actual' && (
-              <span className="kiko-aqui"><I n="huella" tamano={14} /> ¡{estado.nombreAjolote} está aquí!</span>
+              <span className="kiko-aqui"><CabezaKiko tamano={22} /> ¡{estado.nombreAjolote} está aquí!</span>
             )}
             {e === 'bloqueado' ? (
               <span className="nodo-s nodo-bloq" aria-label={`${etiqueta}, bloqueado`}><I n="candado" tamano={22} /></span>
@@ -70,6 +78,92 @@ function Sendero({ mundo, estado, onCofre }) {
         );
       })}
     </ol>
+  );
+}
+
+/** El mundo donde va el alumno: el del siguiente reto o cofre; si ya terminó todo, el último que abrió. */
+function mundoDondeVa(estado, mundos) {
+  const paso = siguientePaso(estado, mundos);
+  if (paso) return paso.mundo.id;
+  const abiertos = mundos.filter((m) => !m.proximamente && m.retos.length && nodosDeMundo(estado, m).abierto);
+  return abiertos.length ? abiertos[abiertos.length - 1].id : null;
+}
+
+// Las trajineras navegan por el centro del canal en una curva suave.
+const CURVA_CANAL = ['center', 'flex-end', 'center', 'flex-start'];
+// Chinampas y lirios esparcidos por las orillas (top en % del alto del canal).
+const DECO_CANAL = [
+  { tipo: 'isla', lado: 'izq', top: '1%', variante: 0 },
+  { tipo: 'lirio', lado: 'der', top: '6%' },
+  { tipo: 'isla', lado: 'der', top: '12%', variante: 1 },
+  { tipo: 'lirio', lado: 'izq', top: '19%' },
+  { tipo: 'isla', lado: 'izq', top: '24%', variante: 2 },
+  { tipo: 'isla', lado: 'der', top: '35%', variante: 0 },
+  { tipo: 'lirio', lado: 'izq', top: '42%' },
+  { tipo: 'isla', lado: 'izq', top: '48%', variante: 1 },
+  { tipo: 'lirio', lado: 'der', top: '55%' },
+  { tipo: 'isla', lado: 'der', top: '60%', variante: 2 },
+  { tipo: 'isla', lado: 'izq', top: '72%', variante: 0 },
+  { tipo: 'lirio', lado: 'der', top: '78%' },
+  { tipo: 'isla', lado: 'der', top: '84%', variante: 1 },
+  { tipo: 'isla', lado: 'izq', top: '93%', variante: 2 },
+];
+
+/** Mundo del canal: cada nivel es una trajinera con 3 peces (uno por ejercicio resuelto); las chinampas adornan las orillas. */
+function SenderoCanal({ mundo, estado, onCofre }) {
+  const { nodos, cofre } = nodosDeMundo(estado, mundo);
+  const niveles = [];
+  for (const n of nodos) {
+    let g = niveles.find((x) => x.nivel === n.reto.nivel);
+    if (!g) niveles.push((g = { nivel: n.reto.nivel, tema: n.reto.nivelTema, titulo: n.reto.nivelTitulo, nodos: [] }));
+    g.nodos.push(n);
+  }
+  return (
+    <div className="canal-mapa">
+      {DECO_CANAL.map((d, k) => (
+        <span key={k} className={`canal-deco ${d.lado} ${d.tipo}`} style={{ top: d.top }} aria-hidden="true">
+          {d.tipo === 'lirio' ? <Lirio /> : <ChinampaIsla variante={d.variante} />}
+        </span>
+      ))}
+      <ol className="sendero sendero-canal" aria-label={`Niveles de ${mundo.nombre}`}>
+        {niveles.map((g, i) => {
+          const hechos = g.nodos.filter((n) => n.estado === 'completado').length;
+          const actual = g.nodos.find((n) => n.estado === 'actual');
+          const est = hechos === g.nodos.length ? 'hecho' : actual ? 'actual' : 'bloq';
+          const destino = (actual || g.nodos[0]).reto;
+          const nombre = `Nivel ${g.nivel}: ${g.titulo}`;
+          const color = COLORES_NIVEL[(g.nivel - 1) % COLORES_NIVEL.length];
+          return (
+            <li key={g.nivel} className="paso-sendero paso-canal" style={{ alignSelf: CURVA_CANAL[i % CURVA_CANAL.length] }}>
+              {est === 'actual' && <span className="kiko-aqui"><CabezaKiko tamano={22} /> ¡{estado.nombreAjolote} está aquí!</span>}
+              {est === 'bloq' ? (
+                <span className="trajinera-nodo" aria-label={`${nombre}, bloqueado`}>
+                  <TrajineraNivel estado="bloq" color={color}><I n="candado" tamano={18} /></TrajineraNivel>
+                </span>
+              ) : (
+                <a href={`#/reto/${destino.id}`} className="trajinera-nodo"
+                  aria-label={est === 'hecho' ? `${nombre}, completado. Repasar` : `${nombre}, ${hechos} de 3 peces. Jugar`}>
+                  <TrajineraNivel estado={est} color={color}>{est === 'hecho' ? <I n="check" tamano={20} grosor={3} /> : g.nivel}</TrajineraNivel>
+                </a>
+              )}
+              <PecesNivel llenos={hechos} />
+              <span className={`etq-nodo${est === 'bloq' ? ' texto-suave' : ''}`}>{nombre}</span>
+              <small className="etq-tema">{g.tema}</small>
+            </li>
+          );
+        })}
+        <li className="paso-sendero paso-canal" style={{ alignSelf: CURVA_CANAL[niveles.length % CURVA_CANAL.length] }}>
+          {cofre === 'actual' ? (
+            <button className="nodo-s nodo-actual nodo-cofre" onClick={onCofre} aria-label="Cofre del embarcadero: ¡ábrelo!"><I n="cofre" tamano={28} /></button>
+          ) : (
+            <span className={`nodo-s ${cofre === 'abierto' ? 'nodo-hecho' : 'nodo-bloq'}`} aria-label={cofre === 'abierto' ? 'Cofre abierto' : 'Cofre bloqueado'}>
+              <I n={cofre === 'abierto' ? 'check' : 'cofre'} tamano={24} />
+            </span>
+          )}
+          <span className="etq-nodo">Cofre del embarcadero</span>
+        </li>
+      </ol>
+    </div>
   );
 }
 
@@ -100,6 +194,13 @@ export default function Mapa() {
   const [premio, setPremio] = useState(null);
   const [error, setError] = useState(null);
   const [etapa, setEtapa] = useState('primaria');
+  // Solo el mundo donde va el alumno se despliega; los demás se ven al tocar "Ver mundo".
+  const mundoActual = mundoDondeVa(estado, mundos);
+  const [abiertos, setAbiertos] = useState(() => new Set(mundoActual ? [mundoActual] : []));
+  // Al pasar a otro mundo, ese queda desplegado y el anterior se pliega.
+  useEffect(() => {
+    if (mundoActual) setAbiertos((s) => (s.size === 1 && s.has(mundoActual) ? s : new Set([mundoActual])));
+  }, [mundoActual]);
 
   const abrir = async (mundo) => {
     setError(null);
@@ -116,7 +217,7 @@ export default function Mapa() {
   if (premio) {
     return (
       <div className="pila-lg centro-col">
-        <Ajolote estado="celebrando" tamano={160} mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} />
+        <Ajolote estado="celebrando" tamano={160} mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} traje={estado.traje} />
         <MisionCumplida
           texto={`¡Superaste ${premio.mundo.nombre}! Ganaste ★ ${premio.estrellas} y un sticker nuevo: ${premio.sticker}. Las branquias de ${estado.nombreAjolote} ganaron un color.`}
           textoBoton="Seguir explorando"
@@ -136,7 +237,13 @@ export default function Mapa() {
   const pct = total ? Math.round((hechos / total) * 100) : 0;
   const paso = siguientePaso(estado, mundos);
   const bonoPendiente = estado.ultimoBonoDia !== hoy();
-  const consejo = CONSEJOS[hechos % CONSEJOS.length];
+  const listaConsejos = mundos.find((m) => m.id === mundoActual)?.tema === 'xochimilco' ? CONSEJOS_CANAL : CONSEJOS;
+  const consejo = listaConsejos[hechos % listaConsejos.length];
+  const alternar = (id) => setAbiertos((s) => {
+    const nuevo = new Set(s);
+    if (nuevo.has(id)) nuevo.delete(id); else nuevo.add(id);
+    return nuevo;
+  });
 
   return (
     <div className="pila-lg">
@@ -177,41 +284,57 @@ export default function Mapa() {
               const { abierto, cofre } = nodosDeMundo(estado, mundo);
               const hechosM = retosCompletadosDe(estado, mundo);
               const entrar = abierto || cofre === 'abierto';
+              const desplegado = abiertos.has(mundo.id);
+              const aqui = mundo.id === mundoActual;
+              const canal = mundo.tema === 'xochimilco';
+              const cabecera = (
+                <button type="button" className="mundo-cabecera" aria-expanded={desplegado} aria-controls={`mundo-${mundo.id}`}
+                  onClick={() => alternar(mundo.id)}>
+                  <span className="mundo-titulo">
+                    <span className={`sobre${entrar ? '' : ' gris'}`}>
+                      {entrar ? <span className="chip-mundo">Mundo {mundo.numero}</span> : `Mundo ${mundo.numero}`}
+                      {' '}<span className="texto-suave">• {mundo.concepto}</span>
+                    </span>
+                    <span className="t-lg mundo-nombre">{mundo.nombre}</span>
+                  </span>
+                  <span className="mundo-estado">
+                    {aqui && <span className="chip chip-verde"><CabezaKiko tamano={20} /> Estás aquí</span>}
+                    {!entrar ? <span className="pastilla"><I n="candado" tamano={16} /> Bloqueado</span> : (
+                      <span className="pastilla">
+                        <I n={cofre === 'abierto' ? 'checkCirculo' : 'logros'} tamano={16} className="texto-selva" />
+                        {cofre === 'abierto' ? 'Mundo superado' : `${hechosM}/${mundo.retos.length}`}
+                      </span>
+                    )}
+                    <span className="mundo-ver">{desplegado ? 'Ocultar' : 'Ver mundo'} <I n="atras" tamano={16} className={`chevron${desplegado ? ' arriba' : ''}`} /></span>
+                  </span>
+                </button>
+              );
               if (!entrar) {
                 return (
                   <section key={mundo.id} className="tarjeta-suave mundo-bloqueado">
-                    <div className="fila-entre">
-                      <div>
-                        <span className="sobre gris">Mundo {mundo.numero} <span className="texto-suave">• {mundo.concepto}</span></span>
-                        <h2 className="t-lg" style={{ margin: '4px 0 0' }}>{mundo.nombre}</h2>
+                    {cabecera}
+                    {desplegado && (
+                      <div id={`mundo-${mundo.id}`} className="tarjeta cofre-secreto" style={{ marginTop: 14 }}>
+                        <span className="icono-caja ic-gris grande"><I n="cofre" tamano={26} /></span>
+                        <div style={{ flex: 1 }}>
+                          <b className="t-sm">Cofre de los Secretos</b>
+                          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Abre el cofre del mundo anterior para abrir el portal a este mundo.</p>
+                        </div>
+                        <span className="pastilla"><I n="llave" tamano={16} /> 0 / 1 Llave</span>
                       </div>
-                      <span className="pastilla"><I n="candado" tamano={16} /> Bloqueado</span>
-                    </div>
-                    <div className="tarjeta cofre-secreto">
-                      <span className="icono-caja ic-gris grande"><I n="cofre" tamano={26} /></span>
-                      <div style={{ flex: 1 }}>
-                        <b className="t-sm">Cofre de los Secretos</b>
-                        <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Abre el cofre del mundo anterior para abrir el portal a este mundo.</p>
-                      </div>
-                      <span className="pastilla"><I n="llave" tamano={16} /> 0 / 1 Llave</span>
-                    </div>
+                    )}
                   </section>
                 );
               }
               return (
-                <section key={mundo.id} className="tarjeta tarjeta-grande mundo">
-                  <span className="burbuja-deco b1" aria-hidden="true" />
-                  <div className="fila-entre" style={{ alignItems: 'flex-start', position: 'relative' }}>
-                    <div>
-                      <span className="sobre"><span className="chip-mundo">Mundo {mundo.numero}</span> <span className="texto-suave">• {mundo.concepto}</span></span>
-                      <h2 className="t-lg" style={{ margin: '4px 0 0' }}>{mundo.nombre}</h2>
-                    </div>
-                    <span className="pastilla">
-                      <I n={cofre === 'abierto' ? 'checkCirculo' : 'logros'} tamano={16} className="texto-selva" />
-                      {cofre === 'abierto' ? 'Mundo superado' : `Capítulo activo · ${hechosM}/${mundo.retos.length}`}
-                    </span>
-                  </div>
-                  <Sendero mundo={mundo} estado={estado} onCofre={() => abrir(mundo)} />
+                <section key={mundo.id} className={`tarjeta mundo${desplegado ? ' tarjeta-grande' : ''}${canal ? ' mundo-canal' : ''}`}>
+                  {!canal && <span className="burbuja-deco b1" aria-hidden="true" />}
+                  {cabecera}
+                  {desplegado && (
+                  <div id={`mundo-${mundo.id}`}>
+                  {canal
+                    ? <SenderoCanal mundo={mundo} estado={estado} onCofre={() => abrir(mundo)} />
+                    : <Sendero mundo={mundo} estado={estado} onCofre={() => abrir(mundo)} />}
                   {paso && paso.mundo.id === mundo.id && (
                     <div className="siguiente-desafio">
                       <span className="icono-caja ic-blanco"><I n="triangulo" /></span>
@@ -223,6 +346,8 @@ export default function Mapa() {
                         {paso.tipo === 'reto' ? 'Jugar Ahora' : 'Abrir cofre'} <I n="jugar" tamano={16} />
                       </button>
                     </div>
+                  )}
+                  </div>
                   )}
                 </section>
               );
@@ -261,7 +386,7 @@ export default function Mapa() {
             </section>
 
             <section className="tarjeta-suave consejo-kiko">
-              <span className="kiko-icono grande"><I n="huella" tamano={22} /></span>
+              <span className="kiko-icono grande"><CabezaKiko tamano={46} /></span>
               <div>
                 <b className="t-sm">Consejo de {estado.nombreAjolote}</b>
                 <p className="cuerpo-sm texto-suave" style={{ margin: '2px 0 0' }}>“{consejo}”</p>
