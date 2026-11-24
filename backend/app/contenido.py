@@ -53,6 +53,12 @@ STICKERS = {
     "sombrero": "Sombrero del río",
 }
 
+# Trajes típicos para vestir al ajolote (no son del álbum de los mundos).
+TRAJES = {
+    "trajinero": "Traje de trajinero",
+    "trajinera": "Traje de trajinera",
+}
+
 
 def ejercicio_multiplicacion(id_: str, orden: int, titulo: str, enunciado: str, a: int, b: int,
                              objeto: str, etapa_min: int, ejemplo: dict | None = None) -> dict:

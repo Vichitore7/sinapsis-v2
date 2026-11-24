@@ -703,3 +703,32 @@ a.clase:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(40, 33
   #diploma-imprimible, #diploma-imprimible * { visibility: visible !important; }
   #diploma-imprimible { position: fixed; inset: 0; margin: auto; width: 90%; height: max-content; box-shadow: none; }
 }
+
+/* ---------- Stickers especiales: vestir a Kiko (Perfil > Stickers) ---------- */
+.vestir-vista { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; min-height: 320px;
+  background: radial-gradient(circle at 50% 55%, var(--st-naranja-suave), var(--st-superficie) 70%); }
+.trajes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.traje-carta { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px; border-radius: 18px; border: 2px solid transparent;
+  background: var(--st-cont-bajo); color: var(--st-tinta); font-family: var(--font-body); text-align: center; transition: border-color .15s, background .15s; }
+.traje-carta.activo { border-color: var(--st-verde-2); background: var(--st-verde-claro); }
+.traje-arte { display: grid; place-items: center; width: 104px; height: 104px; border-radius: 999px; background: var(--st-naranja-claro); }
+
+/* ---------- Notificación de logro (al crear la cuenta) ---------- */
+.logro-aviso { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; overflow: hidden;
+  animation: logro-entra .45s cubic-bezier(.2, 1.4, .4, 1) both; }
+.logro-aviso::before { content: ''; position: absolute; inset: 0 0 auto; height: 6px; background: linear-gradient(90deg, var(--st-naranja-2), var(--st-ambar), var(--st-verde-2), #6fa8dc); }
+.logro-medalla { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 999px; background: linear-gradient(160deg, #fde68a, #fbbf24);
+  color: #92400e; box-shadow: 0 0 0 4px var(--borde-sticker), 0 6px 14px rgba(40, 33, 87, .15); animation: logro-brilla 1.6s ease-in-out .5s 2; }
+.logro-regalo { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; width: 100%; padding: 14px; border-radius: 18px; background: var(--st-cont-bajo); }
+.logro-regalo figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.logro-regalo figcaption { font: 700 13px/18px var(--font-body); color: var(--st-tinta); }
+.logro-pista { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; background: var(--st-naranja-claro); color: var(--st-naranja); font: 700 14px/18px var(--font-body); }
+@keyframes logro-entra { from { opacity: 0; transform: translateY(16px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes logro-brilla { 50% { transform: scale(1.08) rotate(-6deg); } }
+@media (prefers-reduced-motion: reduce) { .logro-aviso, .logro-medalla { animation: none; } }
+.logro-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+@media (max-width: 479px) { .logro-acciones { grid-template-columns: 1fr; } }
+.especiales { padding-bottom: 20px; border-bottom: 2px dashed var(--st-cont-max); }
+.especiales-cuerpo { display: grid; grid-template-columns: minmax(200px, 260px) 1fr; gap: 16px; align-items: stretch; }
+.especiales-cuerpo .vestir-vista { min-height: 0; padding: 16px; border-radius: 18px; }
+@media (max-width: 639px) { .especiales-cuerpo { grid-template-columns: 1fr; } }

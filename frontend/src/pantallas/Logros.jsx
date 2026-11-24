@@ -1,7 +1,10 @@
 // Secciones de "Usuario" (Perfil del alumno): logros, medallas, stickers y diplomas.
+import { useState } from 'react';
+import { api } from '../api.js';
+import { useJuego } from '../estado/store.jsx';
 import I from '../componentes/IconosUI.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
-import { STICKERS } from '../contenido/mundos.js';
+import { STICKERS, TRAJES } from '../contenido/mundos.js';
 
 const ARTE = {
   mochila: { icono: 'mochila', fondo: 'sticker-ambar' },
@@ -80,11 +83,81 @@ export function SeccionMedallas({ estado, mundos }) {
   );
 }
 
+/**
+ * Stickers especiales (temáticos): se ven y se le ponen a Kiko aquí, en el Perfil.
+ * Los stickers normales de los mundos se equipan en la Mochila.
+ */
+function StickersEspeciales() {
+  const { estado, aplicarServidor } = useJuego();
+  const [guardando, setGuardando] = useState(null);
+  const [error, setError] = useState(null);
+  const kiko = estado.nombreAjolote;
+  const especiales = estado.trajes.filter((id) => TRAJES[id]).map((id) => ({ id, ...TRAJES[id] }));
+  if (!especiales.length) return null;
+  const puesto = estado.traje ? TRAJES[estado.traje] : null;
+
+  const ponerse = async (traje) => {
+    setGuardando(traje ?? 'quitar');
+    setError(null);
+    try {
+      aplicarServidor(await api.vestir(traje));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setGuardando(null);
+    }
+  };
+
+  return (
+    <div className="especiales">
+      <div className="fila-entre" style={{ marginBottom: 12 }}>
+        <div>
+          <h3 className="t-md" style={{ margin: 0 }}><I n="chispa" tamano={18} className="texto-naranja" /> Stickers especiales</h3>
+          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Trajes típicos de las trajineras de Xochimilco. Toca uno para vestir a {kiko}.</p>
+        </div>
+        <span className="pastilla">{especiales.length} especiales</span>
+      </div>
+      <div className="especiales-cuerpo">
+        <div className="vestir-vista">
+          <span className="sobre">Así se ve {kiko}</span>
+          <Ajolote estado="feliz" tamano={170} traje={estado.traje} etiqueta={`${kiko}${puesto ? ` con ${puesto.nombre.toLowerCase()}` : ''}`} />
+          <b className="t-sm">{puesto ? puesto.nombre : 'Sin traje especial'}</b>
+          {puesto && (
+            <button className="btn btn-crema btn-chico" disabled={guardando !== null} onClick={() => ponerse(null)}>
+              {guardando === 'quitar' ? 'Quitando…' : 'Quitar traje'}
+            </button>
+          )}
+        </div>
+        <div className="trajes">
+          {especiales.map((t) => {
+            const activo = estado.traje === t.id;
+            return (
+              <div key={t.id} className={`traje-carta${activo ? ' activo' : ''}`}>
+                <span className="chip chip-oro">{t.origen}</span>
+                <span className="traje-arte"><Ajolote estado="feliz" tamano={92} traje={t.id} etiqueta={t.nombre} /></span>
+                <b className="t-sm">{t.nombre}</b>
+                <small className="cuerpo-sm texto-suave">{t.detalle}</small>
+                <button className={`btn btn-chico ${activo ? 'btn-verde' : 'btn-naranja'}`} aria-pressed={activo}
+                  disabled={guardando !== null || activo} onClick={() => ponerse(t.id)}>
+                  {guardando === t.id ? 'Vistiendo…' : activo ? <><I n="check" tamano={14} grosor={3} /> Puesto</> : `Ponérselo a ${kiko}`}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {error && <p className="etq texto-casi" role="alert" style={{ margin: '8px 0 0' }}>{error}</p>}
+    </div>
+  );
+}
+
 export function SeccionStickers({ estado, mundos }) {
   const jugables = mundos.filter((m) => !m.proximamente && m.retos.length);
   const stickers = Object.entries(STICKERS).map(([id, s], i) => ({ id, ...s, mundo: jugables[i] || null }));
   return (
-    <section className="tarjeta">
+    <section className="tarjeta pila-lg">
+      <StickersEspeciales />
+      <div>
       <div className="fila-entre" style={{ marginBottom: 12 }}>
         <div>
           <h2 className="t-md" style={{ margin: 0 }}><I n="libro" tamano={20} className="texto-naranja" /> Álbum de Stickers</h2>
@@ -104,6 +177,7 @@ export function SeccionStickers({ estado, mundos }) {
             </div>
           );
         })}
+      </div>
       </div>
     </section>
   );

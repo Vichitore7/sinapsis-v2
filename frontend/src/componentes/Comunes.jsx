@@ -2,10 +2,10 @@
 import Ajolote from './Ajolote.jsx';
 
 /** Globo de diálogo del ajolote con el ajolote a un lado. */
-export function DiceAjolote({ estado = 'feliz', children, tamano = 96, mundosSuperados = 0, accesorios = [] }) {
+export function DiceAjolote({ estado = 'feliz', children, tamano = 96, mundosSuperados = 0, accesorios = [], traje = null }) {
   return (
     <div className="dice-ajolote">
-      <Ajolote estado={estado} tamano={tamano} mundosSuperados={mundosSuperados} accesorios={accesorios} />
+      <Ajolote estado={estado} tamano={tamano} mundosSuperados={mundosSuperados} accesorios={accesorios} traje={traje} />
       <div className="sm-bubble globo">{children}</div>
     </div>
   );

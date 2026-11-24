@@ -155,7 +155,7 @@ export default function Reto({ retoId }) {
     }
     return (
       <div className="pila">
-        <DiceAjolote estado="celebrando" mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers}>
+        <DiceAjolote estado="celebrando" mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} traje={estado.traje}>
           ¡Misión cumplida! {reto.a} × {formatoNumero(reto.b, reto.moneda)} = {formatoNumero(resultado.respuesta, reto.moneda)}
         </DiceAjolote>
         <MisionCumplida
@@ -174,7 +174,7 @@ export default function Reto({ retoId }) {
   return (
     <div className="reto-layout">
      <div className="pila col-principal">
-      <DiceAjolote estado={animo} tamano={88} mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers}>
+      <DiceAjolote estado={animo} tamano={88} mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} traje={estado.traje}>
         {fase === 'casi'
           ? 'Mmm, revisemos el sendero juntos.'
           : pistaActual

@@ -162,6 +162,7 @@ def nivel(xp: int) -> int:
 
 def logros(resueltos: int, stats: dict, lecciones_terminadas: int) -> list[dict]:
     return [
+        {"id": "cuenta", "nombre": "Inicio de la aventura", "detalle": "Crea tu cuenta de explorador.", "hecho": True},
         {"id": "primera", "nombre": "Primera misión", "detalle": "Resuelve tu primer reto.", "hecho": resueltos >= 1},
         {"id": "cinco", "nombre": "Explorador constante", "detalle": "Resuelve 5 retos.", "hecho": resueltos >= 5},
         {"id": "solo", "nombre": "Lo descubrí yo", "detalle": "Resuelve 3 retos sin pistas.", "hecho": stats.get("retos_sin_ayuda", 0) >= 3},

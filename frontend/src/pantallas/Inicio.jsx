@@ -60,7 +60,7 @@ export default function Inicio() {
   return (
     <div className="pila-lg">
       <section className="saludo-kiko">
-        <span className="kiko-cabeza"><Ajolote estado={animo === 'dormido' ? 'dormido' : 'feliz'} tamano={110} cabeza /></span>
+        <span className="kiko-cabeza"><Ajolote estado={animo === 'dormido' ? 'dormido' : 'feliz'} tamano={110} cabeza traje={estado.traje} /></span>
         <div className="saludo-globo">
           <p className="t-xl" style={{ margin: 0 }}>Hola, {estado.apodo}. {pregunta}</p>
         </div>

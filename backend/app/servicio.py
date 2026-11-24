@@ -130,7 +130,8 @@ def resumen(db: Session, alumno: Usuario) -> dict:
         "stickers": list(est.stickers),
         "ejemplos_vistos": list(est.ejemplos_vistos),
         "stats": dict(est.stats),
-        "mascota": {"nombre": m.nombre, **medidores, "dormido": m.dormido, "pide": juego.lo_que_pide(medidores)},
+        "mascota": {"nombre": m.nombre, **medidores, "dormido": m.dormido, "pide": juego.lo_que_pide(medidores),
+                    "trajes": list(m.trajes or []), "traje": m.traje},
         "logros": juego.logros(len(completados), est.stats, len(est.lecciones_terminadas)),
         "mapa": estado_mapa(db, est, completados),
         "diagnostico_hecho": db.get(Diagnostico, alumno.id) is not None,
@@ -253,6 +254,16 @@ def cuidar(db: Session, alumno: Usuario, accion: str) -> dict:
         stats = dict(est.stats)
         stats["cuidados"] = stats.get("cuidados", 0) + 1
         est.stats = stats
+    db.commit()
+    return resumen(db, alumno)
+
+
+def vestir(db: Session, alumno: Usuario, traje: str | None) -> dict:
+    """Le pone al ajolote un traje que el alumno ya tiene (o se lo quita con None)."""
+    _, m = estado_de(db, alumno)
+    if traje is not None and traje not in (m.trajes or []):
+        raise HTTPException(status.HTTP_409_CONFLICT, "Todavía no tienes ese traje.")
+    m.traje = traje
     db.commit()
     return resumen(db, alumno)
 

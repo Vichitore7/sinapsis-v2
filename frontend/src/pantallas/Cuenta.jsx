@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { useJuego } from '../estado/store.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import I from '../componentes/IconosUI.jsx';
+import { guardarBienvenida } from '../componentes/LogroBienvenida.jsx';
 
 function Campo({ id, etiqueta, ayuda, icono, extra, ...props }) {
   return (
@@ -86,6 +87,8 @@ export default function Cuenta() {
         const r = await api.registro({ usuario: form.usuario, apodo: form.apodo, password: form.password, rol: form.rol });
         // El nivel escolar todavía no existe en el servidor: se guarda en este dispositivo.
         if (alumno) { try { localStorage.setItem(`selva:grado:${r.usuario.id}`, grado); } catch { /* sin almacenamiento */ } }
+        // La notificación del logro de bienvenida sale al terminar el examen diagnóstico.
+        if (r.bienvenida) guardarBienvenida(r.usuario.id, r.bienvenida);
         setPendiente({ usuario: r.usuario, codigo: r.codigo_recuperacion });
       } else {
         const r = await api.recuperar({ usuario: form.usuario, codigo: form.codigo, nueva_password: form.password });

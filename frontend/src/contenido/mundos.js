@@ -8,6 +8,13 @@ export const STICKERS = {
   sombrero: { nombre: 'Sombrero del río' },
 };
 
+// Stickers especiales (temáticos): se ven y se le ponen a Kiko en Perfil > Stickers.
+// Los de traje típico son el regalo de inicio de sesión (al crear la cuenta).
+export const TRAJES = {
+  trajinero: { nombre: 'Traje de trajinero', origen: 'Inicio de sesión', detalle: 'Sombrero de palma, camisa de manta, faja tejida y garrocha de bambú.' },
+  trajinera: { nombre: 'Traje de trajinera', origen: 'Inicio de sesión', detalle: 'Pañoleta bordada, trenzas, blusa con flores, falda de rayas y remo.' },
+};
+
 // Errores típicos que el maestro puede marcar en el Modo Aula (sin internet).
 export const ERRORES_TIPICOS = [
   { id: 'sumo', texto: 'Sumó en vez de multiplicar', refuerzo: 'Repasa con monedas por qué {a} × {b} es juntar {a} montones de {b}. Usa bolsitas con el grupo antes del siguiente reto.' },

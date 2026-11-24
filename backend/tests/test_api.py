@@ -120,6 +120,24 @@ def test_etapa_sube_y_medidores_bajan_al_jugar(cliente):
     assert est["racha_dias"] == 1 and est["xp"] == est["estrellas"]
 
 
+def test_bienvenida_regala_trajes_y_se_puede_vestir(cliente):
+    r = registrar(cliente)
+    assert r["bienvenida"]["logro"] == "Inicio de la aventura"
+    assert [t["id"] for t in r["bienvenida"]["trajes"]] == ["trajinero", "trajinera"]
+    est = cliente.get("/api/juego/estado").json()
+    assert est["logros"][0] == {"id": "cuenta", "nombre": "Inicio de la aventura", "detalle": "Crea tu cuenta de explorador.", "hecho": True}
+    assert est["mascota"]["trajes"] == ["trajinero", "trajinera"] and est["mascota"]["traje"] is None
+    assert cliente.put("/api/mascota/traje", json={"traje": "trajinera"}).json()["mascota"]["traje"] == "trajinera"
+    assert cliente.put("/api/mascota/traje", json={"traje": "astronauta"}).status_code == 409
+    assert cliente.put("/api/mascota/traje", json={"traje": None}).json()["mascota"]["traje"] is None
+
+
+def test_profesor_no_recibe_trajes(cliente):
+    r = registrar(cliente, usuario="profe", rol="profesor")
+    assert "bienvenida" not in r
+    assert cliente.put("/api/mascota/traje", json={"traje": "trajinero"}).status_code == 403
+
+
 def test_cuidados_y_estrellas(cliente):
     registrar(cliente)
     assert cliente.post("/api/mascota/cuidar", json={"accion": "jugar"}).status_code == 409  # sin estrellas
