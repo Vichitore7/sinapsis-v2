@@ -48,6 +48,9 @@ export const api = {
   renombrarMascota: (nombre) => pedir('PATCH', '/mascota', { nombre }),
   vestir: (traje) => pedir('PUT', '/mascota/traje', { traje }),
 
+  // Tutor de IA (Kiko en el chat del escáner). Regresa { respuesta, origen: 'claude' | 'reglas' }.
+  tutor: (d) => pedir('POST', '/tutor', d),
+
   // Aulas
   aulas: () => pedir('GET', '/aulas'),
   crearAula: (d) => pedir('POST', '/aulas', typeof d === 'string' ? { nombre: d } : d),
