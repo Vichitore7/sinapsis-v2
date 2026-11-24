@@ -12,6 +12,16 @@ export async function leerOperacion(_fotoDataUrl) {
   return null;
 }
 
+// Respuesta de Kiko a una foto enviada en el chat.
+//
+// PENDIENTE (backend): aquí se conectará la IA del tutor. Recibirá la foto comprimida
+// (dataURL JPEG, menos de 300 KB) y devolverá el texto de Kiko. La API key va solo en el backend.
+//
+// Mientras tanto, es una respuesta fija de prueba.
+export async function responderFoto(_fotoDataUrl) {
+  return '¡Vas bien!';
+}
+
 /** Pistas del escáner: la primera es la del diagnóstico; las otras son preguntas generales del paso. */
 export function pistasEscaner({ a, op, b }, diag) {
   const generales = {

@@ -528,7 +528,9 @@ a.nodo-s:hover, button.nodo-s:hover { transform: scale(1.06); }
 .chip-sug { border: 0; cursor: pointer; padding: 6px 12px; border-radius: 999px; background: var(--st-superficie); color: var(--st-tinta); font: 700 13px/18px var(--font-body); box-shadow: var(--st-sombra); }
 .chip-sug:disabled { opacity: .45; cursor: not-allowed; }
 .chat-entrada { display: flex; align-items: center; gap: 8px; padding: 12px; background: var(--st-superficie); }
-.chat-entrada .entrada { min-height: 48px; border-radius: 14px; background: var(--st-cont-bajo); }
+.chat-entrada .entrada { flex: 1; min-width: 0; min-height: 48px; border-radius: 14px; background: var(--st-cont-bajo); }
+.msg-globo.msg-foto { padding: 4px; }
+.msg-foto img { display: block; max-width: min(240px, 100%); max-height: 240px; border-radius: 14px; object-fit: contain; }
 
 /* ---------- Mi Aula (alumno) ---------- */
 .unirse { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
