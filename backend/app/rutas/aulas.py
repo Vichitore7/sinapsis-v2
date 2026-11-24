@@ -236,7 +236,9 @@ def panel(aula_id: int, profe: Usuario = Depends(solo_profesor), db: Session = D
     ]
     refuerzo = None
     if errores_comunes:
-        ej = db.scalars(select(Ejercicio).order_by(Ejercicio.leccion_id, Ejercicio.orden)).first()
+        # Las plantillas de refuerzo usan a y b: solo los ejercicios de cuentas los tienen.
+        ej = db.scalars(select(Ejercicio).where(Ejercicio.tipo == "numerica")
+                        .order_by(Ejercicio.leccion_id, Ejercicio.orden)).first()
         plantilla = ERRORES.get(errores_comunes[0]["id"], {}).get("refuerzo")
         if plantilla and ej:
             refuerzo = plantilla.format(a=ej.datos["a"], b=ej.datos["b"])
@@ -305,18 +307,22 @@ def diagnostico_grupo(aula_id: int, profe: Usuario = Depends(solo_profesor), db:
     """Resultados del examen diagnóstico: por habilidad (cuántos la dominan) y por alumno."""
     aula = _aula_de_profesor(db, aula_id, profe)
     alumnos = activos(aula)
-    por_alumno, conteo = [], Counter()
+    por_alumno, conteo, presentadas = [], Counter(), Counter()
     hechos = 0
     for a in alumnos:
         d = db.get(Diagnostico, a.id)
         if d:
             hechos += 1
             conteo.update(h for h, ok in d.resultados.items() if ok)
+            presentadas.update(d.resultados.keys())
         por_alumno.append({"id": a.id, "apodo": a.apodo, "usuario": a.usuario, "hecho": d is not None,
                            "aciertos": d.aciertos if d else None, "total": d.total if d else None,
                            "habilidades": diagnostico.resumen(d.resultados) if d else []})
-    habilidades = [{"habilidad": p["habilidad"], "nombre": p["nombre"], "logrado": conteo[p["habilidad"]], "de": hechos}
-                   for p in diagnostico.PREGUNTAS]
+    # Cada grado tiene su examen: "de" es cuántos alumnos tuvieron esa habilidad en el suyo.
+    # Sin exámenes todavía, se muestran las del examen general para que el panel no salga vacío.
+    presentes = set(presentadas) or {p["habilidad"] for p in diagnostico.PREGUNTAS}
+    habilidades = [{"habilidad": h, "nombre": diagnostico.NOMBRES.get(h, h), "logrado": conteo[h], "de": presentadas[h]}
+                   for h in diagnostico.habilidades_en_orden(presentes)]
     return {"aula": {"id": aula.id, "nombre": aula.nombre}, "hechos": hechos, "alumnos_total": len(alumnos),
             "habilidades": habilidades, "alumnos": por_alumno}
 

@@ -383,3 +383,99 @@ def test_diagnostico_de_entrada(cliente, nuevo_cliente):
     suma = next(h for h in grupo["habilidades"] if h["habilidad"] == "suma")
     assert suma["logrado"] == 1 and suma["de"] == 1
     assert cliente.post("/api/diagnostico", json={"respuestas": {}}).status_code == 403  # solo alumnos
+
+
+def test_modulo_algebra_en_contenido_y_aulas(cliente):
+    registrar(cliente, "profe", rol="profesor")
+    mundos = cliente.get("/api/contenido").json()["mundos"]
+    alg = [m for m in mundos if m["unidad"]["id"] == "algebra"]
+    assert [m["id"] for m in alg] == ["al1", "al2", "al3", "al4"]
+    assert all(m["tema"] == "algebra" and not m["proximamente"] and len(m["retos"]) == 4 for m in alg)
+    reto = alg[0]["retos"][0]
+    assert reto["expresion"] == "4x = 20" and reto["etiqueta"] == "x =" and len(reto["pistas"]) == 3
+    # El profesor puede elegir Álgebra al crear su clase, y ya no sale como "próximamente".
+    aula = cliente.post("/api/aulas", json={"nombre": "1.º A", "nivel": "Secundaria • 1°", "modulos": ["algebra"]}).json()
+    assert aula["modulos"] == [{"id": "algebra", "nombre": "Álgebra", "proximamente": False}]
+
+
+def test_algebra_se_califica_sin_dar_la_respuesta():
+    from app import contenido_algebra as alg
+    from app.juego import evaluar, leer_numero
+
+    assert leer_numero("x = 7") == 7 and leer_numero("$16") == 16 and leer_numero("-5") == -5 and leer_numero("x = −3") == -3
+    for leccion in alg.LECCIONES:
+        for e in leccion["ejercicios"]:
+            datos = alg.ejercicio_tabla(e, 1, 1)["datos"]
+            assert evaluar(e["tipo"], datos, e["respuesta"], e["respuesta"])["correcto"], e["id"]
+            for p in e["pistas"] + [e["pregunta_error"]]:  # las pistas nunca traen la respuesta sola
+                assert f" {e['respuesta']}." not in f" {p}" and not p.endswith(f"= {e['respuesta']}"), e["id"]
+    e = alg.LECCIONES[0]["ejercicios"][0]
+    d = evaluar("conteo", alg.ejercicio_tabla(e, 1, 1)["datos"], e["respuesta"], "-5")
+    assert d["correcto"] is False and d["pasos"][0]["texto"] == "Lee la ecuación" and "5" not in d["pregunta"]
+
+
+def test_cada_grado_tiene_examen_sin_temas_mas_avanzados():
+    from app import diagnostico as dg
+
+    assert set(dg.EXAMENES) == set(dg.GRADOS)
+    for grado, preguntas in dg.EXAMENES.items():
+        lugar = dg.GRADOS[grado][0]
+        assert 6 <= len(preguntas) <= 8, grado
+        assert len({p["habilidad"] for p in preguntas}) == len(preguntas), f"{grado}: habilidad repetida"
+        for p in preguntas:
+            assert dg.GRADOS[p["tema"]][0] <= lugar, f"{p['id']} es de {p['tema']}, más avanzado que {grado}"
+            assert len(p["id"]) <= 10, p["id"]  # el servidor corta los ids a 10 letras
+        # Todas bien con la respuesta esperada; todas mal con "no sé".
+        assert all(dg.calificar({p["id"]: p["respuestas"][0] for p in preguntas}, grado).values()), grado
+        assert not any(dg.calificar({}, grado).values())
+
+
+def test_calificacion_acepta_formas_comunes():
+    from app import diagnostico as dg
+
+    p = {"respuestas": ["0.75"]}
+    assert dg._correcta("0,75", p) and dg._correcta("0.75", p) and not dg._correcta("75", p)
+    assert dg._correcta("x = 5", {"respuestas": ["5"]}) and dg._correcta("$45", {"respuestas": ["45"]})
+    assert dg._correcta("5,125", {"respuestas": ["5125"]}) and dg._correcta("5 125", {"respuestas": ["5125"]})
+    assert dg._correcta("−3", {"respuestas": ["-3"]}) and not dg._correcta("3", {"respuestas": ["-3"]})
+    assert dg._correcta("40 cm²", {"respuestas": ["40"]}) and dg._correcta(" 3 / 5 ", {"respuestas": ["3/5"]})
+    assert dg._correcta("Imposible", {"respuestas": ["imposible"]}) and not dg._correcta("seguro", {"respuestas": ["imposible"]})
+
+
+def test_alumno_nuevo_recibe_el_examen_de_su_grado(cliente, nuevo_cliente):
+    from app import diagnostico as dg
+
+    alumno = nuevo_cliente()
+    r = alumno.post("/api/auth/registro", json={"usuario": "rana", "apodo": "Rana", "password": "selva123", "grado": "P4"})
+    assert r.status_code == 201 and r.json()["usuario"]["grado"] == "P4"
+    examen = alumno.get("/api/diagnostico").json()
+    assert examen["grado"] == "4.º de primaria" and [p["id"] for p in examen["preguntas"]] == [p["id"] for p in dg.EXAMENES["P4"]]
+    assert "respuesta" not in str(examen)
+    r = alumno.post("/api/diagnostico", json={"respuestas": {"p4-1": "5000", "p4-6": "0,5"}}).json()
+    assert r["aciertos"] == 2 and r["total"] == 8
+
+    # Un grado que no existe se rechaza; un profesor no guarda grado.
+    otro = nuevo_cliente()
+    assert otro.post("/api/auth/registro", json={"usuario": "x9", "apodo": "X", "password": "selva123", "grado": "P9"}).status_code == 422
+    profe = otro.post("/api/auth/registro", json={"usuario": "profe2", "apodo": "Profe", "password": "selva123", "rol": "profesor", "grado": "S1"})
+    assert profe.json()["usuario"]["grado"] is None
+
+    # Cuentas sin grado (las que ya existían): siguen con el examen general.
+    viejo = nuevo_cliente()
+    registrar(viejo, "viejo")
+    examen = viejo.get("/api/diagnostico").json()
+    assert examen["grado"] is None and [p["id"] for p in examen["preguntas"]] == [f"d{i}" for i in range(1, 9)]
+
+
+def test_panel_del_profesor_con_alumnos_de_grados_distintos(cliente, nuevo_cliente):
+    registrar(cliente, "profe", rol="profesor")
+    aula = cliente.post("/api/aulas", json={"nombre": "Mixto"}).json()
+    for usuario, grado, respuestas in (("ana", "P2", {"p2-2": "85"}), ("beto", "P4", {"p4-2": "5125"})):
+        a = nuevo_cliente()
+        a.post("/api/auth/registro", json={"usuario": usuario, "apodo": usuario, "password": "selva123", "grado": grado})
+        a.post("/api/aulas/unirse", json={"codigo": aula["codigo"]})
+        a.post("/api/diagnostico", json={"respuestas": respuestas})
+    grupo = cliente.get(f"/api/aulas/{aula['id']}/diagnostico").json()
+    por_id = {h["habilidad"]: h for h in grupo["habilidades"]}
+    assert por_id["suma"]["logrado"] == 2 and por_id["suma"]["de"] == 2  # los dos tuvieron suma
+    assert por_id["resta"]["de"] == 1 and por_id["decimales"]["de"] == 1  # solo uno la tuvo

@@ -12,6 +12,7 @@ export default function ExamenDiagnostico() {
   const { usuario, estado, aplicarServidor } = useJuego();
   const [bienvenida, setBienvenida] = useState(null);
   const [preguntas, setPreguntas] = useState(null);
+  const [grado, setGrado] = useState(null);
   const [i, setI] = useState(0);
   const [respuestas, setRespuestas] = useState({});
   const [texto, setTexto] = useState('');
@@ -21,7 +22,7 @@ export default function ExamenDiagnostico() {
 
   useEffect(() => {
     api.diagnostico()
-      .then((r) => (r.hecho ? setResultado(r) : setPreguntas(r.preguntas)))
+      .then((r) => { setGrado(r.grado || null); if (r.hecho) setResultado(r); else setPreguntas(r.preguntas); })
       .catch((e) => setError(e.message));
   }, []);
   useEffect(() => { entrada.current?.focus(); }, [i, preguntas]);
@@ -114,7 +115,7 @@ export default function ExamenDiagnostico() {
     <div className="examen">
       <section className="tarjeta tarjeta-entrada pila-md">
         <div className="fila-entre">
-          <span className="sobre"><I n="diana" tamano={14} /> Diagnóstico de entrada</span>
+          <span className="sobre"><I n="diana" tamano={14} /> Diagnóstico de entrada{grado ? ` · ${grado}` : ''}</span>
           <span className="etq texto-suave">Pregunta {i + 1} de {preguntas.length}</span>
         </div>
         <div className="barra-prog naranja"><span style={{ width: `${(i / preguntas.length) * 100}%` }} /></div>

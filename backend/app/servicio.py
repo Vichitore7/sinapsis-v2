@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
+from . import contenido_algebra as algebra
 from . import contenido_canal as canal
 from . import juego
 from .contenido import STICKERS
@@ -42,6 +43,8 @@ def ejercicio_publico(e: Ejercicio) -> dict:
         # Mundos por niveles (El Canal de los Números): a qué chinampa pertenece y qué dibujar.
         "nivel": d.get("nivel"), "nivel_tema": d.get("nivel_tema"), "nivel_titulo": d.get("nivel_titulo"),
         "visual": d.get("visual"),
+        # Álgebra: la ecuación que se muestra grande y lo que va antes de la respuesta ("x =").
+        "expresion": d.get("expresion"), "etiqueta": d.get("etiqueta"),
     }
 
 
@@ -60,7 +63,7 @@ def mundos_publicos(db: Session) -> list[dict]:
         mundos.append({
             "id": l.id, "numero": numero, "nombre": l.nombre, "entrada": l.entrada, "concepto": l.concepto,
             "sticker": l.sticker, "unidad": {"id": u.id, "nombre": u.nombre}, "proximamente": u.proximamente,
-            "tema": canal.TEMA if l.id == canal.LECCION_ID else None,
+            "tema": canal.TEMA if l.id == canal.LECCION_ID else algebra.TEMA if u.id == "algebra" else None,
             "estado_revision": l.estado_revision, "retos": [ejercicio_publico(e) for e in l.ejercicios],
         })
     return mundos

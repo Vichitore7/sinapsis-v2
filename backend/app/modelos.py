@@ -34,6 +34,8 @@ class Usuario(Base):
     recuperacion_hash: Mapped[str] = mapped_column(String(64))
     version_sesion: Mapped[int] = mapped_column(Integer, default=0)  # sube al cerrar sesión o recuperar: invalida tokens viejos
     avatar: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    # Grado escolar del alumno ("P1" a "P6", "S1" a "S3"). Decide su examen diagnóstico. None en cuentas viejas.
+    grado: Mapped[str | None] = mapped_column(String(3), nullable=True)
     creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
     ultimo_acceso: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

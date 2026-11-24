@@ -10,6 +10,7 @@ import sys
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from . import contenido_algebra as algebra
 from . import contenido_canal as canal
 from .contenido import UNIDADES, ejercicio_canal, ejercicio_multiplicacion
 from .db import Base, SesionLocal, engine, migrar_columnas
@@ -36,6 +37,10 @@ def cargar_contenido(db: Session) -> None:
             if l["id"] == canal.LECCION_ID:
                 for j, e in enumerate(canal.ejercicios(), start=1):
                     db.merge(Ejercicio(leccion_id=l["id"], **ejercicio_canal(e, j)))
+                continue
+            if u["id"] == "algebra":
+                for j, e in enumerate(l["ejercicios"], start=1):
+                    db.merge(Ejercicio(leccion_id=l["id"], **algebra.ejercicio_tabla(e, j, l["dificultad"])))
                 continue
             for j, (id_, titulo, enunciado, a, b, objeto, etapa) in enumerate(l["retos"], start=1):
                 datos = ejercicio_multiplicacion(id_, j, titulo, enunciado, a, b, objeto, etapa,

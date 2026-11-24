@@ -26,6 +26,13 @@ const CONSEJOS_CANAL = [
   'Cada trajinera lleva 3 peces: resuelve sus 3 ejercicios para llenarla.',
 ];
 
+const CONSEJOS_ALGEBRA = [
+  'Una ecuación es una balanza: lo que hagas de un lado, hazlo también del otro.',
+  'Comprueba tu respuesta: cambia la x por tu número y mira si los dos lados dan lo mismo.',
+  'En una sucesión, primero busca cuánto aumenta de un número al siguiente.',
+  'Pedir una pista no te quita nada. ¡Los exploradores valientes preguntan!',
+];
+
 function Estrellas({ llenas }) {
   return (
     <span className="estrellas-nodo" aria-hidden="true">
@@ -237,7 +244,8 @@ export default function Mapa() {
   const pct = total ? Math.round((hechos / total) * 100) : 0;
   const paso = siguientePaso(estado, mundos);
   const bonoPendiente = estado.ultimoBonoDia !== hoy();
-  const listaConsejos = mundos.find((m) => m.id === mundoActual)?.tema === 'xochimilco' ? CONSEJOS_CANAL : CONSEJOS;
+  const temaActual = mundos.find((m) => m.id === mundoActual)?.tema;
+  const listaConsejos = temaActual === 'xochimilco' ? CONSEJOS_CANAL : temaActual === 'algebra' ? CONSEJOS_ALGEBRA : CONSEJOS;
   const consejo = listaConsejos[hechos % listaConsejos.length];
   const alternar = (id) => setAbiertos((s) => {
     const nuevo = new Set(s);

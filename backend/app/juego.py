@@ -112,7 +112,7 @@ def evaluar(tipo: str, datos: dict, respuesta_correcta: str, respuesta: str) -> 
         correcto = numero == int(respuesta_correcta)
         accion = f"Tu respuesta: {_f(numero, datos.get('moneda', False))}"
     pasos = [
-        {"texto": "Observa el dibujo", "estado": "ok"},
+        {"texto": datos.get("paso_inicial", "Observa el dibujo"), "estado": "ok"},
         {"texto": accion, "estado": "ok" if correcto else "casi"},
         {"texto": "Resultado", "estado": "ok" if correcto else "pendiente"},
     ]
@@ -132,10 +132,14 @@ def pistas_multiplicacion(a: int, b: int, moneda: bool, objeto: str) -> list[str
 
 
 def leer_numero(texto: str) -> int | None:
-    digitos = "".join(ch for ch in (texto or "") if ch.isdigit())
+    """Lee el número que escribió el alumno ("$18", "x = 7", "-3"). Respeta el signo menos antes del número."""
+    texto = texto or ""
+    digitos = "".join(ch for ch in texto if ch.isdigit())
     if not digitos or len(digitos) > 9:
         return None
-    return int(digitos)
+    antes = texto[: next(i for i, ch in enumerate(texto) if ch.isdigit())].rstrip()
+    negativo = antes.endswith(("-", "−"))
+    return -int(digitos) if negativo else int(digitos)
 
 
 # ---------------- Recompensas, escalera y bienestar ----------------

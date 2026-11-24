@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import random
 
+from . import contenido_algebra as algebra
 from . import contenido_canal as canal
 from .juego import pistas_multiplicacion
 
@@ -48,6 +49,8 @@ UNIDADES = [
     {"id": "decimales", "nombre": "Decimales", "orden": 6, "prerrequisito": "fracciones", "proximamente": True, "lecciones": []},
     {"id": "geometria", "nombre": "Geometría", "orden": 7, "prerrequisito": None, "proximamente": True, "lecciones": []},
     {"id": "medicion", "nombre": "Medición", "orden": 8, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    # Secundaria (1.º a 3.º): sus 4 mundos viven en contenido_algebra.py.
+    {"id": "algebra", "nombre": "Álgebra", "orden": 9, "prerrequisito": None, "lecciones": algebra.LECCIONES},
 ]
 
 STICKERS = {

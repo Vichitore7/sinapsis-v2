@@ -22,6 +22,8 @@ class Registro(BaseModel):
     apodo: str = Field(min_length=1, max_length=30)
     password: str = Field(min_length=6, max_length=64)
     rol: Literal["alumno", "profesor"] = "alumno"
+    # Grado escolar del alumno: decide los temas de su examen diagnóstico.
+    grado: Literal["P1", "P2", "P3", "P4", "P5", "P6", "S1", "S2", "S3"] | None = None
 
     _u = field_validator("usuario")(_validar_usuario)
 

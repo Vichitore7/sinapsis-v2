@@ -100,6 +100,8 @@ export function adaptarMundos(mundos) {
       nivel: r.nivel || null,
       nivelTema: r.nivel_tema || null,
       nivelTitulo: r.nivel_titulo || null,
+      expresion: r.expresion || null,
+      etiqueta: r.etiqueta || null,
       mundo,
     }));
     return mundo;

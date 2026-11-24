@@ -97,6 +97,9 @@ export default function Reto({ retoId }) {
   const indice = reto.mundo.retos.findIndex((r) => r.id === reto.id) + 1;
   // Mundo del canal (Xochimilco): ejercicios de conteo, opción y cuentas con dibujos propios.
   const canal = reto.mundo.tema === 'xochimilco';
+  // Álgebra (secundaria): se muestra la ecuación en lugar de monedas o bloques.
+  const algebra = reto.mundo.tema === 'algebra';
+  const sinModelo = canal || algebra;
   const delNivel = canal ? reto.mundo.retos.filter((r) => r.nivel === reto.nivel) : [];
   const pecesNivel = delNivel.filter((r) => estado.completados[r.id]).length;
   const numeroEnNivel = delNivel.findIndex((r) => r.id === reto.id) + 1;
@@ -191,7 +194,10 @@ export default function Reto({ retoId }) {
     return (
       <div className="pila">
         <DiceAjolote estado="celebrando" mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} traje={estado.traje}>
-          ¡Misión cumplida! {reto.a} × {formatoNumero(reto.b, reto.moneda)} = {formatoNumero(resultado.respuesta, reto.moneda)}
+          ¡Misión cumplida! {!algebra
+            ? `${reto.a} × ${formatoNumero(reto.b, reto.moneda)} = ${formatoNumero(resultado.respuesta, reto.moneda)}`
+            : reto.tipo === 'opcion' || !reto.etiqueta ? resultado.respuesta
+              : `${reto.etiqueta}${reto.etiqueta.endsWith('$') ? '' : ' '}${resultado.respuesta}`}
         </DiceAjolote>
         <MisionCumplida
           texto={texto}
@@ -239,7 +245,9 @@ export default function Reto({ retoId }) {
         <h2 className="subtitulo" style={{ margin: '0 0 var(--espacio-2)' }}>{reto.titulo}</h2>
         <p className="cuerpo" style={{ margin: '0 0 var(--espacio-3)' }}>{reto.enunciado}</p>
 
-        {canal ? <VisualCanal visual={reto.visual} /> : (
+        {canal ? <VisualCanal visual={reto.visual} /> : algebra ? (
+          reto.expresion && <p className="expresion-algebra" aria-label={`Expresión: ${reto.expresion}`}>{reto.expresion}</p>
+        ) : (
           <>
             {etapa < 4 && <ModeloVisual etapa={etapa} a={reto.a} b={reto.b} moneda={reto.moneda} />}
             {etapa === 4 && pistasUsadas > 0 && (
@@ -268,7 +276,8 @@ export default function Reto({ retoId }) {
         ) : (
           <div className="operacion">
             <label className="numero-reto" htmlFor="respuesta">
-              {!canal ? `${reto.a} × ${formatoNumero(reto.b, reto.moneda)} =`
+              {algebra ? (reto.etiqueta || 'Tu respuesta')
+                : !canal ? `${reto.a} × ${formatoNumero(reto.b, reto.moneda)} =`
                 : reto.tipo === 'numerica' ? `${reto.a} ${reto.op} ${reto.b} =`
                   : `Tu respuesta${reto.moneda ? ' $' : ''}`}
             </label>
@@ -292,7 +301,7 @@ export default function Reto({ retoId }) {
             {!pistasAgotadas && (
               <button className="sm-btn sm-btn-pista" type="button" onClick={pedirPista}>? Pista</button>
             )}
-            {!canal && pistasAgotadas && pistasUsadas === MAX_PISTAS && (
+            {!sinModelo && pistasAgotadas && pistasUsadas === MAX_PISTAS && (
               <button className="sm-btn sm-btn-pista" type="button" onClick={pedirPista}>Ver ejemplo parecido</button>
             )}
           </div>
@@ -302,7 +311,7 @@ export default function Reto({ retoId }) {
      </div>
 
      <div className="pila col-lateral">
-      {!canal && pistasUsadas > MAX_PISTAS && <EjemploParecido reto={reto} />}
+      {!sinModelo && pistasUsadas > MAX_PISTAS && <EjemploParecido reto={reto} />}
 
       {fase === 'casi' && diag && (
         <>

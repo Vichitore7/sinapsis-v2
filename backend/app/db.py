@@ -38,6 +38,7 @@ def get_db() -> Iterator[Session]:
 # Columnas que se agregaron después de crear la base. create_all() no altera tablas que ya existen,
 # así que las agregamos aquí para que nadie tenga que borrar su selva.db.
 COLUMNAS_NUEVAS = {
+    "usuarios": {"grado": "VARCHAR(3)"},
     "aulas": {"nivel": "VARCHAR(40)", "requiere_aprobacion": "BOOLEAN NOT NULL DEFAULT 0"},
     "aula_alumnos": {"estado": "VARCHAR(10) NOT NULL DEFAULT 'activo'"},
     # Las cuentas que ya existían también reciben los trajes de bienvenida (su logro "Inicio de la aventura" ya está hecho).

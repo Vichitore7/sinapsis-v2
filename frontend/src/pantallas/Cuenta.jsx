@@ -33,6 +33,13 @@ function apodoMagico() {
 const PRIMARIA = ['1°', '2°', '3°', '4°', '5°', '6°'];
 const SECUNDARIA = ['1° Año', '2° Año', '3° Año'];
 
+/** "Primaria • 4°" → "P4", "Secundaria • 1° Año" → "S1": el código que guarda el servidor. */
+export function codigoGrado(grado) {
+  const n = (grado.match(/\d/) || [])[0];
+  if (!n) return null;
+  return `${grado.startsWith('Secundaria') ? 'S' : 'P'}${n}`;
+}
+
 /** Se muestra UNA sola vez después de registrarse o recuperar. */
 export function MostrarCodigo({ codigo, onListo, titulo = '¡Guarda tu código secreto!' }) {
   const [anotado, setAnotado] = useState(false);
@@ -84,9 +91,11 @@ export default function Cuenta() {
         const r = await api.login({ usuario: form.usuario, password: form.password });
         await entrar(r.usuario);
       } else if (modo === 'crear') {
-        const r = await api.registro({ usuario: form.usuario, apodo: form.apodo, password: form.password, rol: form.rol });
-        // El nivel escolar todavía no existe en el servidor: se guarda en este dispositivo.
-        if (alumno) { try { localStorage.setItem(`selva:grado:${r.usuario.id}`, grado); } catch { /* sin almacenamiento */ } }
+        // El grado se guarda en el servidor: decide los temas del examen diagnóstico.
+        const r = await api.registro({
+          usuario: form.usuario, apodo: form.apodo, password: form.password, rol: form.rol,
+          ...(alumno ? { grado: codigoGrado(grado) } : {}),
+        });
         // La notificación del logro de bienvenida sale al terminar el examen diagnóstico.
         if (r.bienvenida) guardarBienvenida(r.usuario.id, r.bienvenida);
         setPendiente({ usuario: r.usuario, codigo: r.codigo_recuperacion });
