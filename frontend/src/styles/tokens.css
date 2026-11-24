@@ -25,7 +25,10 @@
   --sombra-boton: 0 4px 0 #137a52; /* Sombra sólida del botón primario. Al presionar, el botón baja 4px y la sombra desaparece. */
   --sombra-tarjeta: 0 6px 0 rgba(30, 27, 58, 0.16); /* Tarjetas de reto y paneles: profundidad de juego sin difuminado (se ve bien en proyector). */
   --sombra-sticker: 0 3px 0 rgba(30, 27, 58, 0.22); /* Debajo del borde blanco de mascota, íconos y premios tipo sticker. */
+  --contorno: #1e1b3a; /* Contorno y texto de los dibujos tipo sticker (Kiko, monedas, bolsitas). NO cambia con el tema: --tinta se vuelve clara de noche. */
+  --borde-sticker: #ffffff; /* Borde blanco de los stickers, igual de día y de noche (de noche es lo que los hace resaltar). */
 }
+
 :root {
   --espacio-1: 4px; /* Separación mínima entre ícono y texto. */
   --espacio-2: 8px; /* Espacio dentro de chips y entre botones pequeños. */

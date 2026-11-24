@@ -76,6 +76,10 @@ class MascotaCambio(BaseModel):
     nombre: str = Field(min_length=1, max_length=20)
 
 
+class TrajeEntrada(BaseModel):
+    traje: str | None = Field(default=None, max_length=20)  # None = quitarle el traje
+
+
 class AjustesEntrada(BaseModel):
     tema: Literal["claro", "oscuro", "sistema"] | None = None
     idioma: Literal["es-MX"] | None = None

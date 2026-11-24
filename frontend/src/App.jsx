@@ -6,6 +6,7 @@ import { useJuego } from './estado/store.jsx';
 import { useRuta, ir } from './ruta.js';
 import I from './componentes/IconosUI.jsx';
 import Ajolote from './componentes/Ajolote.jsx';
+import { CabezaKiko } from './componentes/Comunes.jsx';
 import Cuenta from './pantallas/Cuenta.jsx';
 import Inicio from './pantallas/Inicio.jsx';
 import Mapa from './pantallas/Mapa.jsx';
@@ -102,7 +103,7 @@ export default function App() {
     <div className="app">
       <aside className="lateral" aria-label="Menú">
         <a href="#/" className="logo">
-          <span className="logo-icono"><I n="huella" tamano={22} /></span>
+          <span className="logo-icono"><CabezaKiko tamano={38} /></span>
           <span className="logo-texto">Selva<small>Matemática</small></span>
         </a>
 
@@ -122,7 +123,7 @@ export default function App() {
           {nav.map((n, i) => (
             <a key={n.id} href={`#/${i === 0 ? '' : n.id}`} className={`menu-item${activa === n.id ? ' activo' : ''}`}
               aria-current={activa === n.id ? 'page' : undefined}>
-              <I n={n.icono} tamano={22} />
+              {n.id === 'mochila' ? <CabezaKiko tamano={28} /> : <I n={n.icono} tamano={22} />}
               <span className="texto-largo">{n.texto}</span>
               <span className="texto-corto">{n.corto}</span>
             </a>
@@ -130,7 +131,7 @@ export default function App() {
         </nav>
 
         <a href={alumno ? '#/mochila' : '#/perfil'} className="tarjeta-kiko">
-          <span className="kiko-icono"><I n="huella" tamano={20} /></span>
+          <span className="kiko-icono"><CabezaKiko tamano={34} /></span>
           <span>
             <b>{alumno ? `${estado.nombreAjolote} el Ajolote` : 'Kiko el Ajolote'}</b>
             <small>{alumno && estado.dormido ? 'Está dormido. ¡Despiértalo!' : '¡Listo para aprender!'}</small>
@@ -140,7 +141,7 @@ export default function App() {
 
       <header className="barra-top">
         <a href="#/" className="logo logo-movil" aria-label="Selva Matemática">
-          <span className="logo-icono"><I n="huella" tamano={18} /></span>
+          <span className="logo-icono"><CabezaKiko tamano={32} /></span>
         </a>
         <div className="pastillas">
           {alumno ? (

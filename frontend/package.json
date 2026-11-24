@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "stickers": "node scripts/exportar-stickers.mjs"
   },
   "dependencies": {
     "@fontsource/baloo-2": "^5.1.0",

@@ -5,9 +5,12 @@ import { api } from '../api.js';
 import { useJuego } from '../estado/store.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import I from '../componentes/IconosUI.jsx';
+import LogroBienvenida, { borrarBienvenida, leerBienvenida } from '../componentes/LogroBienvenida.jsx';
+import { ir } from '../ruta.js';
 
 export default function ExamenDiagnostico() {
-  const { estado, aplicarServidor } = useJuego();
+  const { usuario, estado, aplicarServidor } = useJuego();
+  const [bienvenida, setBienvenida] = useState(null);
   const [preguntas, setPreguntas] = useState(null);
   const [i, setI] = useState(0);
   const [respuestas, setRespuestas] = useState({});
@@ -39,13 +42,37 @@ export default function ExamenDiagnostico() {
     }
   };
 
-  const entrar = async () => {
+  const cargarSelva = async () => {
     try { aplicarServidor(await api.estado()); } catch (e) { setError(e.message); }
+  };
+
+  // Al terminar: si la cuenta es nueva, primero la notificación del logro de bienvenida.
+  const entrar = () => {
+    const pendiente = leerBienvenida(usuario.id);
+    if (pendiente) setBienvenida(pendiente);
+    else cargarSelva();
+  };
+
+  const salirDeBienvenida = (ruta) => {
+    borrarBienvenida(usuario.id);
+    ir(ruta);
+    cargarSelva();
   };
 
   if (error) {
     return (
       <div className="examen"><div className="tarjeta tarjeta-entrada"><div className="aviso-casi">{error}</div></div></div>
+    );
+  }
+
+  if (bienvenida) {
+    return (
+      <div className="examen">
+        <div className="tarjeta-entrada">
+          <LogroBienvenida bienvenida={bienvenida}
+            onInicio={() => salirDeBienvenida('/')} onStickers={() => salirDeBienvenida('/perfil/stickers')} />
+        </div>
+      </div>
     );
   }
 

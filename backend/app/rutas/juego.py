@@ -58,6 +58,12 @@ def despertar(u: Usuario = Depends(solo_alumno), db: Session = Depends(get_db)) 
     return servicio.despertar(db, u)
 
 
+@router.put("/mascota/traje")
+def vestir(datos: esquemas.TrajeEntrada, u: Usuario = Depends(solo_alumno), db: Session = Depends(get_db)) -> dict:
+    """Viste al ajolote con uno de sus trajes (traje = null se lo quita)."""
+    return servicio.vestir(db, u, datos.traje)
+
+
 @router.patch("/mascota")
 def renombrar(datos: esquemas.MascotaCambio, u: Usuario = Depends(solo_alumno), db: Session = Depends(get_db)) -> dict:
     _, m = servicio.estado_de(db, u)

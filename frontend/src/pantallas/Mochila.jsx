@@ -159,7 +159,7 @@ export default function Mochila() {
                 : animo === 'dormido' ? '«Zzz… despiértame para seguir»' : '«¡Hola! ¿Practicamos multiplicación hoy?»')}
             </div>
             <div className="habitat-ajolote">
-              <Ajolote estado={animo} tamano={190} mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} />
+              <Ajolote estado={animo} tamano={190} mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} traje={estado.traje} />
             </div>
             <span className="pastilla blanca centro-self"><I n="checkCirculo" tamano={16} className="texto-selva" /> Estado: {estadoTexto} ({felicidad}%)</span>
             <div className="fila-entre" style={{ marginTop: 12 }}>

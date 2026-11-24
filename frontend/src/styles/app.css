@@ -87,8 +87,11 @@ a { color: inherit; }
 .lista-simple { margin: 0; padding-left: 1.2em; }
 
 /* Sticker: borde blanco grueso y sombra sólida */
-.sticker { filter: drop-shadow(2px 0 0 var(--superficie)) drop-shadow(-2px 0 0 var(--superficie)) drop-shadow(0 2px 0 var(--superficie)) drop-shadow(0 -2px 0 var(--superficie)) drop-shadow(0 3px 0 rgba(30, 27, 58, 0.22)); overflow: visible; }
+.sticker { filter: drop-shadow(2px 0 0 var(--borde-sticker)) drop-shadow(-2px 0 0 var(--borde-sticker)) drop-shadow(0 2px 0 var(--borde-sticker)) drop-shadow(0 -2px 0 var(--borde-sticker)) drop-shadow(0 3px 0 rgba(30, 27, 58, 0.22)); overflow: visible; }
 .ajolote { flex: none; overflow: visible; filter: drop-shadow(0 3px 0 rgba(30, 27, 58, 0.22)); }
+/* Kiko y los íconos sticker se dibujan con --tinta (contorno, ojos) y --superficie (borde blanco, brillo de ojos).
+   De noche esos tokens se invierten y Kiko quedaba con ojos blancos y borde oscuro; aquí se fijan al look de día. */
+.ajolote, svg.sticker { --tinta: var(--contorno); --superficie: var(--borde-sticker); }
 
 /* Ajolote con globo */
 .dice-ajolote { display: flex; align-items: flex-end; gap: var(--espacio-3); }
@@ -144,6 +147,7 @@ a.nodo:active, button.nodo:active { transform: translateY(4px); box-shadow: none
 .modelo { margin: 0 0 var(--espacio-3); overflow-x: auto; }
 .svg-num { font-family: var(--font-body); font-weight: 700; font-size: 14px; fill: var(--tinta-suave); }
 .svg-grande { font-family: var(--font-body); font-weight: 800; font-size: 20px; fill: var(--tinta); }
+.svg-grande.sobre-color { fill: var(--contorno); } /* número sobre relleno amarillo: siempre oscuro */
 .svg-total { font-family: var(--font-body); font-weight: 800; font-size: 22px; fill: var(--selva-profundo); }
 .operacion { display: flex; align-items: center; gap: var(--espacio-3); flex-wrap: wrap; margin: 0 0 var(--espacio-4); }
 .pista-caja { display: flex; flex-direction: column; align-items: flex-start; gap: var(--espacio-2); margin: 0 0 var(--espacio-3); }
@@ -334,19 +338,21 @@ a.nodo:active, button.nodo:active { transform: translateY(4px); box-shadow: none
 .lista-intentos li.casi { background: var(--casi-suave); }
 
 /* =========================================================
-   Tema Noche (PROVISIONAL: el sistema de diseño solo define el tema Día).
-   Se activa con data-tema="oscuro" o, en "sistema", con prefers-color-scheme.
-   Los botones y rellenos de color conservan texto oscuro para mantener el contraste.
+   Tema Noche del diseño anterior (sin stitch.css).
+   El store pone data-tema="oscuro" | "claro" en <html>; en "sistema" no pone nada
+   y decide prefers-color-scheme.
+   Va dentro de :where() para pesar lo mismo que :root: así, si stitch.css está
+   cargado (va después), su paleta noche manda y no se mezclan las dos.
    ========================================================= */
-:root[data-tema="oscuro"] {
-  --fondo: #17142e; --superficie: #221e40; --tinta: #f4f1ff; --tinta-suave: #b9b4dc; --bloqueado: #3d3866;
+:root:where([data-tema="oscuro"]) {
+  --fondo: #141124; --superficie: #221e40; --tinta: #f4f1ff; --tinta-suave: #b9b4dc; --bloqueado: #3d3866;
   --selva-suave: #143b2c; --magia-suave: #2e2560; --magia-profundo: #c9b8ff; --pista-suave: #11304f; --pista-texto: #9ccbff;
   --casi-suave: #40261a; --casi-texto: #ffb48c; --selva-profundo: #5fd6a3;
   --sombra-tarjeta: 0 6px 0 rgba(0, 0, 0, 0.45); --sombra-sticker: 0 3px 0 rgba(0, 0, 0, 0.5);
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-tema="claro"]) {
-    --fondo: #17142e; --superficie: #221e40; --tinta: #f4f1ff; --tinta-suave: #b9b4dc; --bloqueado: #3d3866;
+  :root:where(:not([data-tema="claro"])) {
+    --fondo: #141124; --superficie: #221e40; --tinta: #f4f1ff; --tinta-suave: #b9b4dc; --bloqueado: #3d3866;
     --selva-suave: #143b2c; --magia-suave: #2e2560; --magia-profundo: #c9b8ff; --pista-suave: #11304f; --pista-texto: #9ccbff;
     --casi-suave: #40261a; --casi-texto: #ffb48c; --selva-profundo: #5fd6a3;
     --sombra-tarjeta: 0 6px 0 rgba(0, 0, 0, 0.45); --sombra-sticker: 0 3px 0 rgba(0, 0, 0, 0.5);
