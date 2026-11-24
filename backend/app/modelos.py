@@ -224,3 +224,25 @@ class Diagnostico(Base):
     aciertos: Mapped[int] = mapped_column(Integer)
     total: Mapped[int] = mapped_column(Integer)
     fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
+
+
+class ExamenMundo(Base):
+    """Examen general al final de un mundo (hoy: El Canal de los Números).
+
+    `detalle` guarda todo lo que pasó en cada pregunta para el reporte del profesor:
+    {pregunta_id: {"intentos": [{"respuesta", "correcto", "tiempo_ms"}], "pistas": n, "estado": ..., "tiempo_ms": n}}
+    estado de cada pregunta: pendiente | a_la_primera | con_ayuda | por_reforzar
+    """
+    __tablename__ = "examenes_mundo"
+    __table_args__ = (UniqueConstraint("alumno_id", "leccion_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
+    leccion_id: Mapped[str] = mapped_column(ForeignKey("lecciones.id"))
+    detalle: Mapped[dict] = mapped_column(JSON, default=dict)
+    terminado: Mapped[bool] = mapped_column(Boolean, default=False)
+    aciertos: Mapped[int] = mapped_column(Integer, default=0)  # preguntas logradas (a la primera o con ayuda)
+    total: Mapped[int] = mapped_column(Integer, default=0)
+    premio: Mapped[list] = mapped_column(JSON, default=list)  # trajes ganados al terminar
+    inicio: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
+    fin: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -1,7 +1,7 @@
 """Operaciones del juego sobre la base de datos (las rutas solo llaman a estas funciones)."""
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session, selectinload
 
 from . import contenido_canal as canal
 from . import juego
-from .contenido import STICKERS
-from .modelos import Diagnostico, Ejercicio, EstadoJuego, Intento, Leccion, Mascota, Progreso, Unidad, Usuario
+from .contenido import STICKERS, TRAJES, sortear_trajes_subcultura
+from .modelos import Diagnostico, Ejercicio, EstadoJuego, ExamenMundo, Intento, Leccion, Mascota, Progreso, Unidad, Usuario
 
 
 def hoy() -> date:
@@ -140,7 +140,16 @@ def resumen(db: Session, alumno: Usuario) -> dict:
         "logros": juego.logros(len(completados), est.stats, len(est.lecciones_terminadas)),
         "mapa": estado_mapa(db, est, completados),
         "diagnostico_hecho": db.get(Diagnostico, alumno.id) is not None,
+        # Examen general de cada mundo que lo tiene: sin_empezar | en_curso | terminado (+ trajes ganados).
+        "examenes": {lid: _resumen_examen(_examen(db, alumno.id, lid)) for lid in EXAMENES},
     }
+
+
+def _resumen_examen(ex: ExamenMundo | None) -> dict:
+    if not ex:
+        return {"estado": "sin_empezar"}
+    return {"estado": "terminado" if ex.terminado else "en_curso", "aciertos": ex.aciertos, "total": ex.total,
+            "premio": list(ex.premio or []), "fecha_fin": ex.fin.isoformat() if ex.fin else None}
 
 
 # ---------------- Acciones ----------------
@@ -217,6 +226,8 @@ def abrir_cofre(db: Session, alumno: Usuario, leccion_id: str) -> dict:
     l = db.get(Leccion, leccion_id)
     if not l:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Ese mundo no existe.")
+    if l.id in EXAMENES:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Este mundo termina con el examen general.")
     est, _ = estado_de(db, alumno)
     mapa = estado_mapa(db, est, completados_de(db, alumno.id))
     if mapa.get(l.id, {}).get("cofre") != "actual":
@@ -263,13 +274,165 @@ def cuidar(db: Session, alumno: Usuario, accion: str) -> dict:
 
 
 def vestir(db: Session, alumno: Usuario, traje: str | None) -> dict:
-    """Le pone al ajolote un traje que el alumno ya tiene (o se lo quita con None)."""
-    _, m = estado_de(db, alumno)
+    """Le pone al ajolote un traje que el alumno ya tiene (o se lo quita con None).
+
+    Si es un traje que ganó en el examen general de un mundo, ponérselo abre el mundo siguiente.
+    """
+    est, m = estado_de(db, alumno)
     if traje is not None and traje not in (m.trajes or []):
         raise HTTPException(status.HTTP_409_CONFLICT, "Todavía no tienes ese traje.")
     m.traje = traje
+    if traje:
+        for ex in db.scalars(select(ExamenMundo).where(ExamenMundo.alumno_id == alumno.id, ExamenMundo.terminado.is_(True))):
+            if traje in (ex.premio or []) and ex.leccion_id not in est.lecciones_terminadas:
+                est.lecciones_terminadas = [*est.lecciones_terminadas, ex.leccion_id]
     db.commit()
     return resumen(db, alumno)
+
+
+# ---------------- Examen general al final de un mundo ----------------
+
+EXAMENES = {canal.LECCION_ID: canal.examen}  # mundos que terminan con examen (en lugar de cofre)
+MAX_INTENTOS_EXAMEN = 3
+LOGRADAS = ("a_la_primera", "con_ayuda")
+
+
+def _preguntas_examen(leccion_id: str) -> list[dict]:
+    if leccion_id not in EXAMENES:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Ese mundo no tiene examen general.")
+    return EXAMENES[leccion_id]()
+
+
+def _pregunta_publica(p: dict) -> dict:
+    """Lo que ve el alumno de una pregunta del examen. Nunca incluye la respuesta."""
+    claves = ("id", "tipo", "titulo", "enunciado", "a", "b", "op", "moneda", "opciones", "visual", "pistas", "nivel", "nivel_tema")
+    return {k: p.get(k) for k in claves}
+
+
+def _examen(db: Session, alumno_id: int, leccion_id: str) -> ExamenMundo | None:
+    return db.scalar(select(ExamenMundo).where(ExamenMundo.alumno_id == alumno_id, ExamenMundo.leccion_id == leccion_id))
+
+
+def _salida_examen(ex: ExamenMundo, preguntas: list[dict], est: EstadoJuego) -> dict:
+    return {
+        "leccion_id": ex.leccion_id, "terminado": ex.terminado, "aciertos": ex.aciertos, "total": ex.total,
+        "preguntas": [{**_pregunta_publica(p), "estado": ex.detalle[p["id"]]["estado"],
+                       "intentos": len(ex.detalle[p["id"]]["intentos"])} for p in preguntas],
+        "premio": [{"id": t, "nombre": TRAJES.get(t, t)} for t in (ex.premio or [])],
+        "fecha_fin": ex.fin.isoformat() if ex.fin else None,
+        "mundo_abierto": ex.leccion_id in est.lecciones_terminadas,
+    }
+
+
+def examen_mundo(db: Session, alumno: Usuario, leccion_id: str) -> dict:
+    """Empieza (o retoma) el examen general. Se abre cuando el alumno termina todos los niveles del mundo."""
+    preguntas = _preguntas_examen(leccion_id)
+    est, _ = estado_de(db, alumno)
+    ex = _examen(db, alumno.id, leccion_id)
+    if not ex:
+        mapa = estado_mapa(db, est, completados_de(db, alumno.id))
+        if mapa.get(leccion_id, {}).get("cofre") != "actual":
+            raise HTTPException(status.HTTP_409_CONFLICT, "Termina todos los niveles del mundo para presentar el examen.")
+        ex = ExamenMundo(alumno_id=alumno.id, leccion_id=leccion_id, total=len(preguntas), premio=[],
+                         detalle={p["id"]: {"intentos": [], "pistas": 0, "estado": "pendiente", "tiempo_ms": 0} for p in preguntas})
+        db.add(ex)
+        db.commit()
+    return _salida_examen(ex, preguntas, est)
+
+
+def responder_examen(db: Session, alumno: Usuario, leccion_id: str, pregunta_id: str, respuesta: str | None,
+                     pistas_usadas: int, tiempo_ms: int | None) -> dict:
+    """Califica una pregunta del examen. Hasta 3 intentos; respuesta=None es "No sé todavía" (queda por reforzar)."""
+    preguntas = _preguntas_examen(leccion_id)
+    p = next((x for x in preguntas if x["id"] == pregunta_id), None)
+    est, _ = estado_de(db, alumno)
+    ex = _examen(db, alumno.id, leccion_id)
+    if not ex or not p:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Esa pregunta no existe.")
+    if ex.terminado:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Ya terminaste este examen.")
+    d = dict(ex.detalle[pregunta_id])
+    if d["estado"] != "pendiente":
+        raise HTTPException(status.HTTP_409_CONFLICT, "Esa pregunta ya está contestada.")
+
+    diag = None
+    if respuesta is None:
+        intento = {"respuesta": None, "correcto": False, "tiempo_ms": tiempo_ms}
+        d["estado"] = "por_reforzar"
+    else:
+        try:
+            diag = juego.evaluar(p["tipo"], p, p["respuesta"], respuesta)
+        except ValueError as err:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(err)) from err
+        intento = {"respuesta": respuesta.strip()[:40], "correcto": diag["correcto"], "tiempo_ms": tiempo_ms}
+    d["intentos"] = [*d["intentos"], intento]
+    d["pistas"] = max(d["pistas"], max(0, min(pistas_usadas, juego.VALORES["max_pistas"])))
+    d["tiempo_ms"] = d["tiempo_ms"] + max(0, tiempo_ms or 0)
+    if diag and diag["correcto"]:
+        d["estado"] = "a_la_primera" if len(d["intentos"]) == 1 and d["pistas"] == 0 else "con_ayuda"
+    elif diag and len(d["intentos"]) >= MAX_INTENTOS_EXAMEN:
+        d["estado"] = "por_reforzar"
+    ex.detalle = {**ex.detalle, pregunta_id: d}  # se reasigna para que SQLAlchemy guarde el JSON
+    db.commit()
+
+    salida = {"correcto": bool(diag and diag["correcto"]), "estado": d["estado"],
+              "intentos_restantes": max(0, MAX_INTENTOS_EXAMEN - len(d["intentos"])), "examen": _salida_examen(ex, preguntas, est)}
+    if diag and not diag["correcto"]:
+        salida["diagnostico"] = {k: diag[k] for k in ("pasos", "paso_torcido", "tipo_error", "pregunta")}
+    return salida
+
+
+def terminar_examen(db: Session, alumno: Usuario, leccion_id: str) -> dict:
+    """Cierra el examen: certificado, estrellas, sticker del mundo y 2 trajes de subculturas (uno de cada estilo).
+
+    No hay calificación mínima: equivocarse no se castiga. El mundo siguiente se abre cuando Kiko se pone uno de los trajes.
+    """
+    preguntas = _preguntas_examen(leccion_id)
+    est, m = estado_de(db, alumno)
+    ex = _examen(db, alumno.id, leccion_id)
+    if not ex:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Todavía no empiezas este examen.")
+    if not ex.terminado:
+        if any(v["estado"] == "pendiente" for v in ex.detalle.values()):
+            raise HTTPException(status.HTTP_409_CONFLICT, "Te faltan preguntas por contestar.")
+        ex.terminado = True
+        ex.fin = datetime.now(timezone.utc)
+        ex.aciertos = sum(1 for v in ex.detalle.values() if v["estado"] in LOGRADAS)
+        ex.premio = sortear_trajes_subcultura(list(m.trajes or []))
+        m.trajes = [*(m.trajes or []), *ex.premio]
+        est.estrellas += juego.VALORES["estrellas_cofre"]
+        est.xp += juego.VALORES["estrellas_cofre"]
+        sticker = db.get(Leccion, leccion_id).sticker
+        if sticker not in est.stickers:
+            est.stickers = [*est.stickers, sticker]
+        db.commit()
+    return {"examen": _salida_examen(ex, preguntas, est), "estrellas": juego.VALORES["estrellas_cofre"], "estado": resumen(db, alumno)}
+
+
+def reporte_examen(db: Session, ex: ExamenMundo) -> dict:
+    """Todo lo que pasó en el examen, para el profesor del aula: resultado, fallas, pistas y tiempos por pregunta."""
+    preguntas = _preguntas_examen(ex.leccion_id)
+    leccion = db.get(Leccion, ex.leccion_id)
+    filas = []
+    for p in preguntas:
+        d = ex.detalle[p["id"]]
+        filas.append({
+            "id": p["id"], "nivel": p["nivel"], "tema": p["nivel_tema"], "titulo": p["titulo"], "enunciado": p["enunciado"],
+            "respuesta_correcta": p["respuesta"], "estado": d["estado"], "intentos": len(d["intentos"]),
+            "respuestas_incorrectas": [i["respuesta"] if i["respuesta"] is not None else "No sé todavía"
+                                       for i in d["intentos"] if not i["correcto"]],
+            "pistas": d["pistas"], "tiempo_ms": d["tiempo_ms"],
+        })
+    return {
+        "leccion_id": ex.leccion_id, "mundo": leccion.nombre if leccion else ex.leccion_id,
+        "terminado": ex.terminado, "inicio": ex.inicio.isoformat() if ex.inicio else None,
+        "fin": ex.fin.isoformat() if ex.fin else None, "aciertos": ex.aciertos, "total": ex.total,
+        "a_la_primera": sum(1 for f in filas if f["estado"] == "a_la_primera"),
+        "con_ayuda": sum(1 for f in filas if f["estado"] == "con_ayuda"),
+        "por_reforzar": [f["tema"] for f in filas if f["estado"] == "por_reforzar"],
+        "pistas_total": sum(f["pistas"] for f in filas), "fallas_total": sum(len(f["respuestas_incorrectas"]) for f in filas),
+        "tiempo_total_ms": sum(f["tiempo_ms"] for f in filas), "preguntas": filas,
+    }
 
 
 def despertar(db: Session, alumno: Usuario) -> dict:
@@ -294,4 +457,5 @@ def progreso_alumno(db: Session, alumno: Usuario, total_retos: int) -> dict:
         "estrellas_ganadas": est.xp, "racha_dias": est.racha_dias,
         "intentos": intentos, "fallos": fallos, "pistas_usadas": int(pistas),
         "ultimo_acceso": alumno.ultimo_acceso.isoformat() if alumno.ultimo_acceso else None,
+        "examenes": {lid: _resumen_examen(_examen(db, alumno.id, lid)) for lid in EXAMENES},
     }

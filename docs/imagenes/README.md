@@ -16,6 +16,9 @@ docs/imagenes/
 │   ├── kiko-trajinero-cabeza.png
 │   ├── kiko-trajinera.png            Traje de trajinera de Xochimilco
 │   ├── kiko-trajinera-cabeza.png
+│   ├── kiko-<subcultura>-<estilo>.png  Premio del examen del Mundo 1: 20 trajes de subculturas de la CDMX
+│   │                                 (emo, hippie, punk, skate, manifestante ambientalista, ska, rap, rock,
+│   │                                 dark y lucha libre), dos estilos de cada una, también en versión -cabeza
 │   └── svg/                          Los mismos dibujos en SVG (se agrandan sin perder calidad;
 │                                     se editan en Figma o Illustrator)
 └── canal/                    Mundo 1 "El Canal de los Números" como stickers (borde blanco, 512 px)

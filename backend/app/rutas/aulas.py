@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from .. import diagnostico, esquemas, servicio
 from ..db import get_db
-from ..modelos import Asignacion, Aula, AulaAlumno, AulaModulo, Diagnostico, Ejercicio, Intento, Leccion, Progreso, Unidad, Usuario
+from ..modelos import Asignacion, Aula, AulaAlumno, AulaModulo, Diagnostico, Ejercicio, ExamenMundo, Intento, Leccion, Progreso, Unidad, Usuario
 from ..seguridad import codigo_aula, solo_alumno, solo_profesor, usuario_actual
 
 router = APIRouter(prefix="/aulas", tags=["Aulas"])
@@ -26,6 +26,9 @@ ERRORES = {
              "refuerzo": "Repasa con monedas por qué {a} × {b} es juntar {a} montones de {b}. Usa bolsitas con el grupo antes del siguiente reto."},
     "calculo": {"texto": "Error de cálculo",
                 "refuerzo": "Practiquen contar de {b} en {b} en voz alta, con las monedas en el pizarrón."},
+    # Mundo 1 (El Canal de los Números)
+    "conteo": {"texto": "Se equivocó al contar o leer un número"},
+    "opcion": {"texto": "Eligió otra opción (comparar, lugares o figuras)"},
 }
 
 
@@ -266,8 +269,11 @@ def detalle_alumno(aula_id: int, alumno_id: int, profe: Usuario = Depends(solo_p
     alumno = db.get(Usuario, alumno_id)
     total = db.scalar(select(func.count()).select_from(Ejercicio)) or 0
     intentos = db.scalars(select(Intento).where(Intento.alumno_id == alumno_id).order_by(Intento.creado.desc()).limit(30)).all()
+    examenes = db.scalars(select(ExamenMundo).where(ExamenMundo.alumno_id == alumno_id).order_by(ExamenMundo.inicio)).all()
     return {
         "progreso": servicio.progreso_alumno(db, alumno, total),
+        # Reporte completo de cada examen general (solo lo ve el profesor de un aula donde está el alumno).
+        "examenes": [servicio.reporte_examen(db, ex) for ex in examenes],
         "intentos_recientes": [
             {"ejercicio_id": i.ejercicio_id, "respuesta": i.respuesta, "correcto": i.correcto, "tipo_error": i.tipo_error,
              "pistas_usadas": i.pistas_usadas, "tiempo_ms": i.tiempo_ms, "fecha": i.creado.isoformat()}

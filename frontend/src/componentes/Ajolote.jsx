@@ -3,6 +3,7 @@
 // Evolución: las branquias ganan un color nuevo por cada mundo superado.
 // Accesorios: stickers ganados ('mochila', 'bufanda', ...).
 import { useId } from 'react';
+import { SUBCULTURAS } from './TrajesSubculturas.jsx';
 
 const COLORES_BRANQUIAS = ['var(--magia)', 'var(--selva)', 'var(--pista)', 'var(--sol)'];
 
@@ -89,6 +90,7 @@ const C = { stroke: 'var(--tinta)', strokeWidth: 2.5, strokeLinejoin: 'round' };
 
 /** Siluetas extra que también llevan borde blanco de sticker. */
 function SiluetaTraje({ traje, cabeza }) {
+  if (SUBCULTURAS[traje]) return SUBCULTURAS[traje].silueta?.(cabeza) ?? null;
   if (traje === 'trajinero') {
     return (
       <>
@@ -111,6 +113,7 @@ function SiluetaTraje({ traje, cabeza }) {
 
 /** Herramienta en la mano: garrocha de bambú (trajinero) o remo de madera (trajinera). Va detrás de las branquias. */
 function Herramienta({ traje }) {
+  if (SUBCULTURAS[traje]) return SUBCULTURAS[traje].herramienta?.() ?? null;
   if (traje === 'trajinero') {
     return (
       <g>
@@ -133,6 +136,7 @@ function Herramienta({ traje }) {
 
 /** Ropa del cuerpo, recortada a la silueta del cuerpo (la cabeza va encima). */
 function RopaCuerpo({ traje, recorte }) {
+  if (SUBCULTURAS[traje]) return <g clipPath={`url(#${recorte})`}>{SUBCULTURAS[traje].ropa?.()}</g>;
   if (traje === 'trajinero') {
     return (
       <g clipPath={`url(#${recorte})`}>
@@ -165,6 +169,7 @@ function RopaCuerpo({ traje, recorte }) {
 
 /** Detalles sobre el cuerpo que salen de la silueta (nudo de la faja, morral, listones). */
 function DetallesCuerpo({ traje }) {
+  if (SUBCULTURAS[traje]) return SUBCULTURAS[traje].detalles?.() ?? null;
   if (traje === 'trajinero') {
     return (
       <g {...C} strokeWidth="2">
@@ -183,6 +188,7 @@ function DetallesCuerpo({ traje }) {
 
 /** Sombrero de palma o pañoleta con trenzas y flor. */
 function Tocado({ traje }) {
+  if (SUBCULTURAS[traje]) return SUBCULTURAS[traje].tocado?.() ?? null;
   if (traje === 'trajinero') {
     return (
       <g>

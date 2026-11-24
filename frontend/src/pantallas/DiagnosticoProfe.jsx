@@ -28,9 +28,83 @@ function lectura(a, apoyo, queReforzar) {
   return { fortaleza, oportunidad, sugiere, necesita };
 }
 
+const ESTADO_PREGUNTA = {
+  a_la_primera: { texto: 'A la primera', clase: 'ok' },
+  con_ayuda: { texto: 'Con ayuda', clase: 'ayuda' },
+  por_reforzar: { texto: 'Por reforzar', clase: 'casi' },
+  pendiente: { texto: 'Sin contestar', clase: 'pendiente' },
+};
+
+const minutos = (ms) => (ms >= 60000 ? `${Math.round(ms / 60000)} min` : `${Math.max(1, Math.round(ms / 1000))} s`);
+
+/** Estado del examen general del Mundo 1 en la tarjeta de cada alumno. */
+function ChipExamen({ examen }) {
+  if (!examen || examen.estado === 'sin_empezar') return null;
+  return examen.estado === 'terminado'
+    ? <span className="chip chip-verde"><I n="birrete" tamano={12} /> Examen Mundo 1: {examen.aciertos}/{examen.total}</span>
+    : <span className="chip chip-ambar"><I n="birrete" tamano={12} /> Examen Mundo 1 en curso</span>;
+}
+
+/** Reporte completo del examen general: resultado, fallas, pistas, intentos y tiempo de cada pregunta. */
+function ReporteExamen({ r }) {
+  return (
+    <section className="reporte-examen">
+      <div className="fila-entre" style={{ alignItems: 'flex-start' }}>
+        <div>
+          <span className="sobre"><I n="birrete" tamano={14} /> Examen general</span>
+          <h3 className="t-md" style={{ margin: '2px 0 0' }}>{r.mundo}</h3>
+          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>
+            {r.terminado ? `Terminado el ${new Date(r.fin).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })}` : 'Todavía no lo termina'}
+            {' · '}tiempo total {minutos(r.tiempo_total_ms)}
+          </p>
+        </div>
+        <span className="pastilla"><b>{r.aciertos}/{r.total}</b>&nbsp;logradas</span>
+      </div>
+      <div className="chips" style={{ margin: '10px 0' }}>
+        <span className="chip chip-verde">✓ {r.a_la_primera} a la primera</span>
+        <span className="chip">{r.con_ayuda} con ayuda</span>
+        <span className="chip chip-ambar">{r.por_reforzar.length} por reforzar</span>
+        <span className="chip chip-blanco">{r.fallas_total} fallas</span>
+        <span className="chip chip-blanco">{r.pistas_total} pistas</span>
+      </div>
+      {r.por_reforzar.length > 0 && (
+        <p className="cuerpo-sm" style={{ margin: '0 0 10px' }}><b className="texto-casi">Reforzar:</b> {r.por_reforzar.join(', ')}.</p>
+      )}
+      <div className="tabla-scroll">
+        <table className="tabla-examen">
+          <thead>
+            <tr><th>#</th><th>Tema</th><th>Resultado</th><th>Respuestas incorrectas</th><th>Correcta</th><th>Intentos</th><th>Pistas</th><th>Tiempo</th></tr>
+          </thead>
+          <tbody>
+            {r.preguntas.map((p) => {
+              const e = ESTADO_PREGUNTA[p.estado] || ESTADO_PREGUNTA.pendiente;
+              return (
+                <tr key={p.id}>
+                  <td>{p.nivel}</td>
+                  <td><b>{p.tema}</b><small className="texto-suave">{p.titulo}</small></td>
+                  <td><span className={`estado-pregunta ${e.clase}`}>{e.texto}</span></td>
+                  <td>{p.respuestas_incorrectas.length ? p.respuestas_incorrectas.join(', ') : <span className="texto-suave">—</span>}</td>
+                  <td>{p.respuesta_correcta}</td>
+                  <td>{p.intentos}</td>
+                  <td>{p.pistas}</td>
+                  <td>{p.tiempo_ms ? minutos(p.tiempo_ms) : '—'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 function descargarCsv(panel) {
-  const filas = [['Apodo', 'Usuario', 'Retos completados', 'Total', '%', 'Estrellas', 'Racha', 'Intentos', 'Fallos', 'Pistas']];
-  panel.alumnos.forEach((a) => filas.push([a.apodo, a.usuario, a.retos_completados, a.total_retos, a.porcentaje, a.estrellas_ganadas, a.racha_dias, a.intentos, a.fallos, a.pistas_usadas]));
+  const filas = [['Apodo', 'Usuario', 'Retos completados', 'Total', '%', 'Estrellas', 'Racha', 'Intentos', 'Fallos', 'Pistas', 'Examen Mundo 1']];
+  panel.alumnos.forEach((a) => {
+    const ex = a.examenes?.x1;
+    const examen = !ex || ex.estado === 'sin_empezar' ? 'Sin empezar' : ex.estado === 'terminado' ? `${ex.aciertos}/${ex.total}` : 'En curso';
+    filas.push([a.apodo, a.usuario, a.retos_completados, a.total_retos, a.porcentaje, a.estrellas_ganadas, a.racha_dias, a.intentos, a.fallos, a.pistas_usadas, examen]);
+  });
   const csv = filas.map((f) => f.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
   const url = URL.createObjectURL(new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8' }));
   const enlace = document.createElement('a');
@@ -103,6 +177,7 @@ function Panel({ aulaId, onAlumno }) {
                     <div className="chips" style={{ marginTop: 4, marginBottom: 0 }}>
                       <span className="chip chip-blanco"><I n="estrella" tamano={12} className="texto-selva" /> {a.estrellas_ganadas} pts</span>
                       <span className="chip chip-blanco"><I n="fuego" tamano={12} className="c-fuego" /> Racha {a.racha_dias}d</span>
+                      <ChipExamen examen={a.examenes?.x1} />
                     </div>
                   </div>
                 </div>
@@ -155,6 +230,7 @@ function DetalleAlumno({ aulaId, alumno, onCerrar, onExpulsar }) {
             <span className="pastilla">{d.progreso.pistas_usadas} pistas</span>
             <span className="pastilla"><I n="fuego" tamano={14} className="c-fuego" /> Racha de {d.progreso.racha_dias} día(s)</span>
           </div>
+          {(d.examenes || []).map((r) => <ReporteExamen key={r.leccion_id} r={r} />)}
           <h3 className="t-sm">Intentos recientes</h3>
           <ul className="lista-intentos-stitch">
             {d.intentos_recientes.map((i, n) => (
@@ -162,7 +238,8 @@ function DetalleAlumno({ aulaId, alumno, onCerrar, onExpulsar }) {
                 <b>{i.correcto ? '✓ Acierto' : '¡Casi!'}</b>
                 <span>{i.ejercicio_id} · respondió {i.respuesta}</span>
                 <span className="texto-suave">
-                  {i.tipo_error === 'sumo' ? 'Sumó en vez de multiplicar · ' : i.tipo_error === 'calculo' ? 'Error de cálculo · ' : ''}
+                  {i.tipo_error === 'sumo' ? 'Sumó en vez de multiplicar · ' : i.tipo_error === 'calculo' ? 'Error de cálculo · '
+                    : i.tipo_error === 'conteo' ? 'Error al contar · ' : i.tipo_error === 'opcion' ? 'Eligió otra opción · ' : ''}
                   {i.pistas_usadas} pista(s)
                 </span>
               </li>

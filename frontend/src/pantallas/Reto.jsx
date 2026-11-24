@@ -146,6 +146,7 @@ export default function Reto({ retoId }) {
     actualizar((s) => ({ ...s, celebrando: false }));
     const paso = siguientePaso(estado, mundos);
     if (paso?.tipo === 'reto' && paso.mundo.id === reto.mundo.id) ir(`/reto/${paso.reto.id}`);
+    else if (canal && paso?.tipo === 'cofre' && paso.mundo.id === reto.mundo.id) ir(`/examen/${reto.mundo.id}`);
     else ir('/mapa');
   };
 
@@ -165,7 +166,7 @@ export default function Reto({ retoId }) {
           : formatoNumero(resultado.respuesta, reto.moneda);
       const lleno = pecesNivel === delNivel.length;
       const ultimo = reto.nivel === Math.max(...reto.mundo.retos.map((r) => r.nivel || 0));
-      const siguiente = ultimo ? 'Ya puedes abrir el cofre del embarcadero.' : 'Con los 3 peces zarpa la siguiente trajinera.';
+      const siguiente = ultimo ? 'Ya puedes presentar el examen general del canal.' : 'Con los 3 peces zarpa la siguiente trajinera.';
       return (
         <div className="pila tema-canal reto-canal">
           <DiceAjolote estado="celebrando" mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} traje={estado.traje}>
@@ -182,7 +183,7 @@ export default function Reto({ retoId }) {
                 : `Llevas ${pecesNivel} de 3 peces en esta trajinera. ${texto}`}
             </p>
             <button className="sm-btn ancho" onClick={terminar}>
-              {!lleno ? 'Siguiente ejercicio' : ultimo ? 'Ir al cofre' : 'Ir a la siguiente trajinera'}
+              {!lleno ? 'Siguiente ejercicio' : ultimo ? 'Ir al examen general' : 'Ir a la siguiente trajinera'}
             </button>
           </section>
         </div>

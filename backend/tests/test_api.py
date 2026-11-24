@@ -1,5 +1,6 @@
 from app import contenido_canal as canal
 from app import juego
+from app.contenido import TRAJES_SUBCULTURAS
 from tests.conftest import registrar
 
 
@@ -70,11 +71,112 @@ def test_contenido_no_trae_respuestas(cliente):
     assert mundos[1]["retos"][0]["id"] == "m1-r1" and len(mundos[1]["retos"][0]["pistas"]) == 3
 
 
-def _terminar_canal(c):
-    """Resuelve los 36 ejercicios del Canal de los Números y abre su cofre (desbloquea La tiendita)."""
+def _niveles_canal(c):
+    """Resuelve los 36 ejercicios de los 12 niveles del Canal de los Números."""
     for e in canal.ejercicios():
         assert c.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]}).json()["correcto"], e["id"]
-    assert c.post("/api/lecciones/x1/cofre").json()["sticker"] == "flor"
+
+
+def _examen_canal(c):
+    """Contesta bien todo el examen general y lo termina. Devuelve los trajes de premio."""
+    assert c.get("/api/examenes/x1").status_code == 200
+    for p in canal.examen():
+        r = c.post(f"/api/examenes/x1/preguntas/{p['id']}", json={"respuesta": p["respuesta"]}).json()
+        assert r["correcto"], p["id"]
+    return [t["id"] for t in c.post("/api/examenes/x1/terminar").json()["examen"]["premio"]]
+
+
+def _terminar_canal(c):
+    """Niveles + examen general + vestir a Kiko con un traje del premio (así se abre La tiendita)."""
+    _niveles_canal(c)
+    premio = _examen_canal(c)
+    assert c.put("/api/mascota/traje", json={"traje": premio[0]}).json()["mapa"]["m1"]["abierta"] is True
+
+
+def test_examen_canal_certificado_trajes_y_mundo_2(cliente):
+    registrar(cliente)
+    assert cliente.get("/api/examenes/x1").status_code == 409  # primero los 12 niveles
+    _niveles_canal(cliente)
+    assert cliente.post("/api/lecciones/x1/cofre").status_code == 409  # el canal termina con examen, no con cofre
+    ex = cliente.get("/api/examenes/x1").json()
+    assert ex["total"] == 12 and len(ex["preguntas"]) == 12 and '"respuesta"' not in str(ex).replace("'", '"')
+    ids = [p["id"] for p in canal.examen()]
+
+    # Pregunta 1: falla 3 veces -> queda por reforzar y ya no se puede contestar.
+    for n in range(3):
+        r = cliente.post(f"/api/examenes/x1/preguntas/{ids[0]}", json={"respuesta": "1", "pistas_usadas": n}).json()
+        assert r["correcto"] is False and "diagnostico" in r
+    assert r["estado"] == "por_reforzar" and r["intentos_restantes"] == 0
+    assert cliente.post(f"/api/examenes/x1/preguntas/{ids[0]}", json={"respuesta": "9"}).status_code == 409
+    # Pregunta 2: con una pista y a la primera -> con ayuda.
+    r = cliente.post(f"/api/examenes/x1/preguntas/{ids[1]}", json={"respuesta": "15", "pistas_usadas": 1}).json()
+    assert r["correcto"] and r["estado"] == "con_ayuda"
+    # Pregunta 3: "No sé todavía".
+    assert cliente.post(f"/api/examenes/x1/preguntas/{ids[2]}", json={"respuesta": None}).json()["estado"] == "por_reforzar"
+    assert cliente.post("/api/examenes/x1/terminar").status_code == 409  # faltan preguntas
+    for p in canal.examen()[3:]:
+        assert cliente.post(f"/api/examenes/x1/preguntas/{p['id']}", json={"respuesta": p["respuesta"]}).json()["estado"] == "a_la_primera"
+
+    r = cliente.post("/api/examenes/x1/terminar").json()
+    assert r["examen"]["terminado"] and r["examen"]["aciertos"] == 10 and r["examen"]["mundo_abierto"] is False
+    premio = [t["id"] for t in r["examen"]["premio"]]
+    assert len(premio) == 2 and {TRAJES_SUBCULTURAS[p][2] for p in premio} == {"a", "b"}  # uno de cada estilo
+    est = r["estado"]
+    assert "flor" in est["stickers"] and set(premio) <= set(est["mascota"]["trajes"])
+    assert est["examenes"]["x1"]["estado"] == "terminado" and est["mapa"]["m1"]["abierta"] is False
+    # Terminar otra vez no vuelve a premiar.
+    assert cliente.post("/api/examenes/x1/terminar").json()["examen"]["premio"] == r["examen"]["premio"]
+    # Un traje de bienvenida no abre el Mundo 2; uno del premio sí.
+    assert cliente.put("/api/mascota/traje", json={"traje": "trajinero"}).json()["mapa"]["m1"]["abierta"] is False
+    est = cliente.put("/api/mascota/traje", json={"traje": premio[1]}).json()
+    assert est["mapa"]["m1"]["abierta"] is True and "x1" in est["lecciones_terminadas"]
+    # Quitarse el traje no vuelve a cerrar el mundo.
+    assert cliente.put("/api/mascota/traje", json={"traje": None}).json()["mapa"]["m1"]["abierta"] is True
+
+
+def test_sorteo_de_trajes_mezcla_subculturas():
+    """Siempre 2 trajes de estilos distintos y de subculturas distintas; con muchos sorteos salen combinaciones variadas."""
+    import random
+    from app.contenido import sortear_trajes_subcultura
+    combinaciones = set()
+    for semilla in range(500):
+        a, b = sortear_trajes_subcultura([], random.Random(semilla))
+        assert {TRAJES_SUBCULTURAS[a][2], TRAJES_SUBCULTURAS[b][2]} == {"a", "b"}
+        assert TRAJES_SUBCULTURAS[a][0] != TRAJES_SUBCULTURAS[b][0]  # nunca los dos de la misma subcultura
+        combinaciones.add(frozenset((a, b)))
+    assert len(combinaciones) > 50  # es aleatorio de verdad, no parejas fijas
+    # Si ya tiene casi todos, solo regala los que le faltan.
+    todos = list(TRAJES_SUBCULTURAS)
+    assert sortear_trajes_subcultura([t for t in todos if t != "emo-rayas"], random.Random(1)) == ["emo-rayas"]
+
+
+def test_profesor_ve_reporte_del_examen(cliente, nuevo_cliente):
+    registrar(cliente, "profe", rol="profesor")
+    aula = cliente.post("/api/aulas", json={"nombre": "1.º A"}).json()
+    alumno = nuevo_cliente()
+    alumno_id = registrar(alumno, "teo")["usuario"]["id"]
+    alumno.post("/api/aulas/unirse", json={"codigo": aula["codigo"]})
+    _niveles_canal(alumno)
+    alumno.get("/api/examenes/x1")
+    preguntas = canal.examen()
+    alumno.post(f"/api/examenes/x1/preguntas/{preguntas[0]['id']}", json={"respuesta": "7", "pistas_usadas": 2, "tiempo_ms": 4000})
+    for p in preguntas:
+        alumno.post(f"/api/examenes/x1/preguntas/{p['id']}", json={"respuesta": p["respuesta"], "tiempo_ms": 1000})
+    alumno.post("/api/examenes/x1/terminar")
+
+    d = cliente.get(f"/api/aulas/{aula['id']}/alumnos/{alumno_id}").json()
+    rep = d["examenes"][0]
+    assert rep["mundo"] == "El Canal de los Números" and rep["terminado"] and rep["aciertos"] == 12
+    assert rep["con_ayuda"] == 1 and rep["a_la_primera"] == 11 and rep["fallas_total"] == 1 and rep["pistas_total"] == 2
+    p1 = rep["preguntas"][0]
+    assert p1["respuestas_incorrectas"] == ["7"] and p1["intentos"] == 2 and p1["tiempo_ms"] == 5000
+    assert p1["respuesta_correcta"] == "9" and p1["tema"] == "Conteo hasta 10"
+    assert d["progreso"]["examenes"]["x1"]["estado"] == "terminado"
+    # Otro profesor no puede ver el reporte de un alumno que no está en su aula.
+    otro = nuevo_cliente()
+    registrar(otro, "profe2", rol="profesor")
+    otra_aula = otro.post("/api/aulas", json={"nombre": "2.º B"}).json()
+    assert otro.get(f"/api/aulas/{otra_aula['id']}/alumnos/{alumno_id}").status_code == 404
 
 
 def _estrellas(c):

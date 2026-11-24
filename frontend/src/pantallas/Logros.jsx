@@ -185,7 +185,9 @@ export function SeccionStickers({ estado, mundos }) {
 }
 
 export function SeccionDiplomas({ estado, mundos }) {
-  const terminados = estado.mundosTerminados || [];
+  // Un mundo con examen general da su certificado al terminar el examen (aunque Kiko aún no se ponga el traje nuevo).
+  const conExamen = Object.entries(estado.examenes || {}).filter(([, e]) => e.estado === 'terminado').map(([id]) => id);
+  const terminados = [...new Set([...conExamen, ...(estado.mundosTerminados || [])])];
   const ultimo = mundos.find((m) => m.id === terminados[terminados.length - 1]);
   return (
     <section className="tarjeta tarjeta-grande">

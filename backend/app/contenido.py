@@ -57,11 +57,43 @@ STICKERS = {
     "sombrero": "Sombrero del río",
 }
 
-# Trajes típicos para vestir al ajolote (no son del álbum de los mundos).
+# Trajes para vestir al ajolote (no son del álbum de los mundos).
 TRAJES = {
     "trajinero": "Traje de trajinero",
     "trajinera": "Traje de trajinera",
 }
+
+# Premio del examen general del Mundo 1: subculturas de la CDMX, cada una con dos estilos.
+# Al terminar el examen se regalan 2 al azar, uno de cada estilo ("a" y "b"), para que siempre sean distintos entre sí.
+# Los nombres describen cómo se ve el traje (nada de etiquetas de género): todos pueden usar cualquiera.
+TRAJES_SUBCULTURAS = {  # id: (subcultura, nombre, estilo)
+    "emo-rayas": ("Emo", "Emo de rayas", "a"), "emo-mono": ("Emo", "Emo con moño", "b"),
+    "hippie-guitarra": ("Hippie", "Hippie con guitarra", "a"), "hippie-flores": ("Hippie", "Hippie con flores", "b"),
+    "punk-verde": ("Punk", "Punk de cresta verde", "a"), "punk-rosa": ("Punk", "Punk de cresta rosa", "b"),
+    "skate-gorra": ("Skate", "Skate de gorra", "a"), "skate-gorro": ("Skate", "Skate de gorro", "b"),
+    "manif-xochimilco": ("Manifestante", "Manifestante por Xochimilco", "a"), "manif-ajolote": ("Manifestante", "Manifestante por el ajolote", "b"),
+    "ska-sombrero": ("Ska", "Ska de sombrerito", "a"), "ska-cuadros": ("Ska", "Ska de cuadros", "b"),
+    "rap-gorra": ("Rap", "Rap de gorra plana", "a"), "rap-chongo": ("Rap", "Rap de chongo", "b"),
+    "rock-chopo": ("Rock", "Rock del Chopo", "a"), "rock-mezclilla": ("Rock", "Rock de mezclilla", "b"),
+    "dark-capa": ("Dark", "Dark de capa", "a"), "dark-encaje": ("Dark", "Dark de encaje", "b"),
+    "lucha-azul": ("Lucha libre", "Lucha libre: máscara azul", "a"), "lucha-rosa": ("Lucha libre", "Lucha libre: máscara rosa", "b"),
+}
+TRAJES.update({id_: nombre for id_, (_, nombre, _) in TRAJES_SUBCULTURAS.items()})
+
+
+def sortear_trajes_subcultura(ya_tiene: list[str], rnd: random.Random | None = None) -> list[str]:
+    """Dos trajes al azar que el alumno todavía no tenga: uno de cada estilo y de subculturas distintas
+    (por ejemplo, emo + lucha libre; nunca los dos de dark)."""
+    rnd = rnd or random.Random()
+    salida, subculturas = [], set()
+    for estilo in rnd.sample(["a", "b"], 2):  # el orden también al azar, para no favorecer a un estilo
+        opciones = [t for t, (sub, _, e) in TRAJES_SUBCULTURAS.items()
+                    if e == estilo and t not in ya_tiene and sub not in subculturas]
+        if opciones:
+            elegido = rnd.choice(opciones)
+            salida.append(elegido)
+            subculturas.add(TRAJES_SUBCULTURAS[elegido][0])
+    return salida
 
 
 def ejercicio_canal(e: dict, orden: int) -> dict:

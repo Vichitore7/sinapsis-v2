@@ -14,6 +14,30 @@ export const STICKERS = {
 export const TRAJES = {
   trajinero: { nombre: 'Traje de trajinero', origen: 'Inicio de sesión', detalle: 'Sombrero de palma, camisa de manta, faja tejida y garrocha de bambú.' },
   trajinera: { nombre: 'Traje de trajinera', origen: 'Inicio de sesión', detalle: 'Pañoleta bordada, trenzas, blusa con flores, falda de rayas y remo.' },
+  // Subculturas de la CDMX: premio del examen general del Mundo 1 (2 al azar, de estilos distintos).
+  // Los nombres dicen cómo se ve el traje; cualquiera puede usar cualquiera.
+  ...Object.fromEntries([
+    ['emo-rayas', 'Emo de rayas', 'Fleco negro de lado, playera a rayas y cinturón de estoperoles.'],
+    ['emo-mono', 'Emo con moño', 'Fleco negro con mechón rosa, moño y falda a cuadros.'],
+    ['hippie-guitarra', 'Hippie con guitarra', 'Banda en la frente, lentes redondos, ropa de colores y guitarra.'],
+    ['hippie-flores', 'Hippie con flores', 'Corona de flores, lentes redondos y ropa de colores con el símbolo de paz.'],
+    ['punk-verde', 'Punk de cresta verde', 'Cresta de picos, chamarra negra con estoperoles y botas.'],
+    ['punk-rosa', 'Punk de cresta rosa', 'Cresta rosa, chamarra con estoperoles y cuadros rojos.'],
+    ['skate-gorra', 'Skate de gorra', 'Gorra hacia atrás, sudadera con capucha y patineta.'],
+    ['skate-gorro', 'Skate de gorro', 'Gorro tejido con pompón, sudadera grande y patineta.'],
+    ['manif-xochimilco', 'Manifestante por Xochimilco', 'Gorra, paliacate y pancarta "¡Cuidemos Xochimilco!".'],
+    ['manif-ajolote', 'Manifestante por el ajolote', 'Paliacate en la cabeza y pancarta "¡Salvemos al ajolote!".'],
+    ['ska-sombrero', 'Ska de sombrerito', 'Sombrerito negro, camisa blanca, tirantes y cuadros blanco y negro.'],
+    ['ska-cuadros', 'Ska de cuadros', 'Diadema y ropa a cuadros blanco y negro, con tirantes.'],
+    ['rap-gorra', 'Rap de gorra plana', 'Gorra de visera plana, cadena dorada, playera grande y grabadora.'],
+    ['rap-chongo', 'Rap de chongo', 'Chongo alto, arracadas doradas, sudadera y micrófono.'],
+    ['rock-chopo', 'Rock del Chopo', 'Cabello largo, chaleco negro, playera con rayo y guitarra eléctrica.'],
+    ['rock-mezclilla', 'Rock de mezclilla', 'Lentes de estrella, chamarra de mezclilla con parches y guitarra.'],
+    ['dark-capa', 'Dark de capa', 'Capucha y capa negra con luna plateada.'],
+    ['dark-encaje', 'Dark de encaje', 'Tocado negro con rosas moradas y vestido de encaje.'],
+    ['lucha-azul', 'Lucha libre: máscara azul', 'Máscara azul con relámpagos y capa roja de campeón.'],
+    ['lucha-rosa', 'Lucha libre: máscara rosa', 'Máscara rosa con flamas doradas y capa morada.'],
+  ].map(([id, nombre, detalle]) => [id, { nombre, origen: 'Certificado Mundo 1', detalle }])),
 };
 
 // Errores típicos que el maestro puede marcar en el Modo Aula (sin internet).
