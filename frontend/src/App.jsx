@@ -42,12 +42,6 @@ const PANTALLAS = {
   profesor: { aulas: Aulas, diagnostico: DiagnosticoProfe, perfil: Perfil },
 };
 
-/** Promedio del bienestar del ajolote de 0 a 5 (se muestra como corazones). */
-function vidaAjolote(b) {
-  if (!b) return 5;
-  return Math.round((b.comida + b.pecera + b.alegria) / 3);
-}
-
 function Avisos({ estado, rol }) {
   const [abierto, setAbierto] = useState(false);
   const pide = rol === 'alumno' ? loQuePide(estado.bienestar) : null;
@@ -147,7 +141,6 @@ export default function App() {
           {alumno ? (
             <>
               <span className="pastilla" title="Días seguidos jugando"><I n="fuego" tamano={16} className="c-fuego" /> <span className="solo-ancho">Racha: </span>{estado.rachaDias} día{estado.rachaDias === 1 ? '' : 's'}</span>
-              <span className="pastilla" title={`Bienestar de ${estado.nombreAjolote}`}><I n="corazon" tamano={16} className="c-corazon" /> {vidaAjolote(estado.bienestar)} / 5</span>
               <span className="pastilla" title="Experiencia acumulada"><I n="gema" tamano={16} className="c-gema" /> {estado.xp}</span>
               <button className="pastilla pastilla-estrellas solo-movil" onClick={() => ir('/mochila')} aria-label={`${estado.estrellas} estrellas`}><I n="estrella" tamano={16} /> {estado.estrellas}</button>
             </>
