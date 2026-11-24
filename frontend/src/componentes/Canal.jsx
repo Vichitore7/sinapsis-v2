@@ -12,7 +12,7 @@ const NOMBRE_COLOR = { rojo: 'roja', azul: 'azul', verde: 'verde', amarillo: 'am
 
 export function Flor({ tamano = 34, color = '#ff9f1c', centro = '#ffd166' }) {
   return (
-    <svg width={tamano} height={tamano} viewBox="0 0 40 40" aria-hidden="true">
+    <svg width={tamano} height={tamano} viewBox="0 0 40 40" aria-hidden="true" className="sticker">
       {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
         <ellipse key={a} cx="20" cy="9" rx="5.5" ry="8" transform={`rotate(${a} 20 20)`} fill={color} {...L} strokeWidth="1.5" />
       ))}
@@ -26,7 +26,7 @@ export function Pez({ tamano = 34, encendido = true, color = '#ff8c42', numero =
   // El pez apagado se dibuja con el color del texto (currentColor) para que se vea de día y de noche.
   const trazo = encendido ? TINTA : 'currentColor';
   return (
-    <svg width={tamano} height={tamano * 0.7} viewBox="0 0 50 35" aria-hidden="true" className={encendido ? 'pez' : 'pez pez-apagado'}>
+    <svg width={tamano} height={tamano * 0.7} viewBox="0 0 50 35" aria-hidden="true" className={encendido ? 'pez sticker' : 'pez pez-apagado'}>
       <path d="M38 17.5 L49 7 L49 28 Z" fill={relleno} {...L} stroke={trazo} strokeDasharray={encendido ? undefined : '3 3'} />
       <ellipse cx="22" cy="17.5" rx="19" ry="13" fill={relleno} {...L} stroke={trazo} strokeDasharray={encendido ? undefined : '3 3'} />
       {encendido && <path d="M24 6 Q30 17.5 24 29" fill="none" stroke="#fff" strokeWidth="2" opacity=".55" />}
@@ -38,18 +38,18 @@ export function Pez({ tamano = 34, encendido = true, color = '#ff8c42', numero =
   );
 }
 
-function Persona({ tamano = 30, color = '#6c4bd8' }) {
+export function Persona({ tamano = 30, color = '#6c4bd8' }) {
   return (
-    <svg width={tamano} height={tamano} viewBox="0 0 30 30" aria-hidden="true">
+    <svg width={tamano} height={tamano} viewBox="0 0 30 30" aria-hidden="true" className="sticker">
       <path d="M5 29 Q5 17 15 17 Q25 17 25 29 Z" fill={color} {...L} strokeWidth="1.5" />
       <circle cx="15" cy="10" r="6.5" fill="#f6c9a0" {...L} strokeWidth="1.5" />
     </svg>
   );
 }
 
-function Sombrerito({ tamano = 34 }) {
+export function Sombrerito({ tamano = 34 }) {
   return (
-    <svg width={tamano} height={tamano} viewBox="0 0 40 40" aria-hidden="true">
+    <svg width={tamano} height={tamano} viewBox="0 0 40 40" aria-hidden="true" className="sticker">
       <ellipse cx="20" cy="27" rx="18" ry="6" fill="#f1dfa8" {...L} />
       <path d="M11 27 Q11 10 20 10 Q29 10 29 27 Z" fill="#f1dfa8" {...L} />
       <rect x="11" y="21" width="18" height="4" fill="#e63946" {...L} strokeWidth="1.5" />
@@ -57,9 +57,9 @@ function Sombrerito({ tamano = 34 }) {
   );
 }
 
-function Jarrito({ tamano = 34 }) {
+export function Jarrito({ tamano = 34 }) {
   return (
-    <svg width={tamano} height={tamano} viewBox="0 0 40 40" aria-hidden="true">
+    <svg width={tamano} height={tamano} viewBox="0 0 40 40" aria-hidden="true" className="sticker">
       <path d="M29 15 Q37 15 35 23 Q34 27 29 27" fill="none" {...L} strokeWidth="3" />
       <path d="M11 8 H29 Q27 12 30 18 Q33 30 20 35 Q7 30 10 18 Q13 12 11 8 Z" fill="#c8553d" {...L} />
       <path d="M12 20 H28" stroke="#ffd166" strokeWidth="2.5" />
@@ -74,12 +74,16 @@ function Objeto({ objeto, tamano = 34, color }) {
   return <C tamano={tamano} {...(color ? { color } : {})} />;
 }
 
-/** Hasta 10 por fila, con una pausa a la mitad para contar de 5 en 5. */
+/**
+ * Hasta 10 por fila (como una decena), con una pausa a la mitad para contar de 5 en 5.
+ * Todas las filas tienen el mismo tamaño de dibujo y nunca se parten: si no caben a lo ancho, los dibujos se achican.
+ */
 function Filas({ objeto, cantidad, tamano = 34, color, tachados = 0 }) {
   const filas = [];
   for (let i = 0; i < cantidad; i += 10) filas.push(Array.from({ length: Math.min(10, cantidad - i) }, (_, j) => i + j));
+  const porFila = Math.min(10, cantidad);
   return (
-    <div className="canal-filas">
+    <div className="canal-filas" style={{ '--n': porFila, '--t': `${tamano}px`, '--hueco': porFila > 5 ? '14px' : '0px' }}>
       {filas.map((fila, f) => (
         <div key={f} className="canal-fila">
           {fila.map((i) => (
@@ -99,7 +103,7 @@ function Filas({ objeto, cantidad, tamano = 34, color, tachados = 0 }) {
 export function Trajinera({ color = 'rojo', nombre = '', ancho = 120 }) {
   const c = COLOR_TRAJINERA[color] || color;
   return (
-    <svg width={ancho} height={ancho * 0.62} viewBox="0 0 120 74" aria-hidden="true">
+    <svg width={ancho} height={ancho * 0.62} viewBox="0 0 120 74" aria-hidden="true" className="sticker">
       <rect x="22" y="22" width="76" height="28" rx="3" fill="#fff6e5" {...L} />
       {[34, 50, 66, 82].map((x) => <path key={x} d={`M${x} 22 V50`} stroke={TINTA} strokeWidth="1.5" />)}
       <path d="M16 22 Q60 2 104 22 Z" fill={c} {...L} />
@@ -130,8 +134,7 @@ export function TrajineraNivel({ estado = 'bloq', color = 'rojo', tamano = 124, 
   const flores = ['#ffbe0b', '#ff6fa5', '#ffffff', '#ff9f1c', '#2a9d8f'];
   return (
     <span className={`trajinera-nivel trajinera-${estado}`} style={{ width: tamano, height: tamano * 0.74 }}>
-      <svg width={tamano} height={tamano * 0.74} viewBox="0 0 140 104" aria-hidden="true">
-        <ellipse cx="70" cy="96" rx="64" ry="7" fill="#0b4f7a" opacity=".22" />
+      <svg width={tamano} height={tamano * 0.74} viewBox="0 0 140 104" aria-hidden="true" className="sticker">
         {!bloq && <path d="M14 94 Q24 89 34 94 M104 94 Q114 89 124 94" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" opacity=".8" />}
         {/* cabina con bancas */}
         <rect x="24" y="44" width="92" height="28" rx="3" fill={bloq ? '#ece9f2' : '#fff6e5'} {...L} />
@@ -157,13 +160,12 @@ export function TrajineraNivel({ estado = 'bloq', color = 'rojo', tamano = 124, 
 export function ChinampaIsla({ variante = 0 }) {
   const id = `ci-${useId().replace(/:/g, '')}`;
   return (
-    <svg viewBox="0 0 160 110" aria-hidden="true" className="chinampa-isla">
+    <svg viewBox="0 0 160 110" aria-hidden="true" className="chinampa-isla sticker">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#7fcf6a" /><stop offset="1" stopColor="#4fa84a" />
         </linearGradient>
       </defs>
-      <ellipse cx="80" cy="100" rx="76" ry="8" fill="#0b4f7a" opacity=".2" />
       <path d="M6 78 Q8 98 80 100 Q152 98 154 78 Z" fill="#8b5a2b" {...L} />
       <path d="M8 76 Q10 60 40 58 Q80 50 120 58 Q150 60 152 76 Q150 86 80 86 Q10 86 8 76 Z" fill={`url(#${id})`} {...L} />
       {variante === 2 && [64, 72, 80].map((y, i) => (
@@ -196,7 +198,7 @@ export function ChinampaIsla({ variante = 0 }) {
 /** Lirio acuático: hoja flotante con flor rosa. */
 export function Lirio() {
   return (
-    <svg viewBox="0 0 48 30" aria-hidden="true" className="lirio">
+    <svg viewBox="0 0 48 30" aria-hidden="true" className="lirio sticker">
       <path d="M24 16 L44 10 Q48 22 30 26 Q10 30 4 20 Q2 8 24 16 Z" fill="#4fa84a" {...L} strokeWidth="1.5" />
       <g transform="translate(22 12)">
         {[0, 72, 144, 216, 288].map((a) => <ellipse key={a} cx="0" cy="-5" rx="3" ry="5.5" transform={`rotate(${a})`} fill="#ff8fb8" {...L} strokeWidth="1" />)}
@@ -259,7 +261,7 @@ function Recta({ hasta, inicio }) {
         </g>
       ))}
       <circle cx={inicio * paso} cy="40" r="9" fill="#ff8c42" stroke={TINTA} strokeWidth="2.5" />
-      <text x={inicio * paso} y="20" textAnchor="middle" fontFamily="'Nunito', sans-serif" fontWeight="800" fontSize="12" fill={TINTA}>empiezas</text>
+      <text x={inicio * paso} y="20" textAnchor={inicio === 0 ? 'start' : inicio === hasta ? 'end' : 'middle'} fontFamily="'Nunito', sans-serif" fontWeight="800" fontSize="12" fill={TINTA}>empiezas</text>
     </svg>
   );
 }
@@ -267,7 +269,7 @@ function Recta({ hasta, inicio }) {
 function Figura({ figura, donde }) {
   const relleno = { triangulo: '#ff6fa5', circulo: '#ffbe0b', rectangulo: '#3a86ff', cuadrado: '#2a9d8f' }[figura];
   return (
-    <svg className="canal-figura" viewBox="0 0 220 150" role="img" aria-label={`Figura del ${donde}`}>
+    <svg className="canal-figura sticker" viewBox="0 0 220 150" role="img" aria-label={`Figura del ${donde}`}>
       {donde === 'banderin' && <path d="M10 18 Q110 34 210 18" fill="none" stroke={TINTA} strokeWidth="2" />}
       {figura === 'triangulo' && <path d="M70 26 H150 L110 130 Z" fill={relleno} {...L} strokeWidth="3" />}
       {figura === 'circulo' && (
@@ -339,10 +341,10 @@ function Grafica({ titulo, barras }) {
   );
 }
 
-function Ramo() {
+export function Ramo() {
   return (
     <span className="canal-ramo" aria-label="Ramo de 10 flores">
-      <svg width="56" height="72" viewBox="0 0 56 72" aria-hidden="true">
+      <svg width="56" height="72" viewBox="0 0 56 72" aria-hidden="true" className="sticker">
         {[[10, 14], [22, 8], [34, 8], [46, 14], [16, 24], [28, 18], [40, 24], [22, 32], [34, 32], [28, 6]].map(([x, y], i) => (
           <g key={i}>
             <path d={`M${x} ${y} L28 62`} stroke="#3d8b5a" strokeWidth="2" />
@@ -417,7 +419,7 @@ export function VisualCanal({ visual }) {
     case 'decenas':
       dibujo = (
         <div className="canal-decenas">
-          {Array.from({ length: visual.ramos }, (_, i) => <Ramo key={i} />)}
+          {visual.ramos > 0 && <span className="canal-ramos">{Array.from({ length: visual.ramos }, (_, i) => <Ramo key={i} />)}</span>}
           {visual.sueltas > 0 && <span className="canal-sueltas"><Filas objeto="flor" cantidad={visual.sueltas} tamano={26} /></span>}
         </div>
       );

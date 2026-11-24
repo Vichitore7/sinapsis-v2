@@ -853,10 +853,14 @@ a.trajinera-nodo:focus-visible { outline: 3px solid var(--st-naranja-2); outline
   background:
     radial-gradient(ellipse 50px 7px at 25% 85%, var(--canal-ola) 50%, transparent 52%),
     linear-gradient(180deg, var(--st-cont-bajo) 0 60%, var(--canal-agua-1)); }
-.canal-filas { display: flex; flex-direction: column; gap: 8px; align-items: center; }
-.canal-fila { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
-.canal-obj { display: inline-flex; position: relative; }
-.canal-obj.mitad { margin-left: 14px; }
+/* Las filas de dibujos (hasta 10, como una decena) nunca se parten: si no caben, los dibujos se achican un poco. */
+.visual-canal > * { min-width: 0; max-width: 100%; }
+.canal-filas { display: grid; grid-template-columns: minmax(0, max-content); row-gap: 8px; justify-content: center; min-width: 0; max-width: 100%; }
+.canal-fila { display: flex; flex-wrap: nowrap; justify-content: center; gap: 4px; }
+/* Cada dibujo mide lo mismo en todas las filas: la parte que le toca de una fila completa (--n), sin pasarse de su tamaño (--t). */
+.canal-obj { flex: none; position: relative; width: calc((100% - (var(--n) - 1) * 4px - var(--hueco)) / var(--n)); max-width: var(--t); }
+.canal-obj.mitad { margin-left: 14px; } /* pausa a la mitad para contar de 5 en 5 */
+.canal-obj > svg { display: block; width: 100%; height: auto; }
 .canal-obj.tachado { opacity: .45; }
 .canal-obj.tachado::after { content: ''; position: absolute; inset: 2px; background:
   linear-gradient(45deg, transparent 44%, #e63946 44% 56%, transparent 56%), linear-gradient(-45deg, transparent 44%, #e63946 44% 56%, transparent 56%); }
@@ -881,13 +885,15 @@ a.trajinera-nodo:focus-visible { outline: 3px solid var(--st-naranja-2); outline
 .canal-medir { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 520px; }
 .canal-medida { display: flex; flex-direction: column; gap: 4px; }
 .canal-regla { display: grid; grid-template-rows: 26px 34px; row-gap: 4px; }
-.canal-cosa { grid-row: 1; align-self: center; height: 14px; border: 2px solid #1e1b3a; border-radius: 8px; }
+.canal-cosa { grid-row: 1; align-self: center; height: 14px; border: 2px solid #1e1b3a; border-radius: 8px;
+  box-shadow: 0 0 0 3px var(--borde-sticker), 0 3px 0 3px rgba(30, 27, 58, .22); } /* borde blanco de sticker */
 .canal-cosa.remo { background: linear-gradient(90deg, #c98a4a 0 78%, #a86b33 78%); border-radius: 6px 18px 18px 6px; height: 18px; }
 .canal-cosa.garrocha { background: repeating-linear-gradient(90deg, #d9b46a 0 30px, #a8843f 30px 33px); }
 .canal-cuadrito { grid-row: 2; border: 2px solid var(--canal-borde); background: var(--canal-tarjeta); margin-right: -2px; }
 .canal-monedas { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; }
 .canal-moneda { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 999px; color: #1e1b3a; font: 800 17px/1 var(--font-display);
-  border: 3px solid #1e1b3a; background: radial-gradient(circle at 35% 30%, #f4f5f7, #b8bcc6); box-shadow: 0 3px 0 rgba(0, 0, 0, .2); }
+  border: 3px solid #1e1b3a; background: radial-gradient(circle at 35% 30%, #f4f5f7, #b8bcc6);
+  box-shadow: 0 0 0 3px var(--borde-sticker), 0 3px 0 3px rgba(30, 27, 58, .22); } /* borde blanco de sticker */
 .canal-moneda.m1 { width: 48px; height: 48px; font-size: 15px; }
 .canal-moneda.m5 { width: 62px; height: 62px; }
 .canal-moneda.m10 { width: 68px; height: 68px; background: radial-gradient(circle, #ffd166 0 52%, #c0c4cc 54%); }
@@ -898,7 +904,9 @@ a.trajinera-nodo:focus-visible { outline: 3px solid var(--st-naranja-2); outline
 .canal-barra { display: flex; flex-direction: column-reverse; gap: 3px; min-height: calc(var(--filas) * 29px - 3px); }
 .canal-barra span { width: 40px; height: 26px; flex: none; border-radius: 5px; border: 2px solid #1e1b3a; }
 .canal-decenas { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 6px; }
-.canal-ramo { display: inline-flex; flex-direction: column; align-items: center; }
+.canal-ramos { display: flex; flex-wrap: nowrap; justify-content: center; gap: 6px; min-width: 0; max-width: 100%; } /* los ramos tampoco se parten */
+.canal-ramo { display: inline-flex; flex-direction: column; align-items: center; flex: 0 1 auto; min-width: 0; }
+.canal-ramo > svg { display: block; width: 100%; max-width: 56px; height: auto; }
 .canal-ramo b { margin-top: -4px; padding: 0 8px; border-radius: 999px; background: #c62a3a; color: #fff; font: 800 12px/18px var(--font-body); }
 .canal-sueltas { margin-left: 10px; padding: 8px; border-radius: 14px; background: var(--canal-tarjeta); }
 

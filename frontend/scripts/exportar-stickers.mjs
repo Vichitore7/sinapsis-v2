@@ -86,21 +86,106 @@ function aPng(navegador, rutaSvg, rutaPng, ancho, alto) {
   ], { stdio: 'ignore', timeout: 60000 });
 }
 
-const Ajolote = await cargarAjolote();
+// ---------- Mundo 1 "El Canal de los Números": trajineras, chinampas y objetos para contar ----------
+
+const SALIDA_CANAL = resolve(FRONTEND, '..', 'docs', 'imagenes', 'canal');
+const SALIDA_CANAL_SVG = join(SALIDA_CANAL, 'svg');
+
+async function cargarCanal() {
+  mkdirSync(TEMP, { recursive: true });
+  const destino = join(TEMP, 'Canal.mjs');
+  await build({
+    entryPoints: [join(FRONTEND, 'src', 'componentes', 'Canal.jsx')],
+    bundle: true, format: 'esm', platform: 'node', jsx: 'automatic',
+    external: ['react', 'react/jsx-runtime'], outfile: destino, logLevel: 'silent',
+  });
+  return import(pathToFileURL(destino).href);
+}
+
+/** Los dibujos del canal que se exportan. Cada uno sale del mismo componente que usa la app. */
+function stickersCanal(C) {
+  const h = createElement;
+  return [
+    ...['rojo', 'azul', 'verde', 'amarillo', 'rosa'].map((color) => ({
+      archivo: `trajinera-${{ rojo: 'roja', azul: 'azul', verde: 'verde', amarillo: 'amarilla', rosa: 'rosa' }[color]}`,
+      el: h(C.Trajinera, { color }),
+    })),
+    ...['rojo', 'azul', 'verde', 'amarillo', 'rosa'].map((color) => ({
+      archivo: `trajinera-nivel-${{ rojo: 'roja', azul: 'azul', verde: 'verde', amarillo: 'amarilla', rosa: 'rosa' }[color]}`,
+      el: h(C.TrajineraNivel, { estado: 'hecho', color }),
+    })),
+    { archivo: 'chinampa-ahuejotes', el: h(C.ChinampaIsla, { variante: 0 }) },
+    { archivo: 'chinampa-casita', el: h(C.ChinampaIsla, { variante: 1 }) },
+    { archivo: 'chinampa-cempasuchil', el: h(C.ChinampaIsla, { variante: 2 }) },
+    { archivo: 'lirio', el: h(C.Lirio) },
+    { archivo: 'pez', el: h(C.Pez, {}) },
+    { archivo: 'flor', el: h(C.Flor, {}) },
+    { archivo: 'persona', el: h(C.Persona, {}) },
+    { archivo: 'sombrerito', el: h(C.Sombrerito, {}) },
+    { archivo: 'jarrito', el: h(C.Jarrito, {}) },
+    { archivo: 'ramo', el: h(C.Ramo) },
+  ];
+}
+
+/**
+ * Deja el SVG listo para usarse solo: con margen y con el borde blanco de sticker dibujado por un filtro
+ * (en la app ese borde lo pone la clase .sticker de app.css, que fuera de la app no existe).
+ */
+function aSvgCanal(markup) {
+  const svg = markup.match(/<svg[\s\S]*<\/svg>/)[0]; // TrajineraNivel y Ramo vienen dentro de un <span>
+  const [vx, vy, vw, vh] = svg.match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number);
+  const lado = Math.max(vw, vh);
+  const borde = +(lado * 0.035).toFixed(2); // grosor del borde blanco (≈ el de Kiko)
+  const caida = +(lado * 0.025).toFixed(2); // sombrita de abajo
+  const m = borde * 2 + caida;
+  const [x, y, w, h] = [vx - m, vy - m, vw + 2 * m, vh + 2 * m];
+  const ancho = w >= h ? LADO : Math.round((LADO * w) / h);
+  const alto = h >= w ? LADO : Math.round((LADO * h) / w);
+  const filtro = `<defs><filter id="borde-sticker" filterUnits="userSpaceOnUse" x="${x}" y="${y}" width="${w}" height="${h}" color-interpolation-filters="sRGB">`
+    + `<feMorphology in="SourceAlpha" operator="dilate" radius="${borde}" result="grueso"/>`
+    + '<feFlood flood-color="#ffffff"/><feComposite in2="grueso" operator="in" result="blanco"/>'
+    + `<feOffset in="grueso" dy="${caida}" result="bajo"/>`
+    + '<feFlood flood-color="#1e1b3a" flood-opacity="0.22"/><feComposite in2="bajo" operator="in" result="sombra"/>'
+    + '<feMerge><feMergeNode in="sombra"/><feMergeNode in="blanco"/><feMergeNode in="SourceGraphic"/></feMerge>'
+    + '</filter></defs>';
+  const interior = svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  const salida = `<svg xmlns="http://www.w3.org/2000/svg" width="${ancho}" height="${alto}" viewBox="${x} ${y} ${w} ${h}">`
+    + `${filtro}<g filter="url(#borde-sticker)">${interior}</g></svg>`;
+  return { svg: `<?xml version="1.0" encoding="UTF-8"?>\n${salida}\n`, ancho, alto };
+}
+
+// Qué exportar: `npm run stickers` hace todo; `npm run stickers -- kiko` o `-- canal` solo esa parte.
+const solo = process.argv[2];
 mkdirSync(SALIDA_SVG, { recursive: true });
 const navegador = buscarNavegador();
 if (!navegador) console.warn('No encontré Edge ni Chrome: solo genero los SVG.');
 
-for (const s of STICKERS) {
-  for (const cabeza of [false, true]) {
-    const nombre = `${s.archivo}${cabeza ? '-cabeza' : ''}`;
-    const markup = renderToStaticMarkup(createElement(Ajolote, { estado: 'feliz', tamano: LADO, traje: s.traje, cabeza }));
-    const { svg, ancho, alto } = aSvgSuelto(markup, cabeza);
-    const rutaSvg = join(SALIDA_SVG, `${nombre}.svg`);
-    writeFileSync(rutaSvg, svg);
-    if (navegador) aPng(navegador, rutaSvg, join(SALIDA, `${nombre}.png`), ancho, alto);
-    console.log(`✓ ${nombre} (${ancho}×${alto})`);
+if (!solo || solo === 'kiko') {
+  const Ajolote = await cargarAjolote();
+  for (const s of STICKERS) {
+    for (const cabeza of [false, true]) {
+      const nombre = `${s.archivo}${cabeza ? '-cabeza' : ''}`;
+      const markup = renderToStaticMarkup(createElement(Ajolote, { estado: 'feliz', tamano: LADO, traje: s.traje, cabeza }));
+      const { svg, ancho, alto } = aSvgSuelto(markup, cabeza);
+      const rutaSvg = join(SALIDA_SVG, `${nombre}.svg`);
+      writeFileSync(rutaSvg, svg);
+      if (navegador) aPng(navegador, rutaSvg, join(SALIDA, `${nombre}.png`), ancho, alto);
+      console.log(`✓ ${nombre} (${ancho}×${alto})`);
+    }
   }
+  console.log(`Listo: ${SALIDA}`);
+}
+
+if (!solo || solo === 'canal') {
+  const Canal = await cargarCanal();
+  mkdirSync(SALIDA_CANAL_SVG, { recursive: true });
+  for (const s of stickersCanal(Canal)) {
+    const { svg, ancho, alto } = aSvgCanal(renderToStaticMarkup(s.el));
+    const rutaSvg = join(SALIDA_CANAL_SVG, `${s.archivo}.svg`);
+    writeFileSync(rutaSvg, svg);
+    if (navegador) aPng(navegador, rutaSvg, join(SALIDA_CANAL, `${s.archivo}.png`), ancho, alto);
+    console.log(`✓ canal/${s.archivo} (${ancho}×${alto})`);
+  }
+  console.log(`Listo: ${SALIDA_CANAL}`);
 }
 rmSync(join(TEMP, 'perfil-navegador'), { recursive: true, force: true });
-console.log(`Listo: ${SALIDA}`);
