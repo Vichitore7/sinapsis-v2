@@ -1,0 +1,101 @@
+{
+  "manifestVersion": 3,
+  "name": "Selva Matemática",
+  "namespace": "SelvaMatematica",
+  "files": [
+    "Apoyo-visual.md",
+    "Escaner-de-cuaderno.md",
+    "Modo-aula.md",
+    "Recompensas-y-cuidados.md",
+    "components/Ajolote/README.md",
+    "components/Boton/README.md",
+    "components/Cuidados/README.md",
+    "components/EscanerCaptura/README.md",
+    "components/EscanerLectura/README.md",
+    "components/EscanerSinConexion/README.md",
+    "components/MapaMundos/README.md",
+    "components/MensajeCasi/README.md",
+    "components/MetaSalon/README.md",
+    "components/ModeloVisual/README.md",
+    "components/ModoAulaRegistro/README.md",
+    "components/PanelMaestro/README.md",
+    "components/SendaPasos/README.md",
+    "components/TarjetaReto/README.md",
+    "components/bundle.css",
+    "tokens.css"
+  ],
+  "libraries": [],
+  "components": [
+    {
+      "name": "Ajolote",
+      "group": "Mascota",
+      "summary": "El ajolote explorador es la mascota guía: acompaña cada reto con su sombrero de aventurero y su brújula, celebra los aciertos y se pone curioso (nunca triste)…"
+    },
+    {
+      "name": "Boton",
+      "group": "Acciones",
+      "summary": "Botón 3D de juego: contorno de 2px en tinta, radio-md, sombra sólida de 4px que desaparece al presionar (baja 4px)."
+    },
+    {
+      "name": "Cuidados",
+      "group": "Mascota",
+      "summary": "Panel donde el alumno cuida a su ajolote: tres medidores de bienestar, el ícono con lo que pide y los botones de cuidado."
+    },
+    {
+      "name": "EscanerCaptura",
+      "group": "Escáner de cuaderno",
+      "summary": "Pantallas para obtener la foto del ejercicio: captura y recorte."
+    },
+    {
+      "name": "EscanerLectura",
+      "group": "Escáner de cuaderno",
+      "summary": "Pantalla donde el ajolote muestra lo que leyó del cuaderno y el alumno lo confirma o lo corrige."
+    },
+    {
+      "name": "EscanerSinConexion",
+      "group": "Escáner de cuaderno",
+      "summary": "Pantalla que aparece cuando el alumno saca la foto sin internet."
+    },
+    {
+      "name": "MapaMundos",
+      "group": "Navegación",
+      "summary": "El mapa de mundos es la ruta de aprendizaje: nodos redondos unidos por un sendero, con un encabezado épico por mundo."
+    },
+    {
+      "name": "MensajeCasi",
+      "group": "Retroalimentación",
+      "summary": "Mensaje de retroalimentación: “¡Casi!” para el error formativo y “¡Misión cumplida!” para el acierto."
+    },
+    {
+      "name": "MetaSalon",
+      "group": "Modo Aula",
+      "summary": "Tarjeta del Modo Aula que muestra el ajolote del salón, la meta colectiva de estrellas y, aparte, el aviso privado de progreso de cada alumno."
+    },
+    {
+      "name": "ModeloVisual",
+      "group": "Apoyo visual",
+      "summary": "Apoyo visual que acompaña a la tarjeta de reto para que el alumno entienda qué significa una operación antes de resolverla de memoria."
+    },
+    {
+      "name": "ModoAulaRegistro",
+      "group": "Modo Aula",
+      "summary": "Lista que usa el maestro para marcar cómo le fue a cada alumno después de cada reto."
+    },
+    {
+      "name": "PanelMaestro",
+      "group": "Modo Aula",
+      "summary": "Resumen que ve el maestro al terminar una prueba del Modo Aula."
+    },
+    {
+      "name": "SendaPasos",
+      "group": "Pistas socráticas",
+      "summary": "La senda de pasos muestra el procedimiento del alumno como un camino y marca en casi el paso donde se torció, con una pregunta socrática debajo."
+    },
+    {
+      "name": "TarjetaReto",
+      "group": "Retos",
+      "summary": "Tarjeta de un reto: chip de ubicación, recompensa, título narrativo, enunciado cotidiano, operación con campo de respuesta y acciones."
+    }
+  ],
+  "assetGroups": []
+}

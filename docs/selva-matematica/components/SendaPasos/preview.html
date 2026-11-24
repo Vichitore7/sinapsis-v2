@@ -1,0 +1,26 @@
+<!-- @dsCard group="Pistas socráticas" height=380 subtitle="Muestra dónde se torció el procedimiento, sin dar la respuesta" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Senda de pasos — preview</title></head>
+<body>
+<div style="padding: var(--espacio-4); max-width: 480px;">
+  <div class="sm-card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--espacio-3);">
+      <h2 style="font-family: var(--font-display); font-weight:800; font-size:22px; line-height:28px; margin:0;">Tu sendero</h2>
+      <span class="sm-chip" style="background: var(--pista-suave); color: var(--pista-texto);">PISTA 1 DE 3</span>
+    </div>
+    <ol class="sm-senda">
+      <li class="sm-paso sm-paso-ok"><span class="sm-paso-marca">✓</span><span>3 mangos, $12 cada uno</span></li>
+      <li class="sm-paso sm-paso-ok"><span class="sm-paso-marca">✓</span><span>3 × 12</span></li>
+      <li class="sm-paso sm-paso-casi"><span class="sm-paso-marca">3</span>
+        <div style="display:flex; flex-direction:column; gap: var(--espacio-2); flex:1;">
+          <span><strong>= 26</strong> <span style="color: var(--casi-texto); font-weight:700; font-size:14px;">· aquí se torció el sendero</span></span>
+          <div class="sm-bubble">¿12 + 12 + 12 da 26?</div>
+        </div>
+      </li>
+      <li class="sm-paso sm-paso-pendiente"><span class="sm-paso-marca">4</span><span>Resultado</span></li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>

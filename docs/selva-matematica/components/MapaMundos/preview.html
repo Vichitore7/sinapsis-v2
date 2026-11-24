@@ -1,0 +1,28 @@
+<!-- @dsCard group="Navegación" height=260 subtitle="Ruta de retos de un mundo" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Mapa de mundos — preview</title>
+<style>
+  .mapa { padding: var(--espacio-4); }
+  .mapa h2 { font-family: var(--font-display); font-weight: 800; font-size: 40px; line-height: 44px; margin: 0 0 var(--espacio-4); color: var(--magia); }
+  .ruta { display: flex; align-items: center; flex-wrap: wrap; row-gap: var(--espacio-3); }
+  .nodo { width: 56px; height: 56px; border-radius: var(--radio-pill); border: 2px solid var(--tinta); display: grid; place-items: center; font-family: var(--font-body); font-weight: 800; font-size: 22px; box-shadow: 0 4px 0 var(--selva-profundo); background: var(--selva); color: var(--tinta); }
+  .nodo.actual { width: 68px; height: 68px; background: var(--sol); box-shadow: 0 4px 0 var(--sol-profundo); outline: 4px solid var(--superficie); }
+  .nodo.bloq { background: var(--bloqueado); box-shadow: none; font-size: 20px; }
+  .tramo { width: 40px; border-top: 4px dashed var(--tinta-suave); }
+  .tramo.hecho { border-top-style: solid; border-color: var(--selva-profundo); }
+</style>
+</head>
+<body>
+<div class="mapa">
+  <h2>Mundo 2: El mercado</h2>
+  <div class="ruta" role="list">
+    <div class="nodo" role="listitem" aria-label="Reto 1 completado">✓</div><div class="tramo hecho"></div>
+    <div class="nodo" role="listitem" aria-label="Reto 2 completado">✓</div><div class="tramo hecho"></div>
+    <div class="nodo actual" role="listitem" aria-label="Reto 3, actual">3</div><div class="tramo"></div>
+    <div class="nodo bloq" role="listitem" aria-label="Reto 4 bloqueado">🔒</div><div class="tramo"></div>
+    <div class="nodo bloq" role="listitem" aria-label="Cofre del mundo bloqueado">★</div>
+  </div>
+</div>
+</body>
+</html>

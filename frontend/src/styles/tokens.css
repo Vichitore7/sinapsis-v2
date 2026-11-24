@@ -1,0 +1,109 @@
+/* Selva Matemática — generated from tokens.json */
+:root, [data-theme="dia"] {
+  --selva: #1fa971; /* Color primario: botón principal, nodos completados del mapa, aciertos. Texto encima siempre en tinta (5.5:1), nunca blanco (3:1, no pasa). */
+  --selva-profundo: #137a52; /* Sombra sólida de los botones verdes y texto verde sobre fondo o selva-suave (4.8:1). */
+  --selva-suave: #e6f7ef; /* Fondo del estado de acierto y de pasos correctos en la senda. */
+  --magia: #6c4bd8; /* Color secundario: botón secundario, branquias del ajolote, encabezados de mundo. Texto encima en blanco (5.8:1). */
+  --magia-profundo: #4b32a8; /* Sombra sólida de los botones morados. */
+  --magia-suave: #ece7ff; /* Fondo de chips, insignias y paneles del Modo Aula. */
+  --sol: #ffc83d; /* Acento de premios: estrellas, monedas, nodo actual del mapa, botón de recompensa. Texto encima en tinta (10.7:1). */
+  --sol-profundo: #c98f00; /* Sombra sólida de los botones y stickers amarillos. */
+  --fondo: #f4f1ff; /* Fondo de toda la app (lavanda clarito). */
+  --superficie: #ffffff; /* Tarjetas de reto, globos de diálogo y bordes de sticker. */
+  --tinta: #1e1b3a; /* Texto principal y contornos de 2px. 14.8:1 sobre fondo. */
+  --tinta-suave: #5b5680; /* Texto secundario, contadores y etiquetas sobre fondo o superficie (6.1:1). */
+  --bloqueado: #cfcae6; /* Nodos y retos bloqueados. Solo como relleno con ícono de candado en tinta; nunca como color de texto. */
+  --pista: #4aa8ff; /* Pistas socráticas: botón de pista, marcador de la senda y anillo de foco del teclado. */
+  --pista-suave: #eaf4ff; /* Fondo de los globos de pista. */
+  --pista-texto: #1a5fa8; /* Texto azul sobre pista-suave (5.8:1), p. ej. “Pista 1 de 3”. */
+  --casi: #ff9f6b; /* Error formativo (durazno, no rojo): borde de la tarjeta “¡Casi!” y paso donde se torció el procedimiento. Texto encima en tinta (8.2:1). */
+  --casi-suave: #fff1e8; /* Fondo del mensaje “¡Casi!” y del paso con error en la senda. */
+  --casi-texto: #b4532a; /* Texto durazno oscuro sobre casi-suave (4.5:1), solo para etiquetas cortas en negritas. */
+  --ajolote-rosa: #ff8fb8; /* Cuerpo del ajolote guía. Reservado para la mascota y sus stickers. */
+  --ajolote-rosa-profundo: #e0628f; /* Sombras, mejillas y detalles del ajolote. */
+  --popo: #9a6340; /* Solo para el sticker de popo que pide limpiar la pecera, siempre con contorno de tinta y borde blanco. Nunca como color de texto. */
+  --sombra-boton: 0 4px 0 #137a52; /* Sombra sólida del botón primario. Al presionar, el botón baja 4px y la sombra desaparece. */
+  --sombra-tarjeta: 0 6px 0 rgba(30, 27, 58, 0.16); /* Tarjetas de reto y paneles: profundidad de juego sin difuminado (se ve bien en proyector). */
+  --sombra-sticker: 0 3px 0 rgba(30, 27, 58, 0.22); /* Debajo del borde blanco de mascota, íconos y premios tipo sticker. */
+  --contorno: #1e1b3a; /* Contorno y texto de los dibujos tipo sticker (Kiko, monedas, bolsitas). NO cambia con el tema: --tinta se vuelve clara de noche. */
+  --borde-sticker: #ffffff; /* Borde blanco de los stickers, igual de día y de noche (de noche es lo que los hace resaltar). */
+}
+
+:root {
+  --espacio-1: 4px; /* Separación mínima entre ícono y texto. */
+  --espacio-2: 8px; /* Espacio dentro de chips y entre botones pequeños. */
+  --espacio-3: 16px; /* Relleno de tarjetas pequeñas y entre elementos de una tarjeta. */
+  --espacio-4: 24px; /* Relleno de tarjetas de reto y márgenes de pantalla. */
+  --espacio-5: 32px; /* Separación entre secciones. */
+  --espacio-6: 48px; /* Alto mínimo táctil y separación entre nodos del mapa. */
+  --radio-sm: 8px; /* Chips, campos de respuesta y pasos de la senda. */
+  --radio-md: 16px; /* Botones. */
+  --radio-lg: 24px; /* Tarjetas de reto, globos de diálogo y paneles. */
+  --radio-pill: 999px; /* Nodos del mapa, insignias y barras de progreso. */
+  --font-display: "Baloo 2", "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, sans-serif;
+  --text-titulo-mundo: 800 40px/44px var(--font-display); /* Encabezado de cada mundo del mapa. */
+  --text-titulo: 800 28px/32px var(--font-display); /* Títulos de pantalla y celebraciones. */
+  --text-subtitulo: 700 22px/28px var(--font-display); /* Títulos de tarjetas y secciones. */
+  --text-boton: 800 20px/24px var(--font-display); /* Texto de botones. */
+  --text-numero-reto: 800 32px/40px var(--font-body); /* Operaciones y números del reto. Siempre Nunito: sus números son los más claros. */
+  --text-cuerpo: 400 18px/26px var(--font-body); /* Enunciados de retos y diálogos. 18px como mínimo para lectores de primaria. */
+  --text-cuerpo-fuerte: 700 18px/26px var(--font-body); /* Preguntas socráticas y énfasis. */
+  --text-etiqueta: 700 14px/20px var(--font-body); /* Chips, contadores y etiquetas. Nunca para texto que se tenga que leer completo. */
+}
+.titulo-mundo {
+  font-family: var(--font-display);
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.titulo {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 32px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.subtitulo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.boton {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.numero-reto {
+  font-family: var(--font-body);
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.cuerpo {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.cuerpo-fuerte {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.etiqueta {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+  letter-spacing: 0;
+}

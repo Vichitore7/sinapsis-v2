@@ -1,0 +1,59 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Selva Matemática</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--fondo); color: var(--tinta); font-family: var(--font-body); overflow: hidden; }
+  .cover { position: relative; height: 288px; overflow: hidden; }
+  .art { position: absolute; top: 0; left: 480px; width: 480px; height: 288px; overflow: hidden; }
+  .art svg { display: block; width: 480px; height: 288px; }
+  .selva { fill: var(--selva); }
+  .magia { fill: var(--magia); }
+  .sol { fill: var(--sol); }
+  .rosa { fill: var(--ajolote-rosa); }
+  .cut { fill: var(--fondo); }
+  .blk { rx: var(--radio-lg); }
+  .disc { rx: 12px; }
+  .words { position: absolute; left: var(--espacio-5); bottom: var(--espacio-5); max-width: 440px; }
+  .name { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 72px; line-height: .95; letter-spacing: -.01em; color: var(--tinta); }
+  .tag { margin: var(--espacio-2) 0 0 2px; font-size: 14px; line-height: 20px; color: var(--tinta-suave); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      selva 144×280 bled off the top (the primary, largest) · magia 176×152 · sol 112×136 bled off top and right (premios) · ajolote-rosa 112×128 (the mascot, smallest) — ≈38% of 960×288
+  arrangement one tall selva slab with satellites, bottoms on one line espacio-5 above the edge, espacio-3 gutters
+  pattern     discs, from "radio-pill en nodos del mapa" and soft large radii: espacio-4 discs at an espacio-6 pitch, cut into the selva slab in fondo like map nodes, and a 3×2 run of sol discs over magia
+  scales      sides in espacio-3 multiples; gutters espacio-3; pitch espacio-6; corners radio-lg; discs radio-pill (rx 12 = half of espacio-4)
+-->
+<rect class="selva blk" x="16" y="-24" width="144" height="280" rx="24"/>
+<rect class="magia blk" x="176" y="104" width="176" height="152" rx="24"/>
+<rect class="sol blk" x="368" y="-24" width="128" height="136" rx="24"/>
+<rect class="rosa blk" x="368" y="128" width="112" height="128" rx="24"/>
+<rect class="cut disc" x="52" y="40" width="24" height="24" rx="12"/>
+<rect class="cut disc" x="100" y="40" width="24" height="24" rx="12"/>
+<rect class="cut disc" x="52" y="88" width="24" height="24" rx="12"/>
+<rect class="cut disc" x="100" y="88" width="24" height="24" rx="12"/>
+<rect class="cut disc" x="52" y="136" width="24" height="24" rx="12"/>
+<rect class="cut disc" x="100" y="136" width="24" height="24" rx="12"/>
+<rect class="cut disc" x="52" y="184" width="24" height="24" rx="12"/>
+<rect class="sol disc" x="204" y="144" width="24" height="24" rx="12"/>
+<rect class="sol disc" x="252" y="144" width="24" height="24" rx="12"/>
+<rect class="sol disc" x="300" y="144" width="24" height="24" rx="12"/>
+<rect class="sol disc" x="204" y="192" width="24" height="24" rx="12"/>
+<rect class="sol disc" x="252" y="192" width="24" height="24" rx="12"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">Selva Matemática</h1>
+<p class="tag">Equivocarse también es avanzar.</p>
+</div>
+</div>
+</body>
+</html>
