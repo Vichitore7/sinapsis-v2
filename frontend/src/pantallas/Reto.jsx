@@ -8,6 +8,7 @@ import { DiceAjolote, MensajeCasi, MisionCumplida } from '../componentes/Comunes
 import { buscarReto, formatoNumero } from '../contenido/mundos.js';
 import { MAX_PISTAS, ejemploParecido, pistasDe } from '../logica/pistas.js';
 import { etapaParaReto, retoJugable, siguientePaso } from '../logica/juego.js';
+import { PecesNivel, VisualCanal } from '../componentes/Canal.jsx';
 
 function EjemploAjolote({ reto, onListo }) {
   const { a, b } = reto.ejemplo;
@@ -94,7 +95,12 @@ export default function Reto({ retoId }) {
   const etapa = etapaParaReto(reto, estado.etapaApoyo);
   const pistas = pistasDe(reto);
   const indice = reto.mundo.retos.findIndex((r) => r.id === reto.id) + 1;
-  const hayRespuesta = /[0-9]/.test(respuesta);
+  // Mundo del canal (Xochimilco): ejercicios de conteo, opción y cuentas con dibujos propios.
+  const canal = reto.mundo.tema === 'xochimilco';
+  const delNivel = canal ? reto.mundo.retos.filter((r) => r.nivel === reto.nivel) : [];
+  const pecesNivel = delNivel.filter((r) => estado.completados[r.id]).length;
+  const numeroEnNivel = delNivel.findIndex((r) => r.id === reto.id) + 1;
+  const hayRespuesta = reto.tipo === 'opcion' ? respuesta.trim() !== '' : /[0-9]/.test(respuesta);
 
   const pedirPista = () => {
     setPistasUsadas((n) => Math.min(MAX_PISTAS + 1, n + 1));
@@ -153,6 +159,35 @@ export default function Reto({ retoId }) {
         : `¡Lo lograste! Pedir ayuda también es de exploradores. Ganaste ${resultado.ganadas} estrellas para ${estado.nombreAjolote}.`;
       if (resultado.bono) texto += ` Y ★ ${resultado.bono} más por el reto del día.`;
     }
+    if (canal) {
+      const solucion = reto.tipo === 'opcion' ? resultado.respuesta
+        : reto.tipo === 'numerica' ? `${reto.a} ${reto.op} ${reto.b} = ${resultado.respuesta}`
+          : formatoNumero(resultado.respuesta, reto.moneda);
+      const lleno = pecesNivel === delNivel.length;
+      const ultimo = reto.nivel === Math.max(...reto.mundo.retos.map((r) => r.nivel || 0));
+      const siguiente = ultimo ? 'Ya puedes abrir el cofre del embarcadero.' : 'Con los 3 peces zarpa la siguiente trajinera.';
+      return (
+        <div className="pila tema-canal reto-canal">
+          <DiceAjolote estado="celebrando" mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} traje={estado.traje}>
+            ¡Misión cumplida! {solucion}
+          </DiceAjolote>
+          <section className="sm-card canal-premio">
+            <PecesNivel llenos={pecesNivel} tamano={46} />
+            <h2 className="subtitulo" style={{ margin: 0 }}>
+              {resultado.repaso ? '¡Repaso completado!' : lleno ? `¡Llenaste la trajinera ${reto.nivel}!` : '¡Pescaste un pez!'}
+            </h2>
+            <p className="cuerpo" style={{ margin: 0 }}>
+              {lleno && !resultado.repaso
+                ? `${siguiente} ${texto}`
+                : `Llevas ${pecesNivel} de 3 peces en esta trajinera. ${texto}`}
+            </p>
+            <button className="sm-btn ancho" onClick={terminar}>
+              {!lleno ? 'Siguiente ejercicio' : ultimo ? 'Ir al cofre' : 'Ir a la siguiente trajinera'}
+            </button>
+          </section>
+        </div>
+      );
+    }
     return (
       <div className="pila">
         <DiceAjolote estado="celebrando" mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} traje={estado.traje}>
@@ -172,8 +207,20 @@ export default function Reto({ retoId }) {
   const pistasAgotadas = pistasUsadas >= MAX_PISTAS;
 
   return (
-    <div className="reto-layout">
+    <div className={`reto-layout${canal ? ' tema-canal reto-canal' : ''}`}>
      <div className="pila col-principal">
+      {canal && (
+        <header className="canal-portada">
+          <span className="canal-portada-arco">
+            <span className="sobre">Nivel {reto.nivel} · {reto.nivelTema}</span>
+            <b className="t-lg">{reto.nivelTitulo}</b>
+          </span>
+          <span className="canal-portada-peces">
+            <PecesNivel llenos={pecesNivel} tamano={30} />
+            <small className="etq">Ejercicio {numeroEnNivel} de {delNivel.length}</small>
+          </span>
+        </header>
+      )}
       <DiceAjolote estado={animo} tamano={88} mundosSuperados={estado.mundosTerminados.length} accesorios={estado.stickers} traje={estado.traje}>
         {fase === 'casi'
           ? 'Mmm, revisemos el sendero juntos.'
@@ -186,16 +233,20 @@ export default function Reto({ retoId }) {
 
       <form className="sm-card" onSubmit={comprobar}>
         <div className="fila-entre" style={{ marginBottom: 'var(--espacio-3)' }}>
-          <span className="sm-chip">Mundo {reto.mundo.numero} · Reto {indice}</span>
+          <span className="sm-chip">{canal ? `${reto.mundo.nombre} · Nivel ${reto.nivel}` : `Mundo ${reto.mundo.numero} · Reto ${indice}`}</span>
           <span className="sm-chip sm-chip-sol">{repaso ? 'Repaso' : `★ +${pistasUsadas || errores ? 2 : 3}`}</span>
         </div>
         <h2 className="subtitulo" style={{ margin: '0 0 var(--espacio-2)' }}>{reto.titulo}</h2>
         <p className="cuerpo" style={{ margin: '0 0 var(--espacio-3)' }}>{reto.enunciado}</p>
 
-        {etapa < 4 && <ModeloVisual etapa={etapa} a={reto.a} b={reto.b} moneda={reto.moneda} />}
-        {etapa === 4 && pistasUsadas > 0 && (
-          // Sin apoyo visual: el apoyo regresa como pista.
-          <ModeloVisual etapa={3} a={reto.a} b={reto.b} moneda={reto.moneda} />
+        {canal ? <VisualCanal visual={reto.visual} /> : (
+          <>
+            {etapa < 4 && <ModeloVisual etapa={etapa} a={reto.a} b={reto.b} moneda={reto.moneda} />}
+            {etapa === 4 && pistasUsadas > 0 && (
+              // Sin apoyo visual: el apoyo regresa como pista.
+              <ModeloVisual etapa={3} a={reto.a} b={reto.b} moneda={reto.moneda} />
+            )}
+          </>
         )}
 
         {pistaActual && fase === 'resolviendo' && (
@@ -205,22 +256,35 @@ export default function Reto({ retoId }) {
           </div>
         )}
 
-        <div className="operacion">
-          <label className="numero-reto" htmlFor="respuesta">
-            {reto.a} × {formatoNumero(reto.b, reto.moneda)} =
-          </label>
-          <input
-            id="respuesta"
-            className="sm-input"
-            inputMode="numeric"
-            autoComplete="off"
-            placeholder="?"
-            value={respuesta}
-            onChange={(e) => setRespuesta(e.target.value)}
-            aria-label="Tu respuesta"
-            disabled={fase === 'casi'}
-          />
-        </div>
+        {reto.tipo === 'opcion' ? (
+          <div className="canal-opciones" role="radiogroup" aria-label="Elige tu respuesta">
+            {reto.opciones.map((o) => (
+              <button key={o} type="button" role="radio" aria-checked={respuesta === o} disabled={fase === 'casi'}
+                className={`canal-opcion${respuesta === o ? ' elegida' : ''}`} onClick={() => setRespuesta(o)}>
+                {o}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="operacion">
+            <label className="numero-reto" htmlFor="respuesta">
+              {!canal ? `${reto.a} × ${formatoNumero(reto.b, reto.moneda)} =`
+                : reto.tipo === 'numerica' ? `${reto.a} ${reto.op} ${reto.b} =`
+                  : `Tu respuesta${reto.moneda ? ' $' : ''}`}
+            </label>
+            <input
+              id="respuesta"
+              className="sm-input"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="?"
+              value={respuesta}
+              onChange={(e) => setRespuesta(e.target.value)}
+              aria-label="Tu respuesta"
+              disabled={fase === 'casi'}
+            />
+          </div>
+        )}
 
         {fase === 'resolviendo' && (
           <div className="acciones">
@@ -228,7 +292,7 @@ export default function Reto({ retoId }) {
             {!pistasAgotadas && (
               <button className="sm-btn sm-btn-pista" type="button" onClick={pedirPista}>? Pista</button>
             )}
-            {pistasAgotadas && pistasUsadas === MAX_PISTAS && (
+            {!canal && pistasAgotadas && pistasUsadas === MAX_PISTAS && (
               <button className="sm-btn sm-btn-pista" type="button" onClick={pedirPista}>Ver ejemplo parecido</button>
             )}
           </div>
@@ -238,7 +302,7 @@ export default function Reto({ retoId }) {
      </div>
 
      <div className="pila col-lateral">
-      {pistasUsadas > MAX_PISTAS && <EjemploParecido reto={reto} />}
+      {!canal && pistasUsadas > MAX_PISTAS && <EjemploParecido reto={reto} />}
 
       {fase === 'casi' && diag && (
         <>

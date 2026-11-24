@@ -3,6 +3,7 @@
 // Aquí solo quedan datos de presentación y ayudas para buscar.
 
 export const STICKERS = {
+  flor: { nombre: 'Flor de la chinampa' },
   mochila: { nombre: 'Mochila de la selva' },
   bufanda: { nombre: 'Bufanda del mercado' },
   sombrero: { nombre: 'Sombrero del río' },

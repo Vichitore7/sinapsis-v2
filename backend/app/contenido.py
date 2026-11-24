@@ -7,10 +7,13 @@ from __future__ import annotations
 
 import random
 
+from . import contenido_canal as canal
 from .juego import pistas_multiplicacion
 
 # Cada reto de multiplicación: (id, título, enunciado, a, b, objeto, etapa_min)
 UNIDADES = [
+    # Mundo 1 (1.º de primaria): sus 12 niveles viven en contenido_canal.py.
+    {"id": "primero", "nombre": "Números y conteo (1.º)", "orden": 0, "prerrequisito": None, "lecciones": [canal.LECCION]},
     {
         "id": "multiplicacion", "nombre": "Multiplicación", "orden": 1, "prerrequisito": None,
         "lecciones": [
@@ -48,6 +51,7 @@ UNIDADES = [
 ]
 
 STICKERS = {
+    "flor": "Flor de la chinampa",
     "mochila": "Mochila de la selva",
     "bufanda": "Bufanda del mercado",
     "sombrero": "Sombrero del río",
@@ -58,6 +62,16 @@ TRAJES = {
     "trajinero": "Traje de trajinero",
     "trajinera": "Traje de trajinera",
 }
+
+
+def ejercicio_canal(e: dict, orden: int) -> dict:
+    """Un ejercicio del Canal de los Números en el formato de la tabla `ejercicios`."""
+    claves_datos = ("a", "b", "op", "moneda", "opciones", "visual", "pregunta_error", "nivel", "nivel_tema", "nivel_titulo")
+    return {
+        "id": e["id"], "orden": orden, "tipo": e["tipo"], "titulo": e["titulo"], "enunciado": e["enunciado"],
+        "datos": {k: e[k] for k in claves_datos if k in e},
+        "respuesta": e["respuesta"], "pistas": e["pistas"], "dificultad": 1, "explicacion": e["explicacion"],
+    }
 
 
 def ejercicio_multiplicacion(id_: str, orden: int, titulo: str, enunciado: str, a: int, b: int,

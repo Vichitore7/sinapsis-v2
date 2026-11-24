@@ -91,6 +91,12 @@ export function adaptarMundos(mundos) {
       etapaMin: r.etapa_min,
       ejemplo: r.ejemplo || null,
       pistas: r.pistas,
+      tipo: r.tipo || 'numerica',
+      opciones: r.opciones || null,
+      visual: r.visual || null,
+      nivel: r.nivel || null,
+      nivelTema: r.nivel_tema || null,
+      nivelTitulo: r.nivel_titulo || null,
       mundo,
     }));
     return mundo;

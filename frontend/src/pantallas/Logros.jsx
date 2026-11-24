@@ -7,6 +7,7 @@ import Ajolote from '../componentes/Ajolote.jsx';
 import { STICKERS, TRAJES } from '../contenido/mundos.js';
 
 const ARTE = {
+  flor: { icono: 'chispa', fondo: 'sticker-rosa' },
   mochila: { icono: 'mochila', fondo: 'sticker-ambar' },
   bufanda: { icono: 'chispa', fondo: 'sticker-cielo' },
   sombrero: { icono: 'sombrero', fondo: 'sticker-oro' },

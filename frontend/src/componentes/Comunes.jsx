@@ -1,5 +1,20 @@
 // Piezas pequeñas compartidas entre pantallas.
 import Ajolote from './Ajolote.jsx';
+import { useJuego } from '../estado/store.jsx';
+
+/**
+ * Cabecita de Kiko con el traje que eligió el alumno (Perfil > Stickers).
+ * Va donde antes había una huella: logo, menú, "¡Kiko está aquí!", consejos. Es decorativa (el texto de al lado dice quién es).
+ */
+export function CabezaKiko({ tamano = 28 }) {
+  const { usuario, estado } = useJuego();
+  const traje = usuario?.rol === 'alumno' ? estado.traje : null;
+  return (
+    <span className="cabeza-kiko" aria-hidden="true">
+      <Ajolote estado="feliz" tamano={tamano} cabeza traje={traje} />
+    </span>
+  );
+}
 
 /** Globo de diálogo del ajolote con el ajolote a un lado. */
 export function DiceAjolote({ estado = 'feliz', children, tamano = 96, mundosSuperados = 0, accesorios = [], traje = null }) {

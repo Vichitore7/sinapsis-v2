@@ -7,6 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
+from . import contenido_canal as canal
 from . import juego
 from .contenido import STICKERS
 from .modelos import Diagnostico, Ejercicio, EstadoJuego, Intento, Leccion, Mascota, Progreso, Unidad, Usuario
@@ -38,6 +39,9 @@ def ejercicio_publico(e: Ejercicio) -> dict:
         "a": d.get("a"), "b": d.get("b"), "op": d.get("op", "×"), "moneda": d.get("moneda", False),
         "objeto": d.get("objeto"), "etapa_min": d.get("etapa_min", 1), "ejemplo": d.get("ejemplo"),
         "opciones": d.get("opciones"), "pistas": e.pistas, "dificultad": e.dificultad,
+        # Mundos por niveles (El Canal de los Números): a qué chinampa pertenece y qué dibujar.
+        "nivel": d.get("nivel"), "nivel_tema": d.get("nivel_tema"), "nivel_titulo": d.get("nivel_titulo"),
+        "visual": d.get("visual"),
     }
 
 
@@ -56,6 +60,7 @@ def mundos_publicos(db: Session) -> list[dict]:
         mundos.append({
             "id": l.id, "numero": numero, "nombre": l.nombre, "entrada": l.entrada, "concepto": l.concepto,
             "sticker": l.sticker, "unidad": {"id": u.id, "nombre": u.nombre}, "proximamente": u.proximamente,
+            "tema": canal.TEMA if l.id == canal.LECCION_ID else None,
             "estado_revision": l.estado_revision, "retos": [ejercicio_publico(e) for e in l.ejercicios],
         })
     return mundos
@@ -155,11 +160,10 @@ def registrar_intento(db: Session, alumno: Usuario, ejercicio_id: str, respuesta
     if not _ejercicio_jugable(db, est, completados, e):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Este sendero todavía está cerrado.")
 
-    numero = juego.leer_numero(respuesta)
-    if numero is None:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Escribe tu respuesta con números.")
-    d = e.datos
-    diag = juego.diagnosticar(d["a"], d.get("op", "×"), d["b"], numero, d.get("moneda", False))
+    try:
+        diag = juego.evaluar(e.tipo, e.datos, e.respuesta, respuesta)
+    except ValueError as err:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(err)) from err
     pistas_usadas = max(0, min(pistas_usadas, juego.VALORES["max_pistas"] + 1))
     # Errores previos en este reto: los cuenta el servidor, no el navegador.
     errores_previos = db.scalar(select(func.count()).select_from(Intento).where(

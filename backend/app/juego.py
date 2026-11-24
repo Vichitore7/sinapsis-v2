@@ -85,6 +85,43 @@ def diagnosticar(a: int, op: str, b: int, c: int, moneda: bool = False) -> dict:
     return {"correcto": False, "pasos": pasos, "paso_torcido": 3, "tipo_error": "calculo", "pregunta": pregunta}
 
 
+def _normalizar_opcion(texto: str) -> str:
+    quitar = str.maketrans("áéíóúü", "aeiouu")
+    return " ".join((texto or "").lower().translate(quitar).split())
+
+
+def evaluar(tipo: str, datos: dict, respuesta_correcta: str, respuesta: str) -> dict:
+    """Califica cualquier tipo de ejercicio y arma la senda de pasos. Nunca da la respuesta.
+
+    - numerica: cuenta a op b (multiplicación, suma, resta) con diagnóstico paso a paso.
+    - conteo:   un número (contar, medir, monedas, gráficas, decenas).
+    - opcion:   una de las opciones.
+    Lanza ValueError si la respuesta no se puede leer (el servidor responde 422).
+    """
+    if tipo == "opcion":
+        if not (respuesta or "").strip():
+            raise ValueError("Elige una opción.")
+        correcto = _normalizar_opcion(respuesta) == _normalizar_opcion(respuesta_correcta)
+        accion = "Elige la opción"
+    else:
+        numero = leer_numero(respuesta)
+        if numero is None:
+            raise ValueError("Escribe tu respuesta con números.")
+        if tipo == "numerica":
+            return diagnosticar(datos["a"], datos.get("op", "×"), datos["b"], numero, datos.get("moneda", False))
+        correcto = numero == int(respuesta_correcta)
+        accion = f"Tu respuesta: {_f(numero, datos.get('moneda', False))}"
+    pasos = [
+        {"texto": "Observa el dibujo", "estado": "ok"},
+        {"texto": accion, "estado": "ok" if correcto else "casi"},
+        {"texto": "Resultado", "estado": "ok" if correcto else "pendiente"},
+    ]
+    if correcto:
+        return {"correcto": True, "pasos": pasos, "paso_torcido": None, "tipo_error": None, "pregunta": None}
+    return {"correcto": False, "pasos": pasos, "paso_torcido": 2, "tipo_error": tipo,
+            "pregunta": datos.get("pregunta_error") or "Vuelve a mirar el dibujo con calma. ¿Qué ves?"}
+
+
 def pistas_multiplicacion(a: int, b: int, moneda: bool, objeto: str) -> list[str]:
     """3 pistas escalonadas que nunca dicen la respuesta."""
     return [
