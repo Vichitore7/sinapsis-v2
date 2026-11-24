@@ -67,3 +67,19 @@ export function MisionCumplida({ texto, onPremio, textoBoton = '★ Reclamar pre
     </div>
   );
 }
+
+/** Medidor de 5 barritas verticales (estilo Stitch: verde lleno, lavanda vacío). */
+export function Medidor({ valor, max = 5, etiqueta }) {
+  return (
+    <span className="medidor" role="img" aria-label={etiqueta || `${valor} de ${max}`}>
+      {Array.from({ length: max }, (_, i) => (
+        <span key={i} className={i < valor ? 'on' : ''} />
+      ))}
+    </span>
+  );
+}
+
+/** Insignia para piezas del diseño que todavía no tienen backend. */
+export function Proximamente({ texto = 'Próximamente' }) {
+  return <span className="chip chip-gris proximamente" title="Diseño de muestra: aún no funciona">{texto}</span>;
+}

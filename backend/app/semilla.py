@@ -11,8 +11,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .contenido import UNIDADES, ejercicio_multiplicacion
-from .db import Base, SesionLocal, engine
-from .modelos import Aula, AulaAlumno, Ejercicio, Leccion, Unidad, Usuario
+from .db import Base, SesionLocal, engine, migrar_columnas
+from . import diagnostico
+from .modelos import Aula, AulaAlumno, AulaModulo, Diagnostico, Ejercicio, Leccion, Unidad, Usuario
 from .seguridad import codigo_aula, hash_password, hash_recuperacion, nuevo_codigo_recuperacion
 
 
@@ -58,12 +59,26 @@ def crear_demo(db: Session) -> None:
         db.flush()
         for a in alumnos:
             db.add(AulaAlumno(aula_id=aula.id, alumno_id=a.id))
+    if not aula.nivel:
+        aula.nivel = "Primaria • 5°"
+    if not aula.modulos:
+        aula.modulos = [AulaModulo(unidad_id=u, orden=i) for i, u in enumerate(("multiplicacion", "division", "fracciones"))]
+    # Teo y Sol ya hicieron el diagnóstico (para que el profe vea datos); Luna lo hace al entrar.
+    respuestas = {
+        "teo_demo": {"d1": "85", "d2": "45", "d3": "400", "d4": "42", "d5": "13", "d6": "62", "d7": None, "d8": "1/4"},
+        "sol_demo": {"d1": "85", "d2": "35", "d3": "400", "d4": "42", "d5": "36", "d6": "72", "d7": "7", "d8": None},
+    }
+    for a in alumnos:
+        if a.usuario in respuestas and not db.get(Diagnostico, a.id):
+            r = diagnostico.calificar(respuestas[a.usuario])
+            db.add(Diagnostico(alumno_id=a.id, resultados=r, aciertos=sum(r.values()), total=len(r)))
     db.commit()
     print(f"Demo listo. Profesor: profe_demo · Alumnos: luna_demo, teo_demo, sol_demo · Contraseña: selva123 · Código del aula: {aula.codigo}")
 
 
 def main() -> None:
     Base.metadata.create_all(engine)
+    migrar_columnas(engine)
     with SesionLocal() as db:
         cargar_contenido(db)
         print("Contenido cargado.")

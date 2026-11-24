@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from . import juego
 from .contenido import STICKERS
-from .modelos import Ejercicio, EstadoJuego, Intento, Leccion, Mascota, Progreso, Unidad, Usuario
+from .modelos import Diagnostico, Ejercicio, EstadoJuego, Intento, Leccion, Mascota, Progreso, Unidad, Usuario
 
 
 def hoy() -> date:
@@ -133,6 +133,7 @@ def resumen(db: Session, alumno: Usuario) -> dict:
         "mascota": {"nombre": m.nombre, **medidores, "dormido": m.dormido, "pide": juego.lo_que_pide(medidores)},
         "logros": juego.logros(len(completados), est.stats, len(est.lecciones_terminadas)),
         "mapa": estado_mapa(db, est, completados),
+        "diagnostico_hecho": db.get(Diagnostico, alumno.id) is not None,
     }
 
 

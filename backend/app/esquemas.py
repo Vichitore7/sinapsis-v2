@@ -86,6 +86,25 @@ class AjustesEntrada(BaseModel):
 
 class AulaEntrada(BaseModel):
     nombre: str = Field(min_length=1, max_length=60)
+    nivel: str | None = Field(default=None, max_length=40)
+    modulos: list[str] = Field(default_factory=list, max_length=30)
+    requiere_aprobacion: bool = False
+
+
+class AulaEditar(BaseModel):
+    nombre: str | None = Field(default=None, min_length=1, max_length=60)
+    nivel: str | None = Field(default=None, max_length=40)
+    modulos: list[str] | None = Field(default=None, max_length=30)
+    requiere_aprobacion: bool | None = None
+
+
+class DiagnosticoEntrada(BaseModel):
+    respuestas: dict[str, str | None] = Field(max_length=20)
+
+    @field_validator("respuestas")
+    @classmethod
+    def _cortas(cls, v: dict) -> dict:
+        return {k[:10]: (r[:20] if isinstance(r, str) else None) for k, r in v.items()}
 
 
 class UnirseAula(BaseModel):

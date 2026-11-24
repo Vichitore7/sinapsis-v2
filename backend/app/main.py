@@ -10,21 +10,19 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
 
 from . import config
-from .db import Base, SesionLocal, engine
-from .modelos import Unidad
-from .rutas import ajustes, auth, aulas, juego
+from .db import Base, SesionLocal, engine, migrar_columnas
+from .rutas import ajustes, auth, aulas, diagnostico, juego
 from .semilla import cargar_contenido
 
 
 @asynccontextmanager
 async def ciclo(_: FastAPI):
     Base.metadata.create_all(engine)
+    migrar_columnas(engine)
     with SesionLocal() as db:
-        if not db.scalar(select(Unidad.id).limit(1)):
-            cargar_contenido(db)
+        cargar_contenido(db)  # idempotente: así aparecen los módulos nuevos sin volver a sembrar
     yield
 
 
@@ -62,5 +60,5 @@ def salud() -> dict:
     return {"ok": True}
 
 
-for r in (auth.router, juego.router, aulas.router, ajustes.router):
+for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router):
     app.include_router(r, prefix="/api")

@@ -1,6 +1,7 @@
 // Escáner de cuaderno (Escaner-de-cuaderno.md): captura → recorte → lectura confirmada → diagnóstico.
 // Privacidad: la foto se borra en cuanto se confirma la lectura. Solo se guarda el texto.
 import { useEffect, useRef, useState } from 'react';
+import I from '../componentes/IconosUI.jsx';
 import { useJuego } from '../estado/store.jsx';
 import { DiceAjolote } from '../componentes/Comunes.jsx';
 import SendaPasos from '../componentes/SendaPasos.jsx';
@@ -29,7 +30,7 @@ function useEnLinea() {
 }
 
 // ---------- 1. Captura ----------
-function Captura({ onFoto, pendientes, enLinea, onLeerPendiente }) {
+function Captura({ onFoto, pendientes, enLinea, onLeerPendiente, historial }) {
   const camara = useRef(null);
   const galeria = useRef(null);
   const elegir = async (e) => {
@@ -37,35 +38,59 @@ function Captura({ onFoto, pendientes, enLinea, onLeerPendiente }) {
     e.target.value = '';
     if (f) onFoto(await leerArchivo(f));
   };
+  const recientes = historial.slice(-3).reverse();
   return (
-    <div className="pila">
-      <section className="sm-card">
-        <h2 className="subtitulo" style={{ margin: '0 0 var(--espacio-1)' }}>Escáner de cuaderno</h2>
-        <p className="consejo">Una operación por foto, con buena luz.</p>
-        <div className="visor" role="img" aria-label="Visor de la cámara">
-          <i className="esq a" /><i className="esq b" /><i className="esq c" /><i className="esq d" />
-          <span>Aquí va tu cuaderno</span>
+    <section className="tarjeta escaner-tarjeta">
+      <div className="fila-entre" style={{ alignItems: 'flex-start' }}>
+        <div>
+          <h2 className="t-lg" style={{ margin: 0 }}><I n="escaner" tamano={26} className="texto-naranja" /> Escáner de Cuaderno</h2>
+          <p className="cuerpo-sm texto-suave" style={{ margin: '2px 0 0' }}>Una sola operación por captura, con luz natural sin sombras.</p>
         </div>
-        <div className="col-3">
-          <button className="sm-btn ancho" onClick={() => camara.current.click()}>Tomar foto</button>
-          <button className="sm-btn sm-btn-suave ancho" onClick={() => galeria.current.click()}>Elegir de galería</button>
+        <span className="pastilla"><span className={`punto ${enLinea ? 'punto-verde' : 'punto-casi'}`} /> {enLinea ? 'Lente lista' : 'Sin internet'}</span>
+      </div>
+      <div className="visor-stitch" role="img" aria-label="Visor de la cámara">
+        <i className="esq a" /><i className="esq b" /><i className="esq c" /><i className="esq d" />
+        <span className="visor-chip"><I n="diana" tamano={14} /> Alinea tu cuaderno dentro del marco</span>
+        <div className="visor-centro">
+          <span className="sobre verde"><I n="chispa" tamano={14} /> Una operación</span>
+          <span className="visor-op">3 × 6 = <b>?</b></span>
+          <span className="cuerpo-sm texto-suave">Así se ve una buena captura</span>
         </div>
-        <input ref={camara} type="file" accept="image/*" capture="environment" hidden onChange={elegir} />
-        <input ref={galeria} type="file" accept="image/*" hidden onChange={elegir} />
-      </section>
+        <span className="visor-listo"><I n="checkCirculo" tamano={16} className="texto-selva" /> Listo para resolver con Kiko</span>
+      </div>
+      <div className="rejilla-2 apretada">
+        <button className="btn btn-verde btn-grande" onClick={() => camara.current.click()}><I n="camara" tamano={24} /> Tomar foto ahora</button>
+        <button className="btn btn-crema btn-grande" onClick={() => galeria.current.click()}><I n="galeria" tamano={24} /> Elegir de galería</button>
+      </div>
+      <input ref={camara} type="file" accept="image/*" capture="environment" hidden onChange={elegir} />
+      <input ref={galeria} type="file" accept="image/*" hidden onChange={elegir} />
 
       {pendientes.length > 0 && (
-        <section className="sm-card">
-          <span className="sm-chip sm-chip-pista">En espera · {pendientes.length} foto{pendientes.length > 1 ? 's' : ''}</span>
-          <p className="cuerpo">Tus fotos están en la mochila de Kiko.</p>
-          {enLinea ? (
-            <button className="sm-btn" onClick={() => onLeerPendiente(pendientes[0])}>Leer la siguiente foto</button>
-          ) : (
-            <p className="cierre">Cuando haya internet, leeré tus fotos.</p>
-          )}
-        </section>
+        <div className="tarjeta-suave fila-entre" style={{ marginTop: 12 }}>
+          <span className="chip chip-pista">En espera · {pendientes.length} foto{pendientes.length > 1 ? 's' : ''}</span>
+          {enLinea
+            ? <button className="btn btn-naranja btn-chico" onClick={() => onLeerPendiente(pendientes[0])}>Leer la siguiente foto</button>
+            : <span className="cuerpo-sm texto-suave">Cuando haya internet, leeré tus fotos.</span>}
+        </div>
       )}
-    </div>
+
+      <div className="tarjeta-suave recientes">
+        <div className="fila-entre"><b className="t-sm">Últimos ejercicios escaneados</b><span className="etq texto-naranja">{historial.length} en total</span></div>
+        {recientes.length ? (
+          <div className="recientes-lista">
+            {recientes.map((h, i) => (
+              <div key={i} className={`reciente${i === 0 && !h.correcto ? ' activo' : ''}`}>
+                <span className="reciente-op">{h.a}{h.op}{h.b}</span>
+                <span>
+                  <b className="cuerpo-sm">{h.fecha}</b>
+                  <small className={h.correcto ? 'texto-selva' : 'texto-naranja'}>{h.correcto ? 'Resuelto 🎉' : 'En curso 💬'}</small>
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : <p className="cuerpo-sm texto-suave" style={{ margin: '6px 0 0' }}>Aún no escaneas nada. ¡Prueba con tu tarea de hoy!</p>}
+      </div>
+    </section>
   );
 }
 
@@ -216,13 +241,12 @@ function Lectura({ lectura, onConfirmar }) {
 }
 
 // ---------- 4. Diagnóstico ----------
-function Diagnostico({ operacion, onOtra }) {
+function Diagnostico({ operacion, pista, onOtra }) {
   const diag = diagnosticar(operacion);
-  const [pista, setPista] = useState(1);
   if (diag.correcto) {
     return (
       <div className="pila">
-        <div className="centro"><Ajolote estado="celebrando" tamano={130} /></div>
+        <div className="centro"><Ajolote estado="celebrando" tamano={110} /></div>
         <SendaPasos pasos={diag.pasos} numeroPista={0} />
         <div className="sm-acierto">
           <h2 className="titulo" style={{ margin: '0 0 var(--espacio-2)' }}>✓ ¡Tu sendero va derecho!</h2>
@@ -233,28 +257,79 @@ function Diagnostico({ operacion, onOtra }) {
     );
   }
   const pistas = pistasEscaner(operacion, diag);
-  const ejemplo = pista > 3 && operacion.op === '×' ? ejemploParecido({ a: operacion.a, b: operacion.b, moneda: false }) : null;
   return (
     <div className="pila">
-      <DiceAjolote estado="curioso" tamano={90}>
-        ¡Casi! El sendero se torció en el paso {diag.pasoTorcido}. ¿Lo revisamos juntos?
-      </DiceAjolote>
       <SendaPasos pasos={diag.pasos} pregunta={pistas[Math.min(pista, 3) - 1]} numeroPista={Math.min(pista, 3)} />
-      {ejemplo && (
-        <div className="sm-card borde-pista">
-          <h3 className="subtitulo" style={{ margin: '0 0 var(--espacio-2)' }}>Un ejemplo parecido</h3>
-          <p className="numero-reto" style={{ margin: 0 }}>{ejemplo.suma} = {ejemplo.total}</p>
-          <p className="cuerpo texto-suave">Entonces {ejemplo.a} × {ejemplo.b} = {ejemplo.total}. Usa la misma idea en tu cuaderno.</p>
-        </div>
-      )}
-      <div className="acciones">
-        {pista < 3 && <button className="sm-btn sm-btn-pista" onClick={() => setPista(pista + 1)}>? Otra pista</button>}
-        {pista === 3 && operacion.op === '×' && (
-          <button className="sm-btn sm-btn-pista" onClick={() => setPista(4)}>Ver ejemplo parecido</button>
-        )}
-        <button className="sm-btn sm-btn-suave" onClick={onOtra}>Corregí mi cuaderno: escanear otra vez</button>
-      </div>
+      <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Platica con Kiko en el chat para pedir más pistas.</p>
+      <button className="sm-btn sm-btn-suave" onClick={onOtra}>Corregí mi cuaderno: escanear otra vez</button>
     </div>
+  );
+}
+
+// ---------- Chat del tutor (pistas socráticas, nunca la respuesta) ----------
+const SALUDO = {
+  de: 'kiko',
+  texto: '¡Hola explorador! 🔍 Toma una foto de UNA operación de tu cuaderno y la revisamos juntos. No te voy a dar la respuesta directa: tú eres el genio aquí.',
+};
+
+function resultadoDe({ a, op, b }) {
+  if (op === '×') return a * b;
+  if (op === '+') return a + b;
+  return a - b;
+}
+
+function ChatTutor({ mensajes, onEnviar, onPista, onEjemplo, hayOperacion, onReiniciar }) {
+  const [texto, setTexto] = useState('');
+  const fin = useRef(null);
+  useEffect(() => { fin.current?.scrollIntoView({ block: 'nearest' }); }, [mensajes.length]);
+  const enviar = (e) => {
+    e.preventDefault();
+    if (!texto.trim()) return;
+    onEnviar(texto.trim());
+    setTexto('');
+  };
+  return (
+    <section className="chat-tutor" aria-label="Chat con Kiko">
+      <header className="chat-cabecera">
+        <span className="chat-avatar"><Ajolote estado="feliz" tamano={46} /><span className="punto punto-verde" /></span>
+        <div style={{ flex: 1 }}>
+          <b className="t-md">Kiko el Ajolote <span className="chip chip-verde-fuerte">Tutor</span></b>
+          <small>¡Te ayudo a pensar por ti mismo!</small>
+        </div>
+        <button className="boton-redondo translucido" onClick={onReiniciar} aria-label="Reiniciar conversación"><I n="recargar" /></button>
+      </header>
+      <div className="chat-mensajes" aria-live="polite">
+        {mensajes.map((m, i) => (
+          m.de === 'kiko' ? (
+            <div key={i} className="msg msg-kiko">
+              <span className="msg-icono"><I n="cerebro" tamano={18} /></span>
+              <div>
+                <span className="msg-autor">Kiko Pensador{m.premio && <span className="texto-selva"> ★ {m.premio}</span>}</span>
+                <div className="msg-globo">
+                  {m.op && <div className="msg-op">{m.op}</div>}
+                  {m.texto}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div key={i} className="msg msg-yo">
+              <span className="msg-autor">Tú</span>
+              <div className="msg-globo">{m.texto}</div>
+            </div>
+          )
+        ))}
+        <span ref={fin} />
+      </div>
+      <div className="chat-sugerencias">
+        <button className="chip-sug" onClick={onPista} disabled={!hayOperacion}>💡 Dame otra pista</button>
+        <button className="chip-sug" onClick={onEjemplo} disabled={!hayOperacion}>🧩 Dibújalo con bloques</button>
+      </div>
+      <form className="chat-entrada" onSubmit={enviar}>
+        <span className="boton-redondo" aria-hidden="true"><I n="micro" /></span>
+        <input className="entrada" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe tu deducción a Kiko…" aria-label="Mensaje para Kiko" maxLength={200} />
+        <button className="btn btn-naranja btn-cuadrado" aria-label="Enviar"><I n="enviar" /></button>
+      </form>
+    </section>
   );
 }
 
@@ -265,12 +340,16 @@ export default function Escaner() {
   const [foto, setFoto] = useState(null);
   const [lectura, setLectura] = useState(undefined);
   const [operacion, setOperacion] = useState(null);
+  const [pista, setPista] = useState(1);
+  const [mensajes, setMensajes] = useState([SALUDO]);
   const pendientes = estado.escaner.pendientes;
+  const decir = (...ms) => setMensajes((xs) => [...xs, ...ms]);
 
   const reiniciar = () => {
     setFoto(null);
     setLectura(undefined);
     setOperacion(null);
+    setPista(1);
     setPaso('captura');
   };
 
@@ -305,6 +384,7 @@ export default function Escaner() {
   const confirmar = (op) => {
     setFoto(null); // La foto se borra apenas se confirma la lectura.
     setOperacion(op);
+    setPista(1);
     const d = diagnosticar(op);
     actualizar((s) => ({
       ...s,
@@ -313,24 +393,92 @@ export default function Escaner() {
         historial: [...s.escaner.historial, { fecha: hoy(), ...op, correcto: d.correcto, pasoTorcido: d.pasoTorcido }].slice(-50),
       },
     }));
+    const opTexto = `${op.a} ${op.op} ${op.b} = ${op.c}`;
+    if (d.correcto) {
+      decir({ de: 'kiko', op: opTexto, texto: '¡Tu sendero va derecho! Revisé cada paso y todos están bien. ¿Escaneamos otro?', premio: '¡Bien pensado!' });
+    } else {
+      decir({ de: 'kiko', op: opTexto, texto: `He mirado con mi lupa la operación que escaneaste. El sendero se torció en el paso ${d.pasoTorcido}. No te voy a dar la respuesta: ${pistasEscaner(op, d)[0]}` });
+    }
     setPaso('diagnostico');
   };
 
+  const otraPista = () => {
+    if (!operacion) return;
+    const d = diagnosticar(operacion);
+    if (d.correcto) { decir({ de: 'kiko', texto: '¡Ya lo tienes bien! Si quieres, escanea otro ejercicio.' }); return; }
+    const pistas = pistasEscaner(operacion, d);
+    if (pista >= pistas.length) {
+      decir({ de: 'kiko', texto: 'Ya te di mis 3 pistas. Prueba “Dibújalo con bloques” para ver un ejemplo parecido.' });
+      return;
+    }
+    decir({ de: 'kiko', texto: `Pista ${pista + 1} de 3: ${pistas[pista]}` });
+    setPista(pista + 1);
+  };
+
+  const ejemplo = () => {
+    if (!operacion) return;
+    if (operacion.op !== '×') {
+      decir({ de: 'kiko', texto: `Dibuja ${operacion.a} bloques y luego ${operacion.op === '+' ? 'agrega' : 'quita'} ${operacion.b}. Cuenta los que quedan, uno por uno.` });
+      return;
+    }
+    const e = ejemploParecido({ a: operacion.a, b: operacion.b, moneda: false });
+    decir({ de: 'kiko', op: `${e.suma} = ${e.total}`, texto: `Mira este ejemplo parecido: ${e.a} bloques de ${e.b} son ${e.total}. Usa la misma idea con tu operación en el cuaderno.` });
+  };
+
+  const alEscribir = (texto) => {
+    decir({ de: 'yo', texto });
+    if (!operacion) {
+      decir({ de: 'kiko', texto: 'Primero escanea o escribe tu operación, así sé de qué estamos platicando. 📸' });
+      return;
+    }
+    const d = diagnosticar(operacion);
+    const numeros = (texto.match(/\d+/g) || []).map(Number);
+    if (numeros.includes(resultadoDe(operacion)) && !d.correcto) {
+      decir({ de: 'kiko', texto: '¡Exacto, explorador! 🌟 Ahora corrígelo en tu cuaderno y escanéalo otra vez para ver tu sendero derecho.', premio: '+ Puntos de lógica' });
+    } else if (d.correcto) {
+      decir({ de: 'kiko', texto: '¡Tu operación ya estaba bien! Explícame cómo lo pensaste: eso también es aprender.' });
+    } else {
+      decir({ de: 'kiko', texto: 'Mmm, casi. No pasa nada: equivocarse también es avanzar. ¿Quieres otra pista?' });
+    }
+  };
+
   return (
-    <div className="pila">
+    <div className="pila-lg">
+      <section className="tarjeta banda-pedagogia">
+        <span className="icono-caja ic-crema chica"><I n="cerebro" tamano={18} /></span>
+        <p className="cuerpo-md" style={{ margin: 0, flex: 1 }}><b>Pedagogía Guiada:</b> Kiko nunca te da la solución servida, ¡te entrena paso a paso como un verdadero explorador!</p>
+        <span className="chip chip-verde"><I n="escudo" tamano={14} /> Modo Seguro Escolar</span>
+      </section>
       {!enLinea && <div className="aviso-red etiqueta">Sin internet: la app sigue funcionando.</div>}
-      {paso === 'captura' && (
-        <Captura
-          onFoto={(f) => { setFoto(f); setPaso('recorte'); }}
-          pendientes={pendientes}
-          enLinea={enLinea}
-          onLeerPendiente={leerPendiente}
-        />
-      )}
-      {paso === 'recorte' && foto && <Recorte foto={foto} onEnviar={enviar} onOtra={reiniciar} />}
-      {paso === 'sinConexion' && <SinConexion cuantas={pendientes.length} onListo={reiniciar} />}
-      {paso === 'lectura' && <Lectura lectura={lectura} onConfirmar={confirmar} />}
-      {paso === 'diagnostico' && operacion && <Diagnostico operacion={operacion} onOtra={reiniciar} />}
+
+      <div className="escaner-layout">
+        <div className="escaner-col">
+          {paso === 'captura' && (
+            <Captura
+              onFoto={(f) => { setFoto(f); setPaso('recorte'); }}
+              pendientes={pendientes}
+              enLinea={enLinea}
+              onLeerPendiente={leerPendiente}
+              historial={estado.escaner.historial}
+            />
+          )}
+          {paso === 'recorte' && foto && <Recorte foto={foto} onEnviar={enviar} onOtra={reiniciar} />}
+          {paso === 'sinConexion' && <SinConexion cuantas={pendientes.length} onListo={reiniciar} />}
+          {paso === 'lectura' && <Lectura lectura={lectura} onConfirmar={confirmar} />}
+          {paso === 'diagnostico' && operacion && <Diagnostico operacion={operacion} pista={pista} onOtra={reiniciar} />}
+        </div>
+        <div className="escaner-col">
+          <ChatTutor
+            mensajes={mensajes}
+            onEnviar={alEscribir}
+            onPista={otraPista}
+            onEjemplo={ejemplo}
+            hayOperacion={!!operacion}
+            onReiniciar={() => { setMensajes([SALUDO]); reiniciar(); }}
+          />
+        </div>
+      </div>
+
     </div>
   );
 }

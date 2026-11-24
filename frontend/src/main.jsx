@@ -6,8 +6,13 @@ import '@fontsource/baloo-2/latin-800.css';
 import '@fontsource/nunito/latin-400.css';
 import '@fontsource/nunito/latin-700.css';
 import '@fontsource/nunito/latin-800.css';
+import '@fontsource/plus-jakarta-sans/latin-500.css';
+import '@fontsource/plus-jakarta-sans/latin-600.css';
+import '@fontsource/plus-jakarta-sans/latin-700.css';
+import '@fontsource/plus-jakarta-sans/latin-800.css';
 import './styles/tokens.css';
 import './styles/app.css';
+import './styles/stitch.css'; // Rediseño Stitch: quitar esta línea regresa al diseño anterior.
 import App from './App.jsx';
 import { ProveedorEstado } from './estado/store.jsx';
 

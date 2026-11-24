@@ -76,7 +76,8 @@ function Extra({ estado }) {
   return null;
 }
 
-export default function Ajolote({ estado = 'feliz', tamano = 140, mundosSuperados = 0, accesorios = [], etiqueta }) {
+// cabeza: solo la cabecita (logo del inicio de sesión y saludos de Kiko).
+export default function Ajolote({ estado = 'feliz', tamano = 140, mundosSuperados = 0, accesorios = [], etiqueta, cabeza = false }) {
   const brilla = estado === 'celebrando';
   const colorBranquia = (i) => {
     if (brilla) return 'var(--sol)';
@@ -92,8 +93,8 @@ export default function Ajolote({ estado = 'feliz', tamano = 140, mundosSuperado
       {BRANQUIAS.map((b, i) => (
         <ellipse key={i} cx={b.cx} cy={b.cy} rx={b.rx || 24} ry="9" transform={`rotate(${b.rot} ${b.cx} ${b.cy})`} />
       ))}
-      <ellipse cx="72" cy="176" rx="14" ry="8" /><ellipse cx="128" cy="176" rx="14" ry="8" />
-      <ellipse cx="100" cy="152" rx="36" ry="26" /><ellipse cx="100" cy="100" rx="62" ry="52" />
+      {!cabeza && <><ellipse cx="72" cy="176" rx="14" ry="8" /><ellipse cx="128" cy="176" rx="14" ry="8" />
+      <ellipse cx="100" cy="152" rx="36" ry="26" /></>}<ellipse cx="100" cy="100" rx="62" ry="52" />
       <ellipse cx="100" cy="54" rx="60" ry="12" /><path d="M62 54 Q62 22 100 22 Q138 22 138 54 Z" />
     </>
   );
@@ -101,7 +102,7 @@ export default function Ajolote({ estado = 'feliz', tamano = 140, mundosSuperado
   return (
     <svg
       className={`ajolote ajolote-${estado}`}
-      viewBox="0 0 200 200"
+      viewBox={cabeza ? '4 10 192 154' : '0 0 200 200'}
       width={tamano}
       height={tamano}
       role="img"
@@ -110,7 +111,7 @@ export default function Ajolote({ estado = 'feliz', tamano = 140, mundosSuperado
       {/* Borde blanco de sticker */}
       <g fill="var(--superficie)" stroke="var(--superficie)" strokeWidth="16" strokeLinejoin="round">{formas}</g>
 
-      {accesorios.includes('mochila') && (
+      {!cabeza && accesorios.includes('mochila') && (
         <g stroke="var(--tinta)" strokeWidth="2.5">
           <rect x="128" y="126" width="44" height="54" rx="14" fill="var(--magia)" />
           <rect x="136" y="148" width="28" height="20" rx="6" fill="var(--sol)" />
@@ -125,14 +126,14 @@ export default function Ajolote({ estado = 'feliz', tamano = 140, mundosSuperado
         />
       ))}
       <g fill="var(--ajolote-rosa)" stroke="var(--tinta)" strokeWidth="2.5">
-        <ellipse cx="72" cy="176" rx="14" ry="8" /><ellipse cx="128" cy="176" rx="14" ry="8" />
-        <ellipse cx="100" cy="152" rx="36" ry="26" /><ellipse cx="100" cy="100" rx="62" ry="52" />
+        {!cabeza && <><ellipse cx="72" cy="176" rx="14" ry="8" /><ellipse cx="128" cy="176" rx="14" ry="8" />
+        <ellipse cx="100" cy="152" rx="36" ry="26" /></>}<ellipse cx="100" cy="100" rx="62" ry="52" />
       </g>
       <ellipse cx="62" cy="116" rx="10" ry="6" fill="var(--ajolote-rosa-profundo)" opacity=".7" />
       <ellipse cx="138" cy="116" rx="10" ry="6" fill="var(--ajolote-rosa-profundo)" opacity=".7" />
       <Cara estado={estado} />
 
-      {accesorios.includes('bufanda') && (
+      {!cabeza && accesorios.includes('bufanda') && (
         <g stroke="var(--tinta)" strokeWidth="2.5">
           <path d="M62 138 Q100 156 138 138 L138 150 Q100 168 62 150 Z" fill="var(--casi)" />
           <rect x="112" y="148" width="14" height="26" rx="4" fill="var(--casi)" />
@@ -144,7 +145,7 @@ export default function Ajolote({ estado = 'feliz', tamano = 140, mundosSuperado
         <path d="M62 54 Q62 22 100 22 Q138 22 138 54 Z" fill="var(--sol)" />
         <rect x="63" y="42" width="74" height="9" fill="var(--selva)" strokeWidth="2" />
       </g>
-      {!accesorios.includes('bufanda') && (
+      {!cabeza && !accesorios.includes('bufanda') && (
         <g>
           <circle cx="100" cy="166" r="9" fill="var(--sol)" stroke="var(--tinta)" strokeWidth="2.5" />
           <path d="M100 160 L103 166 L100 172 L97 166 Z" fill="var(--tinta)" />

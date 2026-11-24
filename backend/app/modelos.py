@@ -1,7 +1,7 @@
 """Tablas de la base de datos.
 
-usuarios · aulas · aula_alumnos · asignaciones · unidades · lecciones · ejercicios
-intentos · progreso · estado_juego · mascotas · ajustes_usuario
+usuarios · aulas · aula_alumnos · aula_modulos · asignaciones · unidades · lecciones · ejercicios
+intentos · progreso · estado_juego · mascotas · ajustes_usuario · diagnosticos
 """
 from __future__ import annotations
 
@@ -54,9 +54,13 @@ class Aula(Base):
     nombre: Mapped[str] = mapped_column(String(60))
     codigo: Mapped[str] = mapped_column(String(7), unique=True, index=True)  # p. ej. X7K-92B
     profesor_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
+    nivel: Mapped[str | None] = mapped_column(String(40), nullable=True)  # p. ej. "Primaria • 5°"
+    # False: basta el código para entrar. True: el profesor aprueba a cada alumno (evita filtraciones del código).
+    requiere_aprobacion: Mapped[bool] = mapped_column(Boolean, default=False)
     creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
 
     alumnos: Mapped[list[AulaAlumno]] = relationship(cascade="all, delete-orphan", back_populates="aula")
+    modulos: Mapped[list[AulaModulo]] = relationship(cascade="all, delete-orphan", order_by="AulaModulo.orden")
     asignaciones: Mapped[list[Asignacion]] = relationship(cascade="all, delete-orphan", back_populates="aula")
 
 
@@ -65,10 +69,20 @@ class AulaAlumno(Base):
 
     aula_id: Mapped[int] = mapped_column(ForeignKey("aulas.id", ondelete="CASCADE"), primary_key=True)
     alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+    estado: Mapped[str] = mapped_column(String(10), default="activo")  # activo | pendiente
     unido: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
 
     aula: Mapped[Aula] = relationship(back_populates="alumnos")
     alumno: Mapped[Usuario] = relationship()
+
+
+class AulaModulo(Base):
+    """Módulos (unidades) que el profesor ve en el año escolar con esa aula."""
+    __tablename__ = "aula_modulos"
+
+    aula_id: Mapped[int] = mapped_column(ForeignKey("aulas.id", ondelete="CASCADE"), primary_key=True)
+    unidad_id: Mapped[str] = mapped_column(ForeignKey("unidades.id"), primary_key=True)
+    orden: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class Asignacion(Base):
@@ -192,3 +206,14 @@ class Mascota(Base):
     retos_desde_bajada: Mapped[int] = mapped_column(Integer, default=0)
     turno_medidor: Mapped[int] = mapped_column(Integer, default=0)
     actualizado: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora, onupdate=ahora)
+
+
+class Diagnostico(Base):
+    """Examen diagnóstico que el alumno hace al entrar por primera vez."""
+    __tablename__ = "diagnosticos"
+
+    alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+    resultados: Mapped[dict] = mapped_column(JSON)  # {habilidad: true/false}
+    aciertos: Mapped[int] = mapped_column(Integer)
+    total: Mapped[int] = mapped_column(Integer)
+    fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)

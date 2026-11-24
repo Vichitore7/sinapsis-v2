@@ -223,3 +223,84 @@ def test_generador_no_repite_formato_y_respeta_nivel():
     e = generar_multiplicacion(1, "p-1", 1, semilla=7)
     assert 2 <= e["datos"]["a"] <= 4 and e["respuesta"] == str(e["datos"]["a"] * e["datos"]["b"])
     assert all(e["respuesta"] not in p for p in e["pistas"])
+
+
+# ---------------- Módulos, aprobación, curso y diagnóstico ----------------
+
+def test_aula_con_modulos_y_nivel(cliente):
+    registrar(cliente, "profe", rol="profesor")
+    aula = cliente.post("/api/aulas", json={"nombre": "5.º B", "nivel": "Primaria • 5°", "modulos": ["multiplicacion", "geometria"]}).json()
+    assert [m["id"] for m in aula["modulos"]] == ["multiplicacion", "geometria"]
+    assert aula["modulos"][1]["proximamente"] is True and aula["nivel"] == "Primaria • 5°"
+    r = cliente.patch(f"/api/aulas/{aula['id']}", json={"modulos": ["division", "multiplicacion", "division"]})
+    assert [m["id"] for m in r.json()["modulos"]] == ["division", "multiplicacion"]  # sin repetidos, en orden
+    assert r.json()["nombre"] == "5.º B"  # editar solo lo que se manda
+    assert cliente.patch(f"/api/aulas/{aula['id']}", json={"modulos": ["no-existe"]}).status_code == 422
+
+
+def test_aprobacion_de_alumnos(cliente, nuevo_cliente):
+    registrar(cliente, "profe", rol="profesor")
+    aula = cliente.post("/api/aulas", json={"nombre": "5.º B", "requiere_aprobacion": True, "modulos": ["multiplicacion"]}).json()
+    teo, sol = nuevo_cliente(), nuevo_cliente()
+    teo_id = registrar(teo, "teo")["usuario"]["id"]
+    sol_id = registrar(sol, "sol")["usuario"]["id"]
+    for c in (teo, sol):
+        r = c.post("/api/aulas/unirse", json={"codigo": aula["codigo"]}).json()
+        assert r["estado"] == "pendiente" and "modulos" not in r  # aún no ve el contenido del aula
+    assert teo.get(f"/api/aulas/{aula['id']}/curso").status_code == 404
+
+    datos = cliente.get(f"/api/aulas/{aula['id']}").json()
+    assert [p["apodo"] for p in datos["pendientes"]] == ["Teo", "Sol"] and datos["alumnos"] == []
+    assert cliente.get(f"/api/aulas/{aula['id']}/panel").json()["alumnos"] == []  # pendientes no cuentan
+
+    r = cliente.post(f"/api/aulas/{aula['id']}/solicitudes/{teo_id}/aprobar").json()
+    assert [a["apodo"] for a in r["alumnos"]] == ["Teo"]
+    r = cliente.delete(f"/api/aulas/{aula['id']}/solicitudes/{sol_id}").json()
+    assert r["pendientes"] == []
+    assert sol.get("/api/aulas").json()["aulas"] == []
+    assert teo.get("/api/aulas").json()["aulas"][0]["estado"] == "activo"
+
+    # Sin aprobación: entra directo
+    cliente.patch(f"/api/aulas/{aula['id']}", json={"requiere_aprobacion": False})
+    assert sol.post("/api/aulas/unirse", json={"codigo": aula["codigo"]}).json()["estado"] == "activo"
+
+
+def test_curso_del_alumno_con_progreso_del_grupo(cliente, nuevo_cliente):
+    registrar(cliente, "profe", rol="profesor")
+    aula = cliente.post("/api/aulas", json={"nombre": "5.º B", "modulos": ["multiplicacion", "division"]}).json()
+    teo, sol = nuevo_cliente(), nuevo_cliente()
+    for c, n in ((teo, "teo"), (sol, "sol")):
+        registrar(c, n)
+        c.post("/api/aulas/unirse", json={"codigo": aula["codigo"]})
+    teo.post("/api/ejercicios/m1-r1/intentos", json={"respuesta": "18"})
+    curso = teo.get(f"/api/aulas/{aula['id']}/curso").json()
+    mult = curso["modulos"][0]
+    assert curso["companeros"] == 2 and mult["total_retos"] == 8
+    assert mult["mis_retos"] == 1 and mult["mi_porcentaje"] == 12
+    assert mult["grupo_porcentaje"] == 6  # promedio de 12.5% y 0%
+    assert [l["id"] for l in mult["lecciones"]] == ["m1", "m2"]
+    assert curso["modulos"][1]["proximamente"] is True
+    assert "alumnos" not in curso and "codigo" not in curso  # sin nombres de compañeros
+
+
+def test_diagnostico_de_entrada(cliente, nuevo_cliente):
+    registrar(cliente, "profe", rol="profesor")
+    aula = cliente.post("/api/aulas", json={"nombre": "5.º B"}).json()
+    alumno = nuevo_cliente()
+    registrar(alumno, "teo")
+    alumno.post("/api/aulas/unirse", json={"codigo": aula["codigo"]})
+    assert alumno.get("/api/juego/estado").json()["diagnostico_hecho"] is False
+    preguntas = alumno.get("/api/diagnostico").json()["preguntas"]
+    assert len(preguntas) == 8 and all("respuesta" not in p for p in preguntas)
+
+    r = alumno.post("/api/diagnostico", json={"respuestas": {"d1": "85", "d2": " 35 ", "d4": "41", "d8": "1/2", "d7": None}}).json()
+    assert r["hecho"] and r["aciertos"] == 3 and r["total"] == 8
+    logradas = {h["habilidad"] for h in r["habilidades"] if h["logrado"]}
+    assert logradas == {"suma", "resta", "fracciones"}
+    assert alumno.get("/api/juego/estado").json()["diagnostico_hecho"] is True
+
+    grupo = cliente.get(f"/api/aulas/{aula['id']}/diagnostico").json()
+    assert grupo["hechos"] == 1 and grupo["alumnos"][0]["aciertos"] == 3
+    suma = next(h for h in grupo["habilidades"] if h["habilidad"] == "suma")
+    assert suma["logrado"] == 1 and suma["de"] == 1
+    assert cliente.post("/api/diagnostico", json={"respuestas": {}}).status_code == 403  # solo alumnos

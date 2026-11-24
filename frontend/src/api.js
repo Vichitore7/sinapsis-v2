@@ -49,8 +49,12 @@ export const api = {
 
   // Aulas
   aulas: () => pedir('GET', '/aulas'),
-  crearAula: (nombre) => pedir('POST', '/aulas', { nombre }),
-  editarAula: (id, nombre) => pedir('PATCH', `/aulas/${id}`, { nombre }),
+  crearAula: (d) => pedir('POST', '/aulas', typeof d === 'string' ? { nombre: d } : d),
+  editarAula: (id, d) => pedir('PATCH', `/aulas/${id}`, typeof d === 'string' ? { nombre: d } : d),
+  aprobarAlumno: (id, alumnoId) => pedir('POST', `/aulas/${id}/solicitudes/${alumnoId}/aprobar`),
+  rechazarAlumno: (id, alumnoId) => pedir('DELETE', `/aulas/${id}/solicitudes/${alumnoId}`),
+  diagnosticoGrupo: (id) => pedir('GET', `/aulas/${id}/diagnostico`),
+  curso: (id) => pedir('GET', `/aulas/${id}/curso`),
   borrarAula: (id) => pedir('DELETE', `/aulas/${id}`),
   regenerarCodigo: (id) => pedir('POST', `/aulas/${id}/regenerar-codigo`),
   expulsar: (id, alumnoId) => pedir('DELETE', `/aulas/${id}/alumnos/${alumnoId}`),
@@ -59,6 +63,10 @@ export const api = {
   panel: (id) => pedir('GET', `/aulas/${id}/panel`),
   detalleAlumno: (id, alumnoId) => pedir('GET', `/aulas/${id}/alumnos/${alumnoId}`),
   unirse: (codigo) => pedir('POST', '/aulas/unirse', { codigo }),
+
+  // Examen diagnóstico (alumno)
+  diagnostico: () => pedir('GET', '/diagnostico'),
+  responderDiagnostico: (respuestas) => pedir('POST', '/diagnostico', { respuestas }),
 
   // Ajustes
   ajustes: () => pedir('GET', '/ajustes'),
@@ -112,5 +120,6 @@ export function adaptarEstado(r) {
     dormido: r.mascota.dormido,
     logros: r.logros,
     mapa: r.mapa,
+    diagnosticoHecho: r.diagnostico_hecho,
   };
 }

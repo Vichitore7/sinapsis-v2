@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from . import config
@@ -33,3 +33,23 @@ def get_db() -> Iterator[Session]:
         yield db
     finally:
         db.close()
+
+
+# Columnas que se agregaron después de crear la base. create_all() no altera tablas que ya existen,
+# así que las agregamos aquí para que nadie tenga que borrar su selva.db.
+COLUMNAS_NUEVAS = {
+    "aulas": {"nivel": "VARCHAR(40)", "requiere_aprobacion": "BOOLEAN NOT NULL DEFAULT 0"},
+    "aula_alumnos": {"estado": "VARCHAR(10) NOT NULL DEFAULT 'activo'"},
+}
+
+
+def migrar_columnas(eng) -> None:
+    insp = inspect(eng)
+    with eng.begin() as conn:
+        for tabla, columnas in COLUMNAS_NUEVAS.items():
+            if not insp.has_table(tabla):
+                continue
+            existentes = {c["name"] for c in insp.get_columns(tabla)}
+            for nombre, tipo in columnas.items():
+                if nombre not in existentes:
+                    conn.execute(text(f"ALTER TABLE {tabla} ADD COLUMN {nombre} {tipo}"))

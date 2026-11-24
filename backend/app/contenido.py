@@ -39,6 +39,12 @@ UNIDADES = [
     },
     {"id": "division", "nombre": "División", "orden": 2, "prerrequisito": "multiplicacion", "proximamente": True, "lecciones": []},
     {"id": "fracciones", "nombre": "Fracciones", "orden": 3, "prerrequisito": "division", "proximamente": True, "lecciones": []},
+    # Módulos del año escolar que el profesor ya puede agregar a su aula; el contenido llega después.
+    {"id": "suma-resta", "nombre": "Suma y resta", "orden": 4, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "valor-posicional", "nombre": "Valor posicional", "orden": 5, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "decimales", "nombre": "Decimales", "orden": 6, "prerrequisito": "fracciones", "proximamente": True, "lecciones": []},
+    {"id": "geometria", "nombre": "Geometría", "orden": 7, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "medicion", "nombre": "Medición", "orden": 8, "prerrequisito": None, "proximamente": True, "lecciones": []},
 ]
 
 STICKERS = {

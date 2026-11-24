@@ -1,249 +1,239 @@
-// Aulas en línea del maestro (tipo Classroom): código para unirse, alumnos, misiones y panel.
-// Sin rankings: la lista va en orden alfabético.
-import { useCallback, useEffect, useState } from 'react';
+// Modo Aula (profesor): código del grupo, crear/configurar grupos (nombre, nivel y VARIOS módulos del año)
+// y cómo entran los alumnos: solo con el código o con aprobación del profe (por si el código se filtra).
+// El avance y el diagnóstico de cada alumno viven en la página "Diagnóstico".
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
 import { useJuego } from '../estado/store.jsx';
-import { Barra } from '../componentes/Comunes.jsx';
-import Ajolote from '../componentes/Ajolote.jsx';
+import I from '../componentes/IconosUI.jsx';
 
-function Panel({ aulaId, onAlumno }) {
-  const [p, setP] = useState(null);
-  const [error, setError] = useState(null);
-  useEffect(() => {
-    api.panel(aulaId).then(setP).catch((e) => setError(e.message));
-  }, [aulaId]);
-  if (error) return <div className="sm-casi">{error}</div>;
-  if (!p) return <p className="cuerpo texto-suave">Cargando panel…</p>;
-  const maxErr = Math.max(1, ...p.errores_comunes.map((e) => e.veces));
+const NIVELES = [
+  ...['1°', '2°', '3°', '4°', '5°', '6°'].map((g) => `Primaria • ${g}`),
+  ...['1°', '2°', '3°'].map((g) => `Secundaria • ${g}`),
+];
+
+/** Catálogo de módulos = unidades del contenido (las "próximamente" también se pueden programar). */
+function useCatalogo() {
+  const { mundos } = useJuego();
+  return useMemo(() => {
+    const vistos = new Map();
+    mundos.forEach((m) => {
+      const u = m.unidad;
+      if (u && !vistos.has(u.id)) vistos.set(u.id, { id: u.id, nombre: u.nombre, proximamente: !!m.proximamente });
+    });
+    return [...vistos.values()];
+  }, [mundos]);
+}
+
+function FormGrupo({ inicial, onGuardar, onCancelar, titulo, textoBoton }) {
+  const catalogo = useCatalogo();
+  const [f, setF] = useState(inicial);
+  const [guardando, setGuardando] = useState(false);
+  useEffect(() => { setF(inicial); }, [inicial]);
+
+  const alternar = (id) => setF((x) => ({ ...x, modulos: x.modulos.includes(id) ? x.modulos.filter((m) => m !== id) : [...x.modulos, id] }));
+  const enviar = async (e) => {
+    e.preventDefault();
+    setGuardando(true);
+    try { await onGuardar(f); } finally { setGuardando(false); }
+  };
+  const cambio = JSON.stringify(f) !== JSON.stringify(inicial);
 
   return (
-    <section className="sm-card">
-      <div className="fila-entre" style={{ marginBottom: 'var(--espacio-2)' }}>
-        <h2 className="subtitulo" style={{ margin: 0 }}>Panel del grupo</h2>
-        <span className="sm-chip">{p.aula.alumnos} alumnos</span>
-      </div>
-      <p className="etiqueta texto-magia" style={{ marginTop: 0 }}>Privado: no lo proyectes.</p>
-
-      <div className="sec">
-        <h3 className="cuerpo-fuerte">Alumnos que necesitan apoyo</h3>
-        {p.necesitan_apoyo.length
-          ? <div className="chips">{p.necesitan_apoyo.map((a) => <span key={a.id} className="sm-chip">{a.apodo}</span>)}</div>
-          : <p className="etiqueta texto-suave">Nadie por ahora.</p>}
+    <form className="tarjeta tarjeta-grande pila-md" onSubmit={enviar}>
+      <div className="fila-entre">
+        <h2 className="t-lg" style={{ margin: 0 }}><I n="ajustes" tamano={22} className="texto-naranja" /> {titulo}</h2>
+        {onCancelar && <button type="button" className="btn btn-blanco btn-chico" onClick={onCancelar}>Cancelar</button>}
       </div>
 
-      <div className="sec">
-        <h3 className="cuerpo-fuerte">Errores más comunes</h3>
-        {p.errores_comunes.length === 0 && <p className="etiqueta texto-suave">Todavía no hay errores registrados.</p>}
-        {p.errores_comunes.map((e) => (
-          <div key={e.id} className="fila-error">
-            <span>{e.texto} <span className="etiqueta texto-suave">({e.alumnos} alumno{e.alumnos === 1 ? '' : 's'})</span></span>
-            <Barra valor={e.veces} max={maxErr} color="magia" etiqueta={`${e.veces} veces`} />
-            <b>{e.veces}</b>
-          </div>
-        ))}
-        {p.mundos_con_mas_errores.length > 0 && (
-          <p className="etiqueta texto-suave">Mundos con más tropiezos: {p.mundos_con_mas_errores.map((m) => `${m.mundo} (${m.fallos})`).join(', ')}</p>
+      <div className="rejilla-2 apretada">
+        <label className="campo-st"><span className="etq">Nombre del aula</span>
+          <input className="entrada entrada-chica" value={f.nombre} onChange={(e) => setF({ ...f, nombre: e.target.value })} maxLength={60} placeholder="Ej. 5.º B" required /></label>
+        <label className="campo-st"><span className="etq">Nivel</span>
+          <select className="entrada entrada-chica" value={f.nivel} onChange={(e) => setF({ ...f, nivel: e.target.value })}>
+            <option value="">Elige el grado…</option>
+            {NIVELES.map((n) => <option key={n} value={n}>{n}</option>)}
+          </select></label>
+      </div>
+
+      <div className="campo-st">
+        <div className="fila-entre"><span className="etq">Módulos del año escolar</span><span className="etq texto-suave">{f.modulos.length} elegido{f.modulos.length === 1 ? '' : 's'}</span></div>
+        <div className="modulos-elegir">
+          {catalogo.map((m) => {
+            const on = f.modulos.includes(m.id);
+            return (
+              <button type="button" key={m.id} className={`modulo-chip${on ? ' activo' : ''}`} aria-pressed={on} onClick={() => alternar(m.id)}>
+                <I n={on ? 'check' : 'libro'} tamano={16} /> {m.nombre}
+                {m.proximamente && <small>pronto</small>}
+              </button>
+            );
+          })}
+        </div>
+        {f.modulos.length > 0 && (
+          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>
+            Orden en que los verán: {f.modulos.map((id) => catalogo.find((c) => c.id === id)?.nombre || id).join(' → ')}
+          </p>
         )}
       </div>
 
-      {p.que_reforzar && (
-        <div className="sec">
-          <h3 className="cuerpo-fuerte">Qué reforzar mañana</h3>
-          <div className="sugerencia">{p.que_reforzar}</div>
-        </div>
-      )}
-
-      <div className="sec">
-        <h3 className="cuerpo-fuerte">Progreso de cada alumno</h3>
-        <div className="tabla-alumnos">
-          {p.alumnos.map((a) => (
-            <button key={a.id} className="fila-alumno" onClick={() => onAlumno(a)}>
-              <b>{a.apodo} <span className="etiqueta texto-suave">@{a.usuario}</span></b>
-              <Barra valor={a.retos_completados} max={a.total_retos} color="magia" etiqueta={`${a.porcentaje}% completado`} />
-              <span className="etiqueta texto-suave">{a.porcentaje}% · ★ {a.estrellas_ganadas} · racha {a.racha_dias}</span>
-            </button>
-          ))}
-          {p.alumnos.length === 0 && <p className="etiqueta texto-suave">Comparte el código para que tus alumnos se unan.</p>}
+      <div className="campo-st">
+        <span className="etq">¿Cómo entran los alumnos?</span>
+        <div className="rejilla-2 apretada">
+          <button type="button" className={`opcion${!f.requiere_aprobacion ? ' activa' : ''}`} aria-pressed={!f.requiere_aprobacion} onClick={() => setF({ ...f, requiere_aprobacion: false })}>
+            <span className="icono-caja"><I n="llave" /></span>
+            <span><b>Solo con el código</b><small>Entran directo. Menos trabajo para ti.</small></span>
+          </button>
+          <button type="button" className={`opcion${f.requiere_aprobacion ? ' activa' : ''}`} aria-pressed={f.requiere_aprobacion} onClick={() => setF({ ...f, requiere_aprobacion: true })}>
+            <span className="icono-caja"><I n="escudo" /></span>
+            <span><b>Yo apruebo a cada alumno</b><small>Si el código se filtra, nadie entra sin tu permiso.</small></span>
+          </button>
         </div>
       </div>
-    </section>
+
+      <div className="fila-fin">
+        <button className="btn btn-naranja" disabled={guardando || !f.nombre.trim() || !cambio}>{guardando ? 'Guardando…' : textoBoton}</button>
+      </div>
+    </form>
   );
 }
 
-function DetalleAlumno({ aulaId, alumno, onCerrar, onExpulsar }) {
-  const [d, setD] = useState(null);
-  useEffect(() => { api.detalleAlumno(aulaId, alumno.id).then(setD); }, [aulaId, alumno.id]);
-  return (
-    <section className="sm-card">
-      <div className="fila-entre">
-        <h2 className="subtitulo" style={{ margin: 0 }}>{alumno.apodo}</h2>
-        <button className="sm-btn sm-btn-suave" onClick={onCerrar}>Volver</button>
-      </div>
-      {!d ? <p className="cuerpo texto-suave">Cargando…</p> : (
-        <>
-          <p className="cuerpo">
-            {d.progreso.retos_completados} de {d.progreso.total_retos} retos · {d.progreso.intentos} intentos ·{' '}
-            {d.progreso.pistas_usadas} pistas · racha de {d.progreso.racha_dias} día(s)
-          </p>
-          <h3 className="cuerpo-fuerte">Intentos recientes</h3>
-          <ul className="lista-intentos">
-            {d.intentos_recientes.map((i, n) => (
-              <li key={n} className={i.correcto ? 'ok' : 'casi'}>
-                <span>{i.correcto ? '✓' : '¡Casi!'}</span>
-                <span>{i.ejercicio_id} · respondió {i.respuesta}</span>
-                <span className="etiqueta texto-suave">
-                  {i.tipo_error === 'sumo' ? 'Sumó en vez de multiplicar · ' : i.tipo_error === 'calculo' ? 'Error de cálculo · ' : ''}
-                  {i.pistas_usadas} pista(s)
-                </span>
-              </li>
-            ))}
-            {d.intentos_recientes.length === 0 && <li className="etiqueta texto-suave">Aún no hay intentos.</li>}
-          </ul>
-        </>
-      )}
-      <button className="sm-btn sm-btn-suave" style={{ marginTop: 'var(--espacio-3)' }} onClick={onExpulsar}>Quitar del aula</button>
-    </section>
-  );
-}
+const VACIO = { nombre: '', nivel: '', modulos: [], requiere_aprobacion: false };
 
 export default function Aulas() {
-  const { mundos } = useJuego();
   const [aulas, setAulas] = useState(null);
   const [selId, setSelId] = useState(null);
-  const [nombre, setNombre] = useState('');
-  const [alumno, setAlumno] = useState(null);
-  const [tarea, setTarea] = useState({ leccion_id: '', fecha_limite: '' });
-  const [version, setVersion] = useState(0); // para recargar el panel
+  const [creando, setCreando] = useState(false);
   const [error, setError] = useState(null);
+  const [copiado, setCopiado] = useState(false);
 
   const cargar = useCallback(async () => {
     const r = await api.aulas();
     setAulas(r.aulas);
     setSelId((id) => id ?? r.aulas[0]?.id ?? null);
+    if (!r.aulas.length) setCreando(true);
   }, []);
   useEffect(() => { cargar().catch((e) => setError(e.message)); }, [cargar]);
 
   const sel = aulas?.find((a) => a.id === selId);
+  const inicialSel = useMemo(() => (sel ? {
+    nombre: sel.nombre, nivel: sel.nivel || '', modulos: sel.modulos.map((m) => m.id), requiere_aprobacion: !!sel.requiere_aprobacion,
+  } : VACIO), [sel]);
+
   const reemplazar = (a) => setAulas((xs) => xs.map((x) => (x.id === a.id ? a : x)));
   const intentar = (fn) => async (...args) => {
     setError(null);
     try { await fn(...args); } catch (e) { setError(e.message); }
   };
 
-  const crear = intentar(async (e) => {
-    e.preventDefault();
-    const a = await api.crearAula(nombre);
+  const crear = intentar(async (f) => {
+    const a = await api.crearAula({ ...f, nombre: f.nombre.trim(), nivel: f.nivel || null });
     setAulas((xs) => [...xs, a]);
     setSelId(a.id);
-    setNombre('');
+    setCreando(false);
   });
-
+  const guardar = intentar(async (f) => reemplazar(await api.editarAula(sel.id, { ...f, nombre: f.nombre.trim() })));
   const regenerar = intentar(async () => {
     if (!window.confirm('El código anterior dejará de servir. ¿Generar uno nuevo?')) return;
     reemplazar(await api.regenerarCodigo(sel.id));
   });
-
   const borrar = intentar(async () => {
     if (!window.confirm(`¿Borrar el aula ${sel.nombre}? Los alumnos no pierden su progreso.`)) return;
     await api.borrarAula(sel.id);
-    setAulas((xs) => xs.filter((x) => x.id !== sel.id));
-    setSelId(null);
+    const resto = aulas.filter((x) => x.id !== sel.id);
+    setAulas(resto);
+    setSelId(resto[0]?.id ?? null);
+    if (!resto.length) setCreando(true);
   });
-
-  const asignar = intentar(async (e) => {
-    e.preventDefault();
-    reemplazar(await api.asignar(sel.id, { leccion_id: tarea.leccion_id, fecha_limite: tarea.fecha_limite || null }));
-    setTarea({ leccion_id: '', fecha_limite: '' });
-  });
-
-  const quitarTarea = intentar(async (id) => {
-    await api.quitarAsignacion(sel.id, id);
+  const aprobar = intentar(async (al) => reemplazar(await api.aprobarAlumno(sel.id, al.id)));
+  const rechazar = intentar(async (al) => reemplazar(await api.rechazarAlumno(sel.id, al.id)));
+  const quitar = intentar(async (al) => {
+    if (!window.confirm(`¿Quitar a ${al.apodo} del aula?`)) return;
+    await api.expulsar(sel.id, al.id);
     await cargar();
   });
+  const copiar = async () => {
+    try { await navigator.clipboard.writeText(sel.codigo); setCopiado(true); setTimeout(() => setCopiado(false), 1500); } catch { /* sin portapapeles */ }
+  };
 
-  const expulsar = intentar(async () => {
-    if (!window.confirm(`¿Quitar a ${alumno.apodo} del aula?`)) return;
-    await api.expulsar(sel.id, alumno.id);
-    setAlumno(null);
-    await cargar();
-    setVersion((v) => v + 1);
-  });
-
-  if (!aulas) return <p className="cuerpo texto-suave">Cargando aulas…</p>;
-
-  const mundosDisponibles = mundos.filter((m) => !m.proximamente && m.retos.length);
+  if (!aulas) return <p className="cuerpo-md texto-suave">Cargando aulas…</p>;
 
   return (
-    <div className="pila">
-      {error && <div className="sm-casi" role="alert">{error}</div>}
-
-      <div className="dos-columnas pila">
-        <section className="sm-card">
-          <h2 className="subtitulo" style={{ margin: '0 0 var(--espacio-3)' }}>Mis aulas</h2>
-          {aulas.length > 0 && (
-            <div className="chips" style={{ marginBottom: 'var(--espacio-3)' }}>
-              {aulas.map((a) => (
-                <button key={a.id} className={`tip${a.id === selId ? ' sel-magia' : ''}`} onClick={() => { setSelId(a.id); setAlumno(null); }}>
-                  {a.nombre} · {a.alumnos.length}
-                </button>
-              ))}
-            </div>
-          )}
-          <form className="acciones" onSubmit={crear}>
-            <input className="sm-input sm-input-texto input-codigo" value={nombre} onChange={(e) => setNombre(e.target.value)}
-              placeholder="Ej. 5.º B" maxLength={60} aria-label="Nombre del aula nueva" />
-            <button className="sm-btn" disabled={!nombre.trim()}>Crear aula</button>
-          </form>
+    <div className="pila-lg">
+      {sel && !creando && (
+        <section className="tarjeta-codigo codigo-arriba">
+          <div>
+            <span className="sobre claro">Código de grupo · {sel.nombre}</span>
+            <p className="codigo-grande">{sel.codigo}</p>
+            <span className="cuerpo-sm" style={{ opacity: 0.8 }}>
+              {sel.requiere_aprobacion ? 'Con el código piden entrar y tú los apruebas.' : 'Con este código entran directo a tu aula.'}
+            </span>
+          </div>
+          <div className="pila-sm" style={{ alignItems: 'flex-end' }}>
+            <button className="btn btn-blanco btn-chico" onClick={copiar}><I n="copiar" tamano={16} /> {copiado ? '¡Copiado!' : 'Copiar'}</button>
+            <button className="enlace-claro" onClick={regenerar}>Regenerar código</button>
+          </div>
         </section>
+      )}
 
-        {sel ? (
-          <section className="sm-card">
-            <div className="fila-ajolote">
-              <Ajolote estado="feliz" tamano={80} etiqueta={`Ajolote del ${sel.nombre}`} />
-              <div style={{ flex: 1 }}>
-                <h2 className="subtitulo" style={{ margin: 0 }}>{sel.nombre}</h2>
-                <p className="etiqueta texto-suave" style={{ margin: 'var(--espacio-1) 0' }}>Código para unirse:</p>
-                <p className="codigo-aula">{sel.codigo}</p>
-              </div>
-            </div>
-            <div className="acciones">
-              <button className="sm-btn sm-btn-suave" onClick={regenerar}>Nuevo código</button>
-              <button className="sm-btn sm-btn-suave" onClick={borrar}>Borrar aula</button>
-            </div>
-          </section>
-        ) : (
-          <section className="sm-card aviso-plano"><span className="cuerpo">Crea tu primera aula y comparte el código con tu grupo.</span></section>
-        )}
+      {error && <div className="aviso-casi" role="alert">{error}</div>}
+
+      <div className="chips">
+        {aulas.map((a) => (
+          <button key={a.id} className={`chip-tab${a.id === selId && !creando ? ' activo' : ''}`} onClick={() => { setSelId(a.id); setCreando(false); }}>
+            {a.nombre} · {a.alumnos.length}{a.pendientes?.length ? ` · ${a.pendientes.length} en espera` : ''}
+          </button>
+        ))}
+        <button className={`chip-tab${creando ? ' activo' : ''}`} onClick={() => setCreando(true)}>+ Crear grupo</button>
       </div>
 
-      {sel && (
-        <>
-          <section className="sm-card">
-            <h2 className="subtitulo" style={{ margin: '0 0 var(--espacio-2)' }}>Misiones del aula</h2>
-            {sel.asignaciones.length === 0 && <p className="etiqueta texto-suave">Sin misiones asignadas.</p>}
-            <div className="chips">
-              {sel.asignaciones.map((t) => (
-                <span key={t.id} className="sm-chip">
-                  {t.leccion}{t.fecha_limite ? ` · ${t.fecha_limite}` : ''}
-                  <button className="quitar" aria-label={`Quitar ${t.leccion}`} onClick={() => quitarTarea(t.id)}>×</button>
-                </span>
-              ))}
-            </div>
-            <form className="acciones" onSubmit={asignar} style={{ marginTop: 'var(--espacio-3)' }}>
-              <select className="sm-select select-corto" value={tarea.leccion_id} onChange={(e) => setTarea({ ...tarea, leccion_id: e.target.value })} aria-label="Mundo">
-                <option value="">Elige un mundo…</option>
-                {mundosDisponibles.map((m) => <option key={m.id} value={m.id}>{m.nombre}</option>)}
-              </select>
-              <input className="sm-select select-corto" type="date" value={tarea.fecha_limite}
-                onChange={(e) => setTarea({ ...tarea, fecha_limite: e.target.value })} aria-label="Fecha límite (opcional)" />
-              <button className="sm-btn" disabled={!tarea.leccion_id}>Asignar</button>
-            </form>
-          </section>
+      {creando ? (
+        <FormGrupo inicial={VACIO} titulo="Crear grupo" textoBoton="Crear grupo" onGuardar={crear} onCancelar={aulas.length ? () => setCreando(false) : null} />
+      ) : sel && (
+        <div className="grid-12">
+          <div className="col-7 pila-lg">
+            <FormGrupo inicial={inicialSel} titulo="Configuración del salón" textoBoton="Guardar cambios" onGuardar={guardar} />
+            <button className="btn btn-blanco btn-chico" style={{ alignSelf: 'flex-start' }} onClick={borrar}>Borrar aula</button>
+          </div>
+          <div className="col-5 pila-lg">
+            <section className="tarjeta">
+              <div className="fila-entre" style={{ marginBottom: 10 }}>
+                <h2 className="t-md" style={{ margin: 0 }}><I n="escudo" tamano={20} className="texto-naranja" /> Solicitudes de ingreso</h2>
+                <span className="chip">{sel.pendientes.length}</span>
+              </div>
+              {sel.pendientes.length === 0 ? (
+                <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>
+                  {sel.requiere_aprobacion ? 'Nadie está esperando. Cuando alguien use el código aparecerá aquí.' : 'Tu grupo entra solo con el código. Activa “Yo apruebo a cada alumno” si quieres revisar quién entra.'}
+                </p>
+              ) : (
+                <ul className="lista-alumnos">
+                  {sel.pendientes.map((al) => (
+                    <li key={al.id}>
+                      <span style={{ flex: 1 }}><b className="t-sm">{al.apodo}</b> <small className="texto-suave">@{al.usuario}</small></span>
+                      <button className="btn btn-verde btn-chico" onClick={() => aprobar(al)}><I n="check" tamano={14} /> Aceptar</button>
+                      <button className="btn btn-blanco btn-chico" onClick={() => rechazar(al)}>Rechazar</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
 
-          {alumno
-            ? <DetalleAlumno aulaId={sel.id} alumno={alumno} onCerrar={() => setAlumno(null)} onExpulsar={expulsar} />
-            : <Panel key={`${sel.id}-${version}`} aulaId={sel.id} onAlumno={setAlumno} />}
-        </>
+            <section className="tarjeta">
+              <div className="fila-entre" style={{ marginBottom: 10 }}>
+                <h2 className="t-md" style={{ margin: 0 }}><I n="aula" tamano={20} className="texto-naranja" /> Alumnos del grupo</h2>
+                <a className="enlace" href="#/diagnostico">Ver diagnóstico</a>
+              </div>
+              {sel.alumnos.length === 0 ? <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Comparte el código para que se unan.</p> : (
+                <ul className="lista-alumnos">
+                  {sel.alumnos.map((al) => (
+                    <li key={al.id}>
+                      <span style={{ flex: 1 }}><b className="t-sm">{al.apodo}</b> <small className="texto-suave">@{al.usuario}</small></span>
+                      <button className="btn btn-blanco btn-chico" onClick={() => quitar(al)}>Quitar</button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+        </div>
       )}
     </div>
   );
