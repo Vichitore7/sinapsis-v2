@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { conDuda, diagnosticarOperacion, explicacionResuelta, resolvioEnChat, validar, yaLoDijo } from './operaciones.js';
+import { conDuda, diagnosticarOperacion, explicacionResuelta, resolvioEnChat, senderoResuelto, validar, yaLoDijo } from './operaciones.js';
 
 const d = (a, op, b, c, residuo = '') => diagnosticarOperacion(validar({ a, op, b, c, residuo }));
 
@@ -72,5 +72,15 @@ describe('explicación después de resolver (sin conexión)', () => {
     expect(explicacionResuelta(validar({ a: 6, op: '×', b: 7, c: 42 }))).toMatch(/6 grupos de 7/);
     expect(explicacionResuelta(validar({ a: 17, op: '÷', b: 5, c: 3, residuo: 2 }))).toMatch(/caben 3 y sobran 2/);
     expect(explicacionResuelta(validar({ a: '3/4', op: '+', b: '1/2', c: '5/4' }))).toMatch(/mismo tamaño/);
+  });
+});
+
+describe('sendero de una operación resuelta con Kiko', () => {
+  it('muestra el resultado que encontró, no el que había escrito, y todo en verde', () => {
+    const pasos = senderoResuelto(validar({ a: 312, op: '+', b: 258, c: 470 }));
+    expect(pasos.every((p) => p.estado === 'ok')).toBe(true);
+    expect(pasos.map((p) => p.texto).join(' ')).toMatch(/570/);
+    expect(pasos.map((p) => p.texto).join(' ')).not.toMatch(/470/);
+    expect(senderoResuelto(validar({ a: 17, op: '÷', b: 5, c: 2, residuo: 7 })).map((p) => p.texto).join(' ')).toMatch(/Sobran 2/);
   });
 });

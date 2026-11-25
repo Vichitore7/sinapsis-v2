@@ -26,6 +26,26 @@ _PARTES = {2: "medios", 3: "tercios", 4: "cuartos", 5: "quintos", 6: "sextos", 7
 _FRACCION = re.compile(r"(\d+)\s*/\s*(\d+)")
 
 
+# Los niños contestan de muchas formas: "7", "siete", "7 decenas", "son 70". Se leen todas como números.
+_PALABRAS = {"cero": 0, "uno": 1, "una": 1, "un": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7,
+             "ocho": 8, "nueve": 9, "diez": 10, "once": 11, "doce": 12, "trece": 13, "catorce": 14, "quince": 15,
+             "dieciséis": 16, "dieciseis": 16, "diecisiete": 17, "dieciocho": 18, "diecinueve": 19, "veinte": 20,
+             "treinta": 30, "cuarenta": 40, "cincuenta": 50, "sesenta": 60, "setenta": 70, "ochenta": 80, "noventa": 90,
+             "cien": 100, "ciento": 100, "doscientos": 200, "trescientos": 300, "cuatrocientos": 400, "quinientos": 500,
+             "seiscientos": 600, "setecientos": 700, "ochocientos": 800, "novecientos": 900, "mil": 1000}
+_PALABRA = re.compile(r"\b(" + "|".join(sorted(_PALABRAS, key=len, reverse=True)) + r")\b", re.I)
+_EN_LUGAR = re.compile(r"(\d+)\s*(decenas?|dieces|centenas?|cientos)\b", re.I)
+
+
+def numeros_del_alumno(mensaje: str) -> set[int]:
+    """Todos los números que dijo, en cifra o con palabras; "7 decenas" también cuenta como 70."""
+    texto = _PALABRA.sub(lambda m: str(_PALABRAS[m[1].lower()]), _FRACCION.sub(" ", mensaje or ""))
+    numeros = {int(x) for x in re.findall(r"\d+", texto)}
+    for n, lugar in _EN_LUGAR.findall(texto):
+        numeros.add(int(n) * (100 if lugar.lower().startswith(("cent", "cien")) else 10))
+    return numeros
+
+
 def partes(d: int) -> str:
     return _PARTES.get(d, f"{d}-avos")
 
@@ -41,6 +61,7 @@ class Pasito:
     dibujo: dict | None = None                  # dibujo verificado para la explicación concreta
     porque: str = ""                            # respuesta a "¿por qué?" (distinta de `reexplicar`)
     reexplicar2: str = ""                       # una ayuda todavía más chica (si se vuelve a atorar)
+    otras: list[int] = field(default_factory=list)  # otras respuestas igual de válidas (p. ej. "7" decenas por 70)
     extra: list[str] = field(default_factory=list)
 
     def __post_init__(self):
@@ -55,8 +76,8 @@ class Pasito:
             if any((int(a), int(b)) == (n, d) for a, b in _FRACCION.findall(mensaje or "")):
                 return True
         if self.entero is not None:
-            sueltos = [int(x) for x in re.findall(r"\d+", _FRACCION.sub(" ", mensaje or ""))]
-            return self.entero in sueltos
+            dichos = numeros_del_alumno(mensaje)
+            return self.entero in dichos or any(o in dichos for o in self.otras)
         return False
 
 
@@ -171,9 +192,16 @@ _LUGAR = ["unidades", "decenas", "centenas", "unidades de millar", "decenas de m
 def _suma(a: int, b: int) -> list[Pasito]:
     if a >= 10 or b >= 10:
         # Por lugar (unidades, decenas, centenas…): un pasito por cada lugar donde los dos números tienen cifra.
-        pasos, partes_ = [], []
+        pasos, partes_, llevo = [], [], 0
         for lugar in range(len(str(max(a, b)))):
             va, vb = (a // 10 ** lugar % 10) * 10 ** lugar, (b // 10 ** lugar % 10) * 10 ** lugar
+            cifras = va // 10 ** lugar + vb // 10 ** lugar
+            # Formas válidas de contestar este lugar: la cifra ("6" decenas) y, como en el método de columnas, con lo
+            # que se lleva del lugar anterior ("7" decenas o 70). Ninguna es el resultado final.
+            otras = [cifras] if lugar else []
+            if lugar and llevo:
+                otras += [cifras + llevo, (cifras + llevo) * 10 ** lugar]
+            llevo = (cifras + llevo) // 10
             if va and vb:
                 nombre = _LUGAR[lugar] if lugar < len(_LUGAR) else "ese lugar"
                 if lugar == 0:
@@ -183,7 +211,9 @@ def _suma(a: int, b: int) -> list[Pasito]:
                               "las centenas. Si las unidades pasan de 9, forman otra decena.")
                 elif lugar == 1:
                     dibujo = {"tipo": "decenas", "ramos": (va + vb) // 10, "sueltas": 0} if va + vb <= 90 else None
-                    reexplicar = f"Las decenas son los ramos completos de 10: {va // 10} ramos y {vb // 10} ramos. ¿Cuántas flores son?"
+                    ramos = lambda n: f"{n} ramo{'s' if n != 1 else ''}"  # noqa: E731
+                    reexplicar = (f"Las decenas son los ramos completos de 10: {ramos(va // 10)} y {ramos(vb // 10)}. "
+                                  "¿Cuántas flores son?")
                     porque = "Porque cada cifra vale según su lugar: el de las decenas cuenta de 10 en 10."
                 else:
                     dibujo = None
@@ -191,7 +221,8 @@ def _suma(a: int, b: int) -> list[Pasito]:
                     porque = f"Porque cada cifra vale según su lugar: el de las {nombre} cuenta de {10 ** lugar} en {10 ** lugar}."
                 pasos.append(Pasito(
                     pregunta=f"{'Primero' if not pasos else 'Ahora'} las {nombre}: ¿cuánto es {va} + {vb}?",
-                    reexplicar=reexplicar, porque=porque, resuelto=f"{va} + {vb} = {va + vb}.", entero=va + vb, dibujo=dibujo))
+                    reexplicar=reexplicar, porque=porque, resuelto=f"{va} + {vb} = {va + vb}.", entero=va + vb,
+                    otras=otras, dibujo=dibujo))
             if va or vb:
                 partes_.append(va + vb)
         if not pasos or len(partes_) < 2:  # nada que partir (p. ej. 300 + 58): un solo pasito, y es el resultado

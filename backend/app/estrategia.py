@@ -211,8 +211,9 @@ def clasificar(mensaje: str, pasito: pasitos.Pasito) -> str:
     if "?" in texto and _PREGUNTA.search(texto):
         return "pregunta"  # "¿porque pasó a 4/6?" es una duda, aunque traiga números
     if pasito.acierta(quitar_negados(texto)):
-        # Con duda ("¿70?", "creo que 70") no avanza: se le explica el porqué de ese pasito para que lo afirme.
-        return "pregunta" if con_duda(texto) else "acierto"
+        # En un pasito intermedio, "¿70?" o "creo que 70" cuentan como acierto: Kiko se lo confirma y avanza (insistir
+        # desespera al niño). Solo el resultado final necesita que lo afirme (ver tutor._anotar_si_lo_resolvio).
+        return "pregunta" if (pasito.final and con_duda(texto)) else "acierto"
     if _PREGUNTA.search(texto):
         return "pregunta"
     return "atorado"
