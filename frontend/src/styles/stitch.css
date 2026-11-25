@@ -515,20 +515,52 @@ a.nodo-s:hover, button.nodo-s:hover { transform: scale(1.06); }
 .reciente.activo { border-color: var(--st-naranja); }
 .reciente small { display: block; font: 600 12px/16px var(--font-body); }
 .reciente-op { min-width: 44px; padding: 6px; border-radius: 10px; background: var(--st-naranja-claro); color: var(--st-naranja); font: 700 13px/16px var(--font-body); text-align: center; }
-.chat-tutor { display: flex; flex-direction: column; min-height: 560px; max-height: 760px; border-radius: var(--st-radio); background: var(--st-cont-bajo); box-shadow: var(--st-sombra); overflow: hidden; }
+/* Altura fija: los mensajes se desplazan dentro del chat (.chat-mensajes) en lugar de estirar la página. */
+.chat-tutor { display: flex; flex-direction: column; height: min(760px, calc(100dvh - 150px)); min-height: 420px; border-radius: var(--st-radio); background: var(--st-cont-bajo); box-shadow: var(--st-sombra); overflow: hidden; }
 .chat-cabecera { display: flex; align-items: center; gap: 12px; padding: 16px 18px; background: var(--st-naranja-2); color: var(--st-sobre-naranja); }
 .chat-cabecera .t-md { color: var(--st-sobre-naranja); }
 .chat-cabecera small { display: block; font: 500 13px/18px var(--font-body); opacity: .85; }
 .chat-avatar { position: relative; width: 56px; height: 56px; border-radius: 999px; background: #fff; display: grid; place-items: center; flex: none; }
 .chat-avatar .punto { position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; border: 2px solid #fff; }
-.chat-mensajes { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+.chat-mensajes { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
 .msg { display: flex; flex-direction: column; gap: 4px; max-width: 92%; }
 .msg-kiko { flex-direction: row; align-items: flex-start; gap: 10px; }
 .msg-yo { align-self: flex-end; align-items: flex-end; }
 .msg-icono { width: 34px; height: 34px; flex: none; border-radius: 999px; background: var(--st-naranja-claro); color: var(--st-naranja); display: grid; place-items: center; }
 .msg-autor { font: 700 12px/16px var(--font-body); color: var(--st-suave); }
-.msg-globo { padding: 12px 16px; border-radius: 18px; font: 500 15px/22px var(--font-body); }
+.msg-globo { padding: 12px 16px; border-radius: 18px; font: 500 15px/22px var(--font-body); white-space: pre-line; } /* Kiko puede mandar dibujos de varias líneas */
 .msg-kiko .msg-globo { background: var(--st-superficie); color: var(--st-tinta); border-top-left-radius: 4px; box-shadow: var(--st-sombra); }
+/* Fracciones del cuaderno (3/4 uno sobre otro), residuo de la división y botones Sí/No del chat */
+.frac { display: inline-flex; flex-direction: column; align-items: center; line-height: 1; vertical-align: middle; }
+.frac > span:first-child { padding: 0 4px 3px; border-bottom: 3px solid currentColor; }
+.frac > span:last-child { padding: 3px 4px 0; }
+.residuo-etq { font-size: .55em; color: var(--st-suave); align-self: center; }
+.msg-botones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.foto-leyendo { display: block; max-width: 100%; max-height: 260px; margin: 12px auto 0; border-radius: 14px; box-shadow: var(--st-sombra); opacity: .85; }
+
+/* Dibujos nuevos del tutor (DibujoTutor.jsx): fracciones, balanza, porcentaje y tabla */
+.dib-tutor { flex-direction: column; align-items: center; }
+.dib-fracciones { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 14px; }
+.dib-fraccion { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.dib-fraccion .frac { font: 800 18px/1 var(--font-display); color: var(--st-tinta); }
+.dib-fila { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.dib-fila svg { width: clamp(64px, 22vw, 96px); height: auto; }
+.dib-columna { display: inline-flex; flex-direction: column; gap: 6px; max-width: 100%; }
+.dib-columna svg { max-width: 100%; height: auto; }
+.dib-balanza { margin: 0; display: flex; flex-direction: column; align-items: center; max-width: 100%; }
+.dib-balanza svg { width: min(280px, 100%); height: auto; }
+.dib-porcentaje { margin: 0; }
+.dib-cuadricula { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; width: min(200px, 60vw); padding: 4px; border-radius: 8px; background: #fff; border: 2px solid var(--st-tinta); }
+.dib-cuadricula span { aspect-ratio: 1; border-radius: 2px; background: #eef1f6; }
+.dib-cuadricula span.lleno { background: #3a86ff; }
+.dib-tabla { margin: 0; max-width: 100%; overflow-x: auto; }
+.dib-tabla table { border-collapse: collapse; background: var(--canal-tarjeta, #fff); border-radius: 12px; overflow: hidden; }
+.dib-tabla th, .dib-tabla td { padding: 6px 14px; text-align: center; font: 700 15px/20px var(--font-body); color: var(--st-tinta); border: 1px solid var(--st-cont-max); }
+.dib-tabla th { background: var(--st-naranja-2); color: #fff; }
+
+/* Dibujo de Kiko en el chat (los stickers del Mundo 1, ver Canal.jsx) */
+.msg-dibujo { margin: 10px -12px -6px; white-space: normal; min-width: min(240px, 100%); } /* casi todo el ancho del globo */
+.msg-dibujo .visual-canal { margin: 0; padding: 12px 6px; }
 .msg-yo .msg-globo { background: var(--st-naranja-2); color: var(--st-sobre-naranja); border-top-right-radius: 4px; }
 .msg-op { margin-bottom: 8px; padding: 8px 12px; border-radius: 12px; background: var(--st-cont); text-align: center; font: 800 22px/30px var(--font-display); color: var(--st-naranja); overflow-wrap: anywhere; }
 .chat-sugerencias { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 12px; border-top: 1px solid var(--st-cont-max); }
@@ -678,8 +710,9 @@ a.clase:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(40, 33
 @media (min-width: 1024px) { .escaner-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; } }
 .escaner-col { display: flex; flex-direction: column; min-width: 0; }
 .escaner-col > * { flex: 1; }
+.escaner-col > .chat-tutor { flex: none; } /* respeta su altura fija; si no, crecería con los mensajes */
 @media (min-width: 1024px) {
-  .escaner-layout .chat-tutor { min-height: calc(100dvh - 190px); max-height: none; }
+  .escaner-layout .chat-tutor { height: calc(100dvh - 190px); min-height: 520px; }
   .escaner-layout .visor-stitch { min-height: calc(100dvh - 520px); }
 }
 
@@ -876,10 +909,17 @@ a.trajinera-nodo:focus-visible { outline: 3px solid var(--st-naranja-2); outline
 .canal-meta { position: absolute; right: 0; top: 0; bottom: 0; width: 30px; display: grid; place-items: center; border-radius: 8px;
   writing-mode: vertical-rl; color: #1e1b3a; font: 800 13px/1 var(--font-display); letter-spacing: .2em;
   background: repeating-conic-gradient(#fff 0 25%, #c9c4dc 0 50%) 0 0 / 14px 14px; }
-.canal-grupos { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; }
-.canal-grupo-caja { display: inline-flex; align-items: center; gap: 10px; }
-.canal-grupo { padding: 10px; border-radius: 16px; background: var(--canal-tarjeta); border: 2px dashed var(--canal-borde); }
-.canal-signo { font: 800 36px/1 var(--font-display); color: var(--st-tinta); }
+/* Los grupos van siempre en una fila (3 + 4 + 5…). Cada dibujo mide lo mismo en todos los grupos:
+   el ancho disponible (100cqw) menos cajas, signos y separaciones, repartido entre todos los dibujos (--total).
+   Entre 14 y 30 px; si aun así no cabe, la tira se desliza de lado (overflow de .visual-canal). */
+.visual-canal { container-type: inline-size; }
+.canal-grupos { --w: clamp(12px, calc((100cqw - var(--total) * 4px - var(--ngrupos) * 36px - var(--huecos, 0) * 14px + 26px) / var(--total)), 30px);
+  display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 4px; }
+.canal-grupo-caja { display: inline-flex; align-items: center; gap: 4px; flex: none; }
+.canal-grupo { padding: 4px 5px; border-radius: 14px; background: var(--canal-tarjeta); border: 2px dashed var(--canal-borde); }
+.canal-grupos .canal-filas { grid-template-columns: max-content; }
+.canal-grupos .canal-obj { width: var(--w); max-width: none; }
+.canal-signo { flex: none; font: 800 clamp(16px, 6cqw, 32px)/1 var(--font-display); color: var(--st-tinta); }
 .canal-recta { width: 100%; max-width: 520px; height: auto; padding: 6px; border-radius: 14px; background: #fff; }
 .canal-figura { width: 100%; max-width: 260px; height: auto; }
 .canal-medir { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 520px; }
