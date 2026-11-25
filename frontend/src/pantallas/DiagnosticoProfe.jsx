@@ -262,7 +262,7 @@ function ResumenDiagnostico({ aulaId }) {
       <div className="fila-entre" style={{ alignItems: 'flex-start' }}>
         <div>
           <h2 className="t-lg" style={{ margin: 0 }}><I n="diana" tamano={24} className="texto-naranja" /> Examen diagnóstico de entrada</h2>
-          <p className="cuerpo-md texto-suave" style={{ margin: '2px 0 0' }}>Cada alumno lo hace solo al entrar por primera vez. Una pregunta por habilidad.</p>
+          <p className="cuerpo-md texto-suave" style={{ margin: '2px 0 0' }}>Cada alumno lo hace solo al entrar por primera vez, con los temas de su grado. Una pregunta por habilidad.</p>
         </div>
         <span className="pastilla">{d.hechos} de {d.alumnos_total} lo han hecho</span>
       </div>
@@ -283,7 +283,7 @@ function ResumenDiagnostico({ aulaId }) {
         <div className="diag-alumnos">
           {d.alumnos.map((a) => (
             <div key={a.id} className="diag-alumno">
-              <b className="t-sm">{a.apodo}</b>
+              <b className="t-sm">{a.apodo}{a.grado_nombre && <span className="etq texto-suave"> · {a.grado_nombre}</span>}</b>
               {a.hecho ? (
                 <div className="chips" style={{ margin: 0 }}>
                   {a.habilidades.map((h) => (

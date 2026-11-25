@@ -313,21 +313,27 @@ def rechazar(aula_id: int, alumno_id: int, profe: Usuario = Depends(solo_profeso
 
 @router.get("/{aula_id}/diagnostico")
 def diagnostico_grupo(aula_id: int, profe: Usuario = Depends(solo_profesor), db: Session = Depends(get_db)) -> dict:
-    """Resultados del examen diagnóstico: por habilidad (cuántos la dominan) y por alumno."""
+    """Resultados del examen diagnóstico: por habilidad (cuántos la dominan) y por alumno.
+
+    Cada alumno hace el examen de su grado, así que "de" cuenta solo a quienes tuvieron esa habilidad en su examen."""
     aula = _aula_de_profesor(db, aula_id, profe)
     alumnos = activos(aula)
-    por_alumno, conteo = [], Counter()
+    por_alumno, conteo, evaluados = [], Counter(), Counter()
     hechos = 0
     for a in alumnos:
         d = db.get(Diagnostico, a.id)
         if d:
             hechos += 1
             conteo.update(h for h, ok in d.resultados.items() if ok)
+            evaluados.update(d.resultados.keys())
+        grado = d.grado if d else a.grado
         por_alumno.append({"id": a.id, "apodo": a.apodo, "usuario": a.usuario, "hecho": d is not None,
+                           "grado": grado, "grado_nombre": diagnostico.nombre_grado(grado),
                            "aciertos": d.aciertos if d else None, "total": d.total if d else None,
                            "habilidades": diagnostico.resumen(d.resultados) if d else []})
-    habilidades = [{"habilidad": p["habilidad"], "nombre": p["nombre"], "logrado": conteo[p["habilidad"]], "de": hechos}
-                   for p in diagnostico.PREGUNTAS]
+    orden = list(diagnostico.HABILIDADES)
+    habilidades = [{"habilidad": h, "nombre": diagnostico.HABILIDADES.get(h, h), "logrado": conteo[h], "de": evaluados[h]}
+                   for h in sorted(evaluados, key=lambda h: orden.index(h) if h in orden else len(orden))]
     return {"aula": {"id": aula.id, "nombre": aula.nombre}, "hechos": hechos, "alumnos_total": len(alumnos),
             "habilidades": habilidades, "alumnos": por_alumno}
 

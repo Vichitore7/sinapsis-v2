@@ -42,6 +42,9 @@ COLUMNAS_NUEVAS = {
     "aula_alumnos": {"estado": "VARCHAR(10) NOT NULL DEFAULT 'activo'"},
     # Las cuentas que ya existían también reciben los trajes de bienvenida (su logro "Inicio de la aventura" ya está hecho).
     "mascotas": {"trajes": "JSON NOT NULL DEFAULT '[\"trajinero\", \"trajinera\"]'", "traje": "VARCHAR(20)"},
+    # Diagnóstico según el grado: el grado que elige el alumno al crear su cuenta.
+    "usuarios": {"grado": "VARCHAR(3)"},
+    "diagnosticos": {"grado": "VARCHAR(3)"},
 }
 
 

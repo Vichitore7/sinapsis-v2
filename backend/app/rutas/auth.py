@@ -21,7 +21,7 @@ router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 def perfil(u: Usuario) -> dict:
     return {
-        "id": u.id, "usuario": u.usuario, "apodo": u.apodo, "rol": u.rol, "avatar": u.avatar,
+        "id": u.id, "usuario": u.usuario, "apodo": u.apodo, "rol": u.rol, "avatar": u.avatar, "grado": u.grado,
         "creado": u.creado.isoformat() if u.creado else None,
         "ultimo_acceso": u.ultimo_acceso.isoformat() if u.ultimo_acceso else None,
     }
@@ -33,7 +33,8 @@ def registro(datos: esquemas.Registro, resp: Response, db: Session = Depends(get
         raise HTTPException(status.HTTP_409_CONFLICT, "Ese usuario ya existe. Elige otro.")
     codigo = nuevo_codigo_recuperacion()
     u = Usuario(usuario=datos.usuario, apodo=datos.apodo, rol=datos.rol, password_hash=hash_password(datos.password),
-                recuperacion_hash=hash_recuperacion(codigo), ultimo_acceso=ahora())
+                recuperacion_hash=hash_recuperacion(codigo), ultimo_acceso=ahora(),
+                grado=datos.grado if datos.rol == "alumno" else None)
     db.add(u)
     db.flush()
     db.add(AjustesUsuario(usuario_id=u.id))
