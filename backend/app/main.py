@@ -4,6 +4,7 @@
 """
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
@@ -13,8 +14,17 @@ from fastapi.responses import JSONResponse
 
 from . import config
 from .db import Base, SesionLocal, engine, migrar_columnas
-from .rutas import ajustes, auth, aulas, diagnostico, juego, tutor
+from .rutas import ajustes, auth, aulas, diagnostico, escaner, juego, tutor
 from .semilla import cargar_contenido
+
+
+# Los avisos de la app (logger "selva", p. ej. por qué el tutor usó reglas) salen en la terminal junto a los de uvicorn.
+_log_app = logging.getLogger("selva")
+if not _log_app.handlers:
+    _manejador = logging.StreamHandler()
+    _manejador.setFormatter(logging.Formatter("%(levelname)s:  %(name)s: %(message)s"))
+    _log_app.addHandler(_manejador)
+    _log_app.setLevel(logging.INFO)
 
 
 @asynccontextmanager
@@ -60,5 +70,5 @@ def salud() -> dict:
     return {"ok": True}
 
 
-for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router, tutor.router):
+for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router, tutor.router, escaner.router):
     app.include_router(r, prefix="/api")

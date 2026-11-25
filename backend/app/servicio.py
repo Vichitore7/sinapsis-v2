@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from . import juego
+from . import aprendizaje, juego
 from .contenido import MUNDOS_TEMATICOS, STICKERS, TRAJES, UNIDADES, sortear_trajes_subcultura
 from .modelos import Diagnostico, Ejercicio, EstadoJuego, ExamenMundo, Intento, Leccion, Mascota, Progreso, Unidad, Usuario
 
@@ -67,18 +67,30 @@ def mundos_publicos(db: Session) -> list[dict]:
 
 # ---------------- Estado del alumno ----------------
 
+def _fila_existente(db: Session, modelo, alumno_id: int):
+    return db.get(modelo, alumno_id)
+
+
+def _crear_si_falta(db: Session, modelo, alumno_id: int, **valores):
+    """Crea la fila del alumno si falta, segura ante peticiones simultáneas: INSERT … ON CONFLICT DO NOTHING
+    (SQLite y Postgres) y luego se lee la fila que quedó, la nuestra o la de la otra petición. No captura errores
+    ni hace rollback: estado_de() también se usa dentro de acciones del juego que siguen en la misma sesión."""
+    fila = _fila_existente(db, modelo, alumno_id)
+    if fila is not None:
+        return fila
+    if db.get_bind().dialect.name == "postgresql":
+        from sqlalchemy.dialects.postgresql import insert
+    else:
+        from sqlalchemy.dialects.sqlite import insert
+    db.execute(insert(modelo).values(alumno_id=alumno_id, **valores).on_conflict_do_nothing(index_elements=["alumno_id"]))
+    return db.get(modelo, alumno_id)
+
+
 def estado_de(db: Session, alumno: Usuario) -> tuple[EstadoJuego, Mascota]:
-    est = db.get(EstadoJuego, alumno.id)
-    if not est:
-        est = EstadoJuego(alumno_id=alumno.id, lecciones_terminadas=[], stickers=[], ejemplos_vistos=[],
+    # Antes: db.add + flush. Dos GET /api/juego/estado simultáneos de una cuenta nueva chocaban (500, 25 nov).
+    est = _crear_si_falta(db, EstadoJuego, alumno.id, lecciones_terminadas=[], stickers=[], ejemplos_vistos=[],
                           stats={"cuidados": 0, "pistas_pedidas": 0, "retos_sin_ayuda": 0})
-        db.add(est)
-    m = db.get(Mascota, alumno.id)
-    if not m:
-        m = Mascota(alumno_id=alumno.id)
-        db.add(m)
-    if est in db.new or m in db.new:
-        db.flush()
+    m = _crear_si_falta(db, Mascota, alumno.id)
     return est, m
 
 
@@ -178,6 +190,10 @@ def registrar_intento(db: Session, alumno: Usuario, ejercicio_id: str, respuesta
         Intento.alumno_id == alumno.id, Intento.ejercicio_id == e.id, Intento.correcto.is_(False))) or 0
     db.add(Intento(alumno_id=alumno.id, ejercicio_id=e.id, respuesta=respuesta[:100], correcto=diag["correcto"],
                    tipo_error=diag["tipo_error"], pistas_usadas=pistas_usadas, tiempo_ms=tiempo_ms))
+    # Memoria de aprendizaje (la usa el tutor): sin ayuda, con ayuda (pistas o errores antes) o error.
+    concepto, nombre = aprendizaje.concepto_de_ejercicio(e)
+    resultado = "error" if not diag["correcto"] else ("solo" if pistas_usadas == 0 and errores_previos == 0 else "ayuda")
+    aprendizaje.registrar_resultado(db, alumno.id, concepto, nombre, resultado, diag["tipo_error"], e.id)
 
     recompensa = None
     if diag["correcto"]:

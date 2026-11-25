@@ -11,3 +11,6 @@ dist/
 __pycache__/
 *.db
 .pytest_cache/
+
+# Reportes de la evaluación del tutor (backend/evaluacion): se generan al correrla
+backend/evaluacion/resultados/

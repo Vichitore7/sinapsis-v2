@@ -553,3 +553,46 @@ def test_diagnostico_de_entrada(cliente, nuevo_cliente):
     suma = next(h for h in grupo["habilidades"] if h["habilidad"] == "suma")
     assert suma["logrado"] == 1 and suma["de"] == 1
     assert cliente.post("/api/diagnostico", json={"respuestas": {}}).status_code == 403  # solo alumnos
+
+
+def test_dos_peticiones_a_la_vez_no_chocan_al_crear_el_estado(cliente, monkeypatch):
+    """25 nov: con una cuenta nueva, dos GET /api/juego/estado simultáneos intentaban crear el mismo estado y uno
+    respondía 500 (UNIQUE constraint failed: estado_juego.alumno_id). Lo mismo podía pasar con la mascota."""
+    import threading
+    from sqlalchemy import func, select
+    from app import servicio
+    from app.db import get_db
+    from app.main import app
+    from app.modelos import EstadoJuego, Mascota
+
+    registrar(cliente, "gemelo")
+    db = next(app.dependency_overrides[get_db]())
+    assert db.get(EstadoJuego, 1) is None  # la cuenta todavía no tiene estado
+    # Fuerza la carrera: las dos peticiones ven que falta la fila ANTES de que cualquiera la cree.
+    barrera = threading.Barrier(2, timeout=10)
+    original = servicio._fila_existente
+    vistas = {"n": 0}
+
+    def ver_y_esperar(db, modelo, alumno_id):
+        fila = original(db, modelo, alumno_id)
+        if vistas["n"] < 2:
+            vistas["n"] += 1
+            barrera.wait()
+        return fila
+    monkeypatch.setattr(servicio, "_fila_existente", ver_y_esperar)
+
+    respuestas = []
+    def pedir():
+        try:
+            respuestas.append(cliente.get("/api/juego/estado").status_code)
+        except Exception as e:  # noqa: BLE001  (TestClient propaga el error del servidor)
+            respuestas.append(repr(e)[:120])
+    hilos = [threading.Thread(target=pedir) for _ in range(2)]
+    for h in hilos:
+        h.start()
+    for h in hilos:
+        h.join(timeout=30)
+    assert respuestas == [200, 200]
+    db.expire_all()
+    for modelo in (EstadoJuego, Mascota):
+        assert db.scalar(select(func.count()).select_from(modelo)) == 1

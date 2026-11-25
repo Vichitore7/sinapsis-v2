@@ -42,6 +42,8 @@ COLUMNAS_NUEVAS = {
     "aula_alumnos": {"estado": "VARCHAR(10) NOT NULL DEFAULT 'activo'"},
     # Las cuentas que ya existían también reciben los trajes de bienvenida (su logro "Inicio de la aventura" ya está hecho).
     "mascotas": {"trajes": "JSON NOT NULL DEFAULT '[\"trajinero\", \"trajinera\"]'", "traje": "VARCHAR(20)"},
+    # Escalera de pistas: avance que el navegador todavía no confirma (turnos del tutor).
+    "escaleras": {"pendiente": "JSON"},
 }
 
 
