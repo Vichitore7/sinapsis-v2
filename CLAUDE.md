@@ -48,7 +48,10 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
   - **Diagnóstico:** resultados por habilidad y por alumno, con exportación a CSV.
 - **Contenido jugable:**
   - Mundo 1 **"El Canal de los Números"** (1.º de primaria, Xochimilco, de Gera): 12 niveles con 3 ejercicios cada uno, en `contenido_canal.py` y `componentes/Canal.jsx`. Los dibujos llevan borde blanco de sticker (clase `.sticker`) y los objetos para contar van en filas de 10 con pausa de 5 en 5 (a propósito: así se cuenta por grupos).
-  - Módulo `multiplicacion` (mundos m1 "La tiendita" y m2 "El mercado", 8 retos).
+  - Mundo 2 **"El Centro de los Números"** (2.º de primaria, Centro de la CDMX, de Gera): 12 niveles de 3 ejercicios en `contenido_cdmx.py` y `componentes/CDMX.jsx`. Cada nivel es un transporte de la tarjeta de movilidad integrada, con 3 cacomixtles, y lleva `faseCPA` (niveles 1–4 concreto, 5–8 pictórico, 9–12 abstracto).
+  - Los mundos temáticos (Canal y Centro) se registran en `MUNDOS_TEMATICOS` (`contenido.py`) y en `componentes/Temas.jsx`. Terminan con **examen general**: certificado + 2 trajes de subculturas al azar (de estilos y subculturas distintos); ponerse uno abre el mundo siguiente. El profesor ve el reporte del examen en Diagnóstico.
+  - Módulo `multiplicacion`: mundo m2 "El mercado" (Mundo 3, 4 retos). **La tiendita (m1) se quitó**: `cargar_contenido` borra de la base los mundos que ya no están en el contenido.
+  - La división (`÷`) solo está en los ejercicios (`OPERACIONES_EJERCICIOS` en `juego.py`); el tutor de IA sigue con `OPERACIONES` (sin división).
   - El resto dice "próximamente": división, fracciones, suma-resta, valor-posicional, decimales, geometría y medición.
 - **Sin vidas:** la barra de arriba ya no muestra corazones (parecían vidas). El bienestar de Kiko vive en la Mochila.
 

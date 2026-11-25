@@ -5,9 +5,11 @@ import { useJuego } from '../estado/store.jsx';
 import I from '../componentes/IconosUI.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import { STICKERS, TRAJES } from '../contenido/mundos.js';
+import { TarjetaMetro } from '../componentes/CDMX.jsx';
 
 const ARTE = {
   flor: { icono: 'chispa', fondo: 'sticker-rosa' },
+  tarjeta: { icono: 'chispa', fondo: 'sticker-ambar' },
   mochila: { icono: 'mochila', fondo: 'sticker-ambar' },
   bufanda: { icono: 'chispa', fondo: 'sticker-cielo' },
   sombrero: { icono: 'sombrero', fondo: 'sticker-oro' },
@@ -154,7 +156,8 @@ function StickersEspeciales() {
 
 export function SeccionStickers({ estado, mundos }) {
   const jugables = mundos.filter((m) => !m.proximamente && m.retos.length);
-  const stickers = Object.entries(STICKERS).map(([id, s], i) => ({ id, ...s, mundo: jugables[i] || null }));
+  // Cada sticker va con el mundo que lo regala (no por orden): la Tarjeta del Metro es del Mundo 2, etc.
+  const stickers = Object.entries(STICKERS).map(([id, s]) => ({ id, ...s, mundo: jugables.find((m) => m.sticker === id) || null }));
   return (
     <section className="tarjeta pila-lg">
       <StickersEspeciales />
@@ -162,7 +165,7 @@ export function SeccionStickers({ estado, mundos }) {
       <div className="fila-entre" style={{ marginBottom: 12 }}>
         <div>
           <h2 className="t-md" style={{ margin: 0 }}><I n="libro" tamano={20} className="texto-naranja" /> Álbum de Stickers</h2>
-          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Abre el cofre al final de cada mundo para ganar uno.</p>
+          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Termina cada mundo (examen o cofre) para ganar su sticker.</p>
         </div>
         <span className="pastilla">{estado.stickers.length} de {stickers.length}</span>
       </div>
@@ -172,7 +175,9 @@ export function SeccionStickers({ estado, mundos }) {
           const arte = ARTE[s.id] || { icono: 'estrella', fondo: 'sticker-rosa' };
           return (
             <div key={s.id} className={`sticker-carta${tiene ? '' : ' falta'}`}>
-              <span className={`sticker-arte ${tiene ? arte.fondo : ''}`}><I n={tiene ? arte.icono : 'candado'} tamano={34} /></span>
+              <span className={`sticker-arte ${tiene ? arte.fondo : ''}`}>
+                {tiene && s.id === 'tarjeta' ? <TarjetaMetro tamano={62} /> : <I n={tiene ? arte.icono : 'candado'} tamano={34} />}
+              </span>
               <b>{tiene ? s.nombre : '¿Secreto?'}</b>
               <small className={tiene ? 'texto-selva' : ''}>{s.mundo ? `Mundo ${s.mundo.numero}` : 'Pronto'}</small>
             </div>
@@ -185,7 +190,9 @@ export function SeccionStickers({ estado, mundos }) {
 }
 
 export function SeccionDiplomas({ estado, mundos }) {
-  const terminados = estado.mundosTerminados || [];
+  // Un mundo con examen general da su certificado al terminar el examen (aunque Kiko aún no se ponga el traje nuevo).
+  const conExamen = Object.entries(estado.examenes || {}).filter(([, e]) => e.estado === 'terminado').map(([id]) => id);
+  const terminados = [...new Set([...conExamen, ...(estado.mundosTerminados || [])])];
   const ultimo = mundos.find((m) => m.id === terminados[terminados.length - 1]);
   return (
     <section className="tarjeta tarjeta-grande">

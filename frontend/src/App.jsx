@@ -18,6 +18,7 @@ import Perfil from './pantallas/Perfil.jsx';
 import MiAula from './pantallas/MiAula.jsx';
 import DiagnosticoProfe from './pantallas/DiagnosticoProfe.jsx';
 import ExamenDiagnostico from './pantallas/ExamenDiagnostico.jsx';
+import ExamenMundo from './pantallas/ExamenMundo.jsx';
 import { loQuePide } from './logica/juego.js';
 
 // Cada rol ve su propio menú. El primero de la lista es su pantalla de inicio.
@@ -38,7 +39,7 @@ const NAV = {
 };
 
 const PANTALLAS = {
-  alumno: { inicio: Inicio, mapa: Mapa, reto: Reto, mochila: Mochila, escaner: Escaner, aula: MiAula, perfil: Perfil, logros: Perfil },
+  alumno: { inicio: Inicio, mapa: Mapa, reto: Reto, examen: ExamenMundo, mochila: Mochila, escaner: Escaner, aula: MiAula, perfil: Perfil, logros: Perfil },
   profesor: { aulas: Aulas, diagnostico: DiagnosticoProfe, perfil: Perfil },
 };
 
@@ -90,7 +91,7 @@ export default function App() {
   const pantallas = PANTALLAS[rol];
   const id = pantallas[pantalla] ? pantalla : nav[0].id;
   const Pantalla = pantallas[id];
-  const activa = id === 'reto' ? 'mapa' : id === 'logros' ? 'perfil' : id;
+  const activa = id === 'reto' || id === 'examen' ? 'mapa' : id === 'logros' ? 'perfil' : id;
   const alumno = rol === 'alumno';
 
   return (

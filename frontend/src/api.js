@@ -47,6 +47,9 @@ export const api = {
   despertar: () => pedir('POST', '/mascota/despertar'),
   renombrarMascota: (nombre) => pedir('PATCH', '/mascota', { nombre }),
   vestir: (traje) => pedir('PUT', '/mascota/traje', { traje }),
+  examen: (leccionId) => pedir('GET', `/examenes/${encodeURIComponent(leccionId)}`),
+  responderExamen: (leccionId, preguntaId, d) => pedir('POST', `/examenes/${encodeURIComponent(leccionId)}/preguntas/${encodeURIComponent(preguntaId)}`, d),
+  terminarExamen: (leccionId) => pedir('POST', `/examenes/${encodeURIComponent(leccionId)}/terminar`),
 
   // Tutor de IA (Kiko en el chat del escáner). Regresa { respuesta, origen: 'claude' | 'reglas' }.
   tutor: (d) => pedir('POST', '/tutor', d),
@@ -100,6 +103,7 @@ export function adaptarMundos(mundos) {
       nivel: r.nivel || null,
       nivelTema: r.nivel_tema || null,
       nivelTitulo: r.nivel_titulo || null,
+      faseCPA: r.fase_cpa || null, // concreto | pictórico | abstracto (método CPA)
       mundo,
     }));
     return mundo;
@@ -133,5 +137,6 @@ export function adaptarEstado(r) {
     logros: r.logros,
     mapa: r.mapa,
     diagnosticoHecho: r.diagnostico_hecho,
+    examenes: r.examenes || {},
   };
 }

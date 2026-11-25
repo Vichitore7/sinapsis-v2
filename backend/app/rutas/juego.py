@@ -43,6 +43,25 @@ def cofre(leccion_id: str, u: Usuario = Depends(solo_alumno), db: Session = Depe
     return servicio.abrir_cofre(db, u, leccion_id)
 
 
+@router.get("/examenes/{leccion_id}")
+def examen(leccion_id: str, u: Usuario = Depends(solo_alumno), db: Session = Depends(get_db)) -> dict:
+    """Empieza o retoma el examen general del mundo (sin respuestas)."""
+    return servicio.examen_mundo(db, u, leccion_id)
+
+
+@router.post("/examenes/{leccion_id}/preguntas/{pregunta_id}")
+def responder_examen(leccion_id: str, pregunta_id: str, datos: esquemas.RespuestaExamen,
+                     u: Usuario = Depends(solo_alumno), db: Session = Depends(get_db)) -> dict:
+    """Hasta 3 intentos por pregunta; todo queda en el reporte del profesor."""
+    return servicio.responder_examen(db, u, leccion_id, pregunta_id, datos.respuesta, datos.pistas_usadas, datos.tiempo_ms)
+
+
+@router.post("/examenes/{leccion_id}/terminar")
+def terminar_examen(leccion_id: str, u: Usuario = Depends(solo_alumno), db: Session = Depends(get_db)) -> dict:
+    """Certificado + 2 trajes de subculturas. El mundo siguiente se abre al vestir a Kiko con uno de ellos."""
+    return servicio.terminar_examen(db, u, leccion_id)
+
+
 @router.post("/lecciones/{leccion_id}/ejemplo-visto")
 def ejemplo_visto(leccion_id: str, u: Usuario = Depends(solo_alumno), db: Session = Depends(get_db)) -> dict:
     return servicio.marcar_ejemplo_visto(db, u, leccion_id)

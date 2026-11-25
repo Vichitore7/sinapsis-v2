@@ -68,6 +68,12 @@ class IntentoEntrada(BaseModel):
     tiempo_ms: int | None = Field(default=None, ge=0, le=86_400_000)
 
 
+class RespuestaExamen(BaseModel):
+    respuesta: str | None = Field(default=None, max_length=20)  # None = "No sé todavía"
+    pistas_usadas: int = Field(default=0, ge=0, le=10)
+    tiempo_ms: int | None = Field(default=None, ge=0, le=86_400_000)
+
+
 class CuidadoEntrada(BaseModel):
     accion: Literal["alimentar", "jugar", "limpiar", "descansar"]
 

@@ -12,6 +12,8 @@ Tipos de ejercicio:
 """
 from __future__ import annotations
 
+from .juego import OPERACIONES_EJERCICIOS as OPERACIONES
+
 TEMA = "xochimilco"
 LECCION_ID = "x1"
 
@@ -23,7 +25,8 @@ def _conteo(id_, titulo, enunciado, respuesta, visual, pistas, error, moneda=Fal
 
 
 def _cuenta(id_, titulo, enunciado, a, op, b, visual, pistas):
-    resultado = a + b if op == "+" else a - b
+    resultado = OPERACIONES[op](a, b)
+    assert op != "÷" or a % b == 0, f"{id_}: el reparto debe ser exacto"
     return {"id": id_, "tipo": "numerica", "titulo": titulo, "enunciado": enunciado, "respuesta": str(resultado),
             "a": a, "b": b, "op": op, "visual": visual, "pistas": pistas,
             "explicacion": f"{a} {op} {b} = {resultado}."}
@@ -224,3 +227,46 @@ def ejercicios() -> list[dict]:
         for e in lista:
             salida.append({**e, "nivel": n, "nivel_tema": tema, "nivel_titulo": titulo})
     return salida
+
+
+# ---------- Examen general del canal (al final de los 12 niveles) ----------
+# Una pregunta por nivel, con números nuevos. Al terminarlo: certificado + 2 trajes de subculturas.
+# Hasta 3 intentos por pregunta y se pueden pedir pistas; si falla los 3, queda "por reforzar" y sigue.
+
+_GRAFICA_EXAMEN = {"tipo": "grafica", "titulo": "Fruta favorita en el embarcadero", "barras": [
+    {"etiqueta": "Rojo", "color": "rojo", "valor": 4}, {"etiqueta": "Azul", "color": "azul", "valor": 6},
+    {"etiqueta": "Amarillo", "color": "amarillo", "valor": 2}, {"etiqueta": "Verde", "color": "verde", "valor": 5}]}
+
+EXAMEN = [
+    _conteo("x1-ex-01", "Flores para la fiesta", "¿Cuántas flores hay en la trajinera?", 9,
+            {"tipo": "objetos", "objeto": "flor", "cantidad": 9}, _p_contar("flor"), "Toca cada flor con tu dedo y vuelve a contar."),
+    _conteo("x1-ex-02", "Peces del embarcadero", "¿Cuántos peces nadan junto al embarcadero?", 15,
+            {"tipo": "objetos", "objeto": "pez", "cantidad": 15}, _p_contar("pez"), "La primera fila tiene 10. Sigue contando desde ahí."),
+    _opcion("x1-ex-03", "¿Cuál lleva más?", "¿Qué trajinera lleva MÁS pasajeros?", ["La roja", "La azul"], "La azul",
+            {"tipo": "comparar", "grupos": [{"color": "rojo", "etiqueta": "La roja", "cantidad": 5}, {"color": "azul", "etiqueta": "La azul", "cantidad": 8}]},
+            ["Cuenta los pasajeros de cada trajinera.", "Junta un pasajero de una con uno de la otra.", "La que tiene pasajeros sin pareja lleva más."],
+            "Cuenta otra vez los pasajeros de cada una."),
+    _opcion("x1-ex-04", "La gran carrera", "¿En qué lugar llegó la trajinera verde?", _LUGARES, "4.º lugar",
+            _carrera(["roja", "amarilla", "azul", "verde"]), _P_CARRERA, "Cuenta desde la meta hasta llegar a la verde."),
+    _cuenta("x1-ex-05", "Juntar flores", "Lupe tiene 3 flores y Toño le regala 5. ¿Cuántas flores tiene Lupe?", 3, "+", 5,
+            {"tipo": "grupos", "objeto": "flor", "grupos": [3, 5]}, _p_suma(3, 5, "flores")),
+    _cuenta("x1-ex-06", "Jarritos vendidos", "Había 9 jarritos y se vendieron 3. ¿Cuántos jarritos quedan?", 9, "−", 3,
+            {"tipo": "quitar", "objeto": "jarrito", "total": 9, "quitar": 3}, _p_resta(9, 3, "jarritos")),
+    _cuenta("x1-ex-07", "Saltos en la recta", "La trajinera estaba en el 7 y avanzó 3 lugares. ¿A qué número llegó?", 7, "+", 3,
+            {"tipo": "recta", "hasta": 10, "inicio": 7}, _p_recta(7, 3, "+")),
+    _opcion("x1-ex-08", "La ventana", "La ventana de la casita de la chinampa tiene 4 lados iguales. ¿Qué figura es?", _FIGURAS, "Cuadrado",
+            {"tipo": "figura", "figura": "cuadrado", "donde": "ventana"}, _P_FIGURA, "¿Sus 4 lados miden lo mismo?"),
+    _conteo("x1-ex-09", "Medir el remo", "¿Cuántos cuadritos mide el remo?", 8,
+            {"tipo": "medir", "objetos": [{"objeto": "remo", "largo": 8}]}, _P_MEDIR, "Cuenta solo los cuadritos que están debajo del remo."),
+    _conteo("x1-ex-10", "Monedas para el elote", "¿Cuánto dinero hay en estas monedas?", 13,
+            {"tipo": "monedas", "monedas": [5, 5, 2, 1]}, _P_MONEDAS, "Empieza por las de $5 y luego suma las demás.", moneda=True),
+    _conteo("x1-ex-11", "La gráfica", "¿Cuántos niños eligieron el color VERDE?", 5,
+            _GRAFICA_EXAMEN, _P_GRAFICA, "Cuenta solo los cuadritos de la barra verde."),
+    _conteo("x1-ex-12", "Ramos del mercado", "¿Cuántas flores hay en total?", 62,
+            {"tipo": "decenas", "ramos": 6, "sueltas": 2}, _P_DECENAS, "Cuenta los ramos de 10 en 10 y luego las sueltas."),
+]
+
+
+def examen() -> list[dict]:
+    """Las 12 preguntas del examen con el nivel (tema) al que pertenece cada una."""
+    return [{**p, "nivel": n, "nivel_tema": NIVELES[n - 1][0]} for n, p in enumerate(EXAMEN, start=1)]

@@ -7,14 +7,15 @@ from __future__ import annotations
 
 import sys
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from . import contenido_canal as canal
-from .contenido import UNIDADES, ejercicio_canal, ejercicio_multiplicacion
+from .contenido import MUNDOS_TEMATICOS, UNIDADES, ejercicio_canal, ejercicio_multiplicacion
 from .db import Base, SesionLocal, engine, migrar_columnas
 from . import diagnostico
-from .modelos import Aula, AulaAlumno, AulaModulo, Diagnostico, Ejercicio, Leccion, Unidad, Usuario
+from .modelos import (
+    Asignacion, Aula, AulaAlumno, AulaModulo, Diagnostico, Ejercicio, ExamenMundo, Intento, Leccion, Progreso, Unidad, Usuario,
+)
 from .seguridad import codigo_aula, hash_password, hash_recuperacion, nuevo_codigo_recuperacion
 
 
@@ -33,15 +34,34 @@ def cargar_contenido(db: Session) -> None:
             leccion.entrada, leccion.concepto, leccion.sticker = l["entrada"], l["concepto"], l["sticker"]
             db.merge(leccion)
             db.flush()
-            if l["id"] == canal.LECCION_ID:
-                for j, e in enumerate(canal.ejercicios(), start=1):
+            if l["id"] in MUNDOS_TEMATICOS:
+                for j, e in enumerate(MUNDOS_TEMATICOS[l["id"]].ejercicios(), start=1):
                     db.merge(Ejercicio(leccion_id=l["id"], **ejercicio_canal(e, j)))
                 continue
             for j, (id_, titulo, enunciado, a, b, objeto, etapa) in enumerate(l["retos"], start=1):
                 datos = ejercicio_multiplicacion(id_, j, titulo, enunciado, a, b, objeto, etapa,
                                                  l.get("ejemplo") if j == 1 else None)
                 db.merge(Ejercicio(leccion_id=l["id"], **datos))
+    _quitar_mundos_retirados(db)
     db.commit()
+
+
+def _quitar_mundos_retirados(db: Session) -> None:
+    """Borra de la base los mundos que ya no están en el contenido (p. ej. La tiendita), con sus retos y su avance.
+
+    Sin esto seguirían apareciendo en el mapa de quien ya tenía la base, porque cargar_contenido solo agrega.
+    """
+    vigentes = {l["id"] for u in UNIDADES for l in u["lecciones"]}
+    for leccion in db.scalars(select(Leccion).where(Leccion.id.not_in(vigentes))).all():
+        ids = list(db.scalars(select(Ejercicio.id).where(Ejercicio.leccion_id == leccion.id)))
+        if ids:
+            db.execute(delete(Intento).where(Intento.ejercicio_id.in_(ids)))
+            db.execute(delete(Progreso).where(Progreso.ejercicio_id.in_(ids)))
+            db.execute(delete(Ejercicio).where(Ejercicio.id.in_(ids)))
+        db.execute(delete(Asignacion).where(Asignacion.leccion_id == leccion.id))
+        db.execute(delete(ExamenMundo).where(ExamenMundo.leccion_id == leccion.id))
+        db.delete(leccion)
+    db.flush()
 
 
 def crear_demo(db: Session) -> None:
