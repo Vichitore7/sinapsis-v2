@@ -1,0 +1,74 @@
+"""API de Selva Matemática.
+
+    uv run uvicorn app.main:app --reload       # http://localhost:8000/docs (Swagger)
+"""
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy import select
+
+from . import config
+from .db import Base, SesionLocal, engine
+from .modelos import Unidad
+from .rutas import ajustes, auth, aulas, juego, habitacion
+from .semilla import cargar_contenido
+
+
+@asynccontextmanager
+async def ciclo(_: FastAPI):
+    Base.metadata.create_all(engine)
+    with SesionLocal() as db:
+        if not db.scalar(select(Unidad.id).limit(1)):
+            cargar_contenido(db)
+    yield
+
+
+app = FastAPI(
+    title="Selva Matemática API",
+    version="0.1.0",
+    description="Backend de Selva Matemática: cuentas sin correo, retos validados en el servidor, progreso, ajolote y aulas.",
+    lifespan=ciclo,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=config.CORS_ORIGENES,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Content-Type"],
+)
+
+
+# Errores con la misma forma siempre: {"error": "mensaje para mostrar", "detalles": [...]}
+@app.exception_handler(HTTPException)
+async def _http(_: Request, exc: HTTPException):
+    return JSONResponse({"error": exc.detail}, status_code=exc.status_code, headers=exc.headers)
+
+
+@app.exception_handler(RequestValidationError)
+async def _validacion(_: Request, exc: RequestValidationError):
+    detalles = [{"campo": ".".join(str(x) for x in e["loc"][1:]), "mensaje": e["msg"].removeprefix("Value error, ")} for e in exc.errors()]
+    mensaje = detalles[0]["mensaje"] if detalles else "Revisa los datos."
+    return JSONResponse({"error": mensaje, "detalles": detalles}, status_code=422)
+
+
+@app.middleware("http")
+async def no_cache_api(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.get("/salud", tags=["Sistema"])
+def salud() -> dict:
+    return {"ok": True}
+
+
+for r in (auth.router, juego.router, aulas.router, ajustes.router, habitacion.router):
+    app.include_router(r, prefix="/api")

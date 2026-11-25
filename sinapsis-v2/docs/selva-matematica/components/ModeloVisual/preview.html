@@ -1,0 +1,52 @@
+<!-- @dsCard group="Apoyo visual" height=640 subtitle="Escalera: monedas, bolsitas, barras y solo números; más el ejemplo del ajolote" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Modelo visual — preview</title>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--espacio-4); padding: var(--espacio-4); }
+  .grid .sm-card { padding: var(--espacio-3) var(--espacio-4); }
+  .head { display: flex; justify-content: space-between; align-items: center; gap: var(--espacio-2); margin-bottom: var(--espacio-3); }
+  .head h3 { font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 28px; margin: 0; }
+  .nota { margin: var(--espacio-2) 0 0; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--tinta-suave); }
+  .num { font-family: var(--font-body); font-weight: 700; font-size: 14px; fill: var(--tinta-suave); }
+  .big { font-family: var(--font-body); font-weight: 800; font-size: 18px; }
+  .op { font-family: var(--font-body); font-weight: 800; font-size: 32px; line-height: 40px; margin: 0; }
+</style>
+</head>
+<body>
+<div class="grid">
+
+  <div class="sm-card">
+    <div class="head"><h3>1 · Monedas</h3><span class="sm-chip">Concepto nuevo</span></div>
+    <svg viewBox="0 0 310 60" width="310" height="60" role="img" aria-label="3 montones de 12 monedas cada uno"><defs><g id="coin"><circle r="7" style="fill:var(--sol);stroke:var(--tinta);stroke-width:1.5"/><circle r="3.4" style="fill:none;stroke:var(--sol-profundo);stroke-width:1.5"/></g></defs><use href="#coin" x="8" y="8"/><use href="#coin" x="23" y="8"/><use href="#coin" x="38" y="8"/><use href="#coin" x="53" y="8"/><use href="#coin" x="68" y="8"/><use href="#coin" x="83" y="8"/><use href="#coin" x="8" y="23"/><use href="#coin" x="23" y="23"/><use href="#coin" x="38" y="23"/><use href="#coin" x="53" y="23"/><use href="#coin" x="68" y="23"/><use href="#coin" x="83" y="23"/><use href="#coin" x="118" y="8"/><use href="#coin" x="133" y="8"/><use href="#coin" x="148" y="8"/><use href="#coin" x="163" y="8"/><use href="#coin" x="178" y="8"/><use href="#coin" x="193" y="8"/><use href="#coin" x="118" y="23"/><use href="#coin" x="133" y="23"/><use href="#coin" x="148" y="23"/><use href="#coin" x="163" y="23"/><use href="#coin" x="178" y="23"/><use href="#coin" x="193" y="23"/><use href="#coin" x="228" y="8"/><use href="#coin" x="243" y="8"/><use href="#coin" x="258" y="8"/><use href="#coin" x="273" y="8"/><use href="#coin" x="288" y="8"/><use href="#coin" x="303" y="8"/><use href="#coin" x="228" y="23"/><use href="#coin" x="243" y="23"/><use href="#coin" x="258" y="23"/><use href="#coin" x="273" y="23"/><use href="#coin" x="288" y="23"/><use href="#coin" x="303" y="23"/><text x="45" y="52" text-anchor="middle" class="num">12</text><text x="155" y="52" text-anchor="middle" class="num">12</text><text x="265" y="52" text-anchor="middle" class="num">12</text></svg>
+    <p class="nota">Doce monedas en dos filas de seis. Se cuentan de 6 en 6.</p>
+  </div>
+
+  <div class="sm-card">
+    <div class="head"><h3>2 · Bolsitas</h3><span class="sm-chip">Ya entiende la idea</span></div>
+    <svg viewBox="0 0 340 74" width="340" height="74" role="img" aria-label="3 bolsitas de 12 pesos cada una"><rect x="35" y="2" width="40" height="12" rx="4" style="fill:var(--magia);stroke:var(--tinta);stroke-width:1.6"/><rect x="15" y="12" width="80" height="58" rx="22" style="fill:var(--sol);stroke:var(--tinta);stroke-width:1.6"/><text x="55" y="49" text-anchor="middle" class="big" style="fill:var(--tinta)">$12</text><rect x="145" y="2" width="40" height="12" rx="4" style="fill:var(--magia);stroke:var(--tinta);stroke-width:1.6"/><rect x="125" y="12" width="80" height="58" rx="22" style="fill:var(--sol);stroke:var(--tinta);stroke-width:1.6"/><text x="165" y="49" text-anchor="middle" class="big" style="fill:var(--tinta)">$12</text><rect x="255" y="2" width="40" height="12" rx="4" style="fill:var(--magia);stroke:var(--tinta);stroke-width:1.6"/><rect x="235" y="12" width="80" height="58" rx="22" style="fill:var(--sol);stroke:var(--tinta);stroke-width:1.6"/><text x="275" y="49" text-anchor="middle" class="big" style="fill:var(--tinta)">$12</text></svg>
+    <p class="nota">Cada bolsita trae lo mismo. Sirve cuando las monedas ya no caben.</p>
+  </div>
+
+  <div class="sm-card">
+    <div class="head"><h3>3 · Barras</h3><span class="sm-chip">Casi abstracto</span></div>
+    <svg viewBox="0 0 320 84" width="320" height="84" role="img" aria-label="3 barras iguales de 12 pesos con un total desconocido"><rect x="0" y="2" width="100" height="40" rx="8" style="fill:var(--magia-suave);stroke:var(--magia);stroke-width:2"/><text x="50" y="29" text-anchor="middle" class="big" style="fill:var(--magia-profundo)">$12</text><rect x="104" y="2" width="100" height="40" rx="8" style="fill:var(--magia-suave);stroke:var(--magia);stroke-width:2"/><text x="154" y="29" text-anchor="middle" class="big" style="fill:var(--magia-profundo)">$12</text><rect x="208" y="2" width="100" height="40" rx="8" style="fill:var(--magia-suave);stroke:var(--magia);stroke-width:2"/><text x="258" y="29" text-anchor="middle" class="big" style="fill:var(--magia-profundo)">$12</text><path d="M0 50 L0 58 L308 58 L308 50" style="fill:none;stroke:var(--tinta);stroke-width:2;stroke-linecap:round;stroke-linejoin:round"/><circle cx="154" cy="72" r="11" style="fill:var(--sol);stroke:var(--tinta);stroke-width:1.6"/><text x="154" y="78" text-anchor="middle" class="big" style="fill:var(--tinta)">?</text></svg>
+    <p class="nota">El total es la incógnita. Sirve también para fracciones y proporciones.</p>
+  </div>
+
+  <div class="sm-card">
+    <div class="head"><h3>4 · Solo números</h3><span class="sm-chip">Sin apoyo</span></div>
+    <p class="op">3 × $12 = ?</p>
+    <p class="nota">El apoyo vuelve como pista si el alumno lo pide.</p>
+  </div>
+
+  <div class="sm-card" style="border-color: var(--pista-texto);">
+    <div class="head"><h3>Ejemplo del ajolote</h3><span class="sm-chip" style="background: var(--pista-suave); color: var(--pista-texto);">Tutorial</span></div>
+    <svg viewBox="0 0 250 36" width="250" height="36" role="img" aria-label="2 montones de 5 monedas que juntos suman 10 pesos"><defs><g id="coin"><circle r="7" style="fill:var(--sol);stroke:var(--tinta);stroke-width:1.5"/><circle r="3.4" style="fill:none;stroke:var(--sol-profundo);stroke-width:1.5"/></g></defs><use href="#coin" x="8" y="8"/><use href="#coin" x="23" y="8"/><use href="#coin" x="38" y="8"/><use href="#coin" x="53" y="8"/><use href="#coin" x="68" y="8"/><use href="#coin" x="138" y="8"/><use href="#coin" x="153" y="8"/><use href="#coin" x="168" y="8"/><use href="#coin" x="183" y="8"/><use href="#coin" x="198" y="8"/></svg>
+    <p class="op" style="font-size:24px; line-height:32px; margin-top: var(--espacio-2);">2 × $5 = <span style="color: var(--selva-profundo);">$10</span></p>
+    <p class="nota">Con otros números: aquí sí se muestra el total. El reto del alumno nunca lo muestra.</p>
+  </div>
+
+</div>
+</body>
+</html>

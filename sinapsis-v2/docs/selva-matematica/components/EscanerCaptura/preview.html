@@ -1,0 +1,67 @@
+<!-- @dsCard group="Escáner de cuaderno" height=560 subtitle="Captura (cámara y galería) y recorte del ejercicio" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Escáner: captura y recorte — preview</title>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--espacio-4); padding: var(--espacio-4); align-items: start; }
+  .tel h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 28px; margin: 0 0 var(--espacio-1); }
+  .consejo { margin: 0 0 var(--espacio-3); font-size: 16px; line-height: 22px; font-weight: 700; color: var(--tinta-suave); }
+  .visor { position: relative; height: 190px; border: 3px dashed var(--tinta-suave); border-radius: var(--radio-lg); background: var(--fondo); display: grid; place-items: center; margin-bottom: var(--espacio-3); }
+  .visor span { font-weight: 700; font-size: 18px; line-height: 26px; color: var(--tinta-suave); }
+  .esq { position: absolute; width: 28px; height: 28px; border: 4px solid var(--magia); }
+  .esq.a { top: 14px; left: 14px; border-right: 0; border-bottom: 0; border-radius: 10px 0 0 0; }
+  .esq.b { top: 14px; right: 14px; border-left: 0; border-bottom: 0; border-radius: 0 10px 0 0; }
+  .esq.c { bottom: 14px; left: 14px; border-right: 0; border-top: 0; border-radius: 0 0 0 10px; }
+  .esq.d { bottom: 14px; right: 14px; border-left: 0; border-top: 0; border-radius: 0 0 10px 0; }
+  .col { display: flex; flex-direction: column; gap: var(--espacio-3); }
+  .col .sm-btn { width: 100%; }
+  .hoja { position: relative; height: 190px; border: 2px solid var(--tinta); border-radius: var(--radio-sm); background-color: var(--superficie); background-image: linear-gradient(var(--pista-suave) 2px, transparent 2px), linear-gradient(90deg, var(--pista-suave) 2px, transparent 2px); background-size: 24px 24px; margin-bottom: var(--espacio-2); overflow: hidden; }
+  .hoja .tex { position: absolute; left: 24px; top: 70px; font-family: var(--font-body); font-weight: 800; font-size: 32px; line-height: 40px; color: var(--tinta); transform: rotate(-1.5deg); }
+  .hoja .otro { position: absolute; left: 24px; top: 14px; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--tinta-suave); }
+  .hoja .otro2 { position: absolute; left: 24px; bottom: 14px; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--tinta-suave); }
+  .marco { position: absolute; left: 14px; right: 40px; top: 54px; bottom: 54px; border: 3px dashed var(--pista); border-radius: var(--radio-sm); }
+  .ag { position: absolute; width: 24px; height: 24px; border-radius: 8px; background: var(--pista); border: 2px solid var(--tinta); }
+  .ag.a { top: -14px; left: -14px; } .ag.b { top: -14px; right: -14px; } .ag.c { bottom: -14px; left: -14px; } .ag.d { bottom: -14px; right: -14px; }
+</style>
+</head>
+<body>
+<div class="grid">
+
+  <div class="sm-card tel">
+    <h2>Escáner de cuaderno</h2>
+    <p class="consejo">Una operación por foto, con buena luz.</p>
+    <div class="visor" role="img" aria-label="Visor de la cámara">
+      <i class="esq a"></i><i class="esq b"></i><i class="esq c"></i><i class="esq d"></i>
+      <span>Aquí va tu cuaderno</span>
+    </div>
+    <div class="col">
+      <button class="sm-btn">
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="2" y="7" width="24" height="17" rx="5" style="fill:var(--superficie);stroke:var(--tinta);stroke-width:2"/><rect x="9" y="3" width="10" height="6" rx="2" style="fill:var(--superficie);stroke:var(--tinta);stroke-width:2"/><circle cx="14" cy="15.5" r="5" style="fill:var(--magia);stroke:var(--tinta);stroke-width:2"/></svg>
+        Tomar foto
+      </button>
+      <button class="sm-btn sm-btn-suave">
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="2" y="4" width="24" height="20" rx="5" style="fill:var(--superficie);stroke:var(--tinta);stroke-width:2"/><circle cx="19" cy="11" r="3" style="fill:var(--sol);stroke:var(--tinta);stroke-width:1.6"/><path d="M4 21 L11 13 L16 18 L19 15 L24 21 Z" style="fill:var(--selva);stroke:var(--tinta);stroke-width:1.6;stroke-linejoin:round"/></svg>
+        Elegir de galería
+      </button>
+    </div>
+  </div>
+
+  <div class="sm-card tel">
+    <h2>Recorta el ejercicio</h2>
+    <p class="consejo">Deja dentro del marco solo la operación.</p>
+    <div class="hoja" role="img" aria-label="Foto del cuaderno con la operación 3 por 12 igual 26 dentro de un marco de recorte">
+      <span class="otro">Tarea · pág. 14</span>
+      <span class="tex">3 × 12 = 26</span>
+      <span class="otro2">Ejercicio 2</span>
+      <div class="marco"><i class="ag a"></i><i class="ag b"></i><i class="ag c"></i><i class="ag d"></i></div>
+    </div>
+    <p class="consejo" style="margin-bottom: var(--espacio-3);">Solo se envía lo que está dentro del marco.</p>
+    <div class="col">
+      <button class="sm-btn">Enviar al ajolote</button>
+      <button class="sm-btn sm-btn-suave">Volver a tomar</button>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
