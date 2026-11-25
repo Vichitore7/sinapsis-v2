@@ -335,3 +335,7 @@ Alimentar, limpiar y dormir son gratuitos y tienen recargas independientes de tr
 La tienda desbloquea decoraciones según las trajineras completadas de El Canal de los Números, no según la XP. Los accesorios especiales se desbloquean al superar las trajineras 3, 6, 9 y 12. Los precios, estrellas verdes e inventario previo se conservan. No se requiere ninguna migración adicional ni dependencias nuevas. Consulta [Habitación](docs/selva-matematica/Habitacion.md).
 
 En Tienda y Trajes v4, el personaje de Habitación usa el ajolote original de Mix (sin traje especial por defecto). El armario permite volver a ese aspecto sin perder los trajes ni el progreso.
+
+## Licencia
+
+© 2026 Equipo Sinapsis. **Todos los derechos reservados.** El código es visible para la evaluación del UniconHub Hack 2026, pero no se permite copiarlo, modificarlo ni publicarlo sin nuestro permiso por escrito. Ver [LICENSE](LICENSE).
