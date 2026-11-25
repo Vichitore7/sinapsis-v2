@@ -5,6 +5,7 @@
 export const STICKERS = {
   flor: { nombre: 'Flor de la chinampa' },
   tarjeta: { nombre: 'Tarjeta del Metro' },
+  peluche: { nombre: 'Peluche de la mascota de la FES' },
   mochila: { nombre: 'Mochila de la selva' },
   bufanda: { nombre: 'Bufanda del mercado' },
   sombrero: { nombre: 'Sombrero del río' },
@@ -18,6 +19,9 @@ export const TRAJES = {
   // Rumbo a la FES Aragón: premio fijo del examen del Mundo 2 (sudadera azul con patita dorada, tenis y audífonos).
   'fes-gorra': { nombre: 'FES Aragón: sudadera y gorra', origen: 'Constancia Mundo 2', detalle: 'Sudadera azul con patita dorada, gorra, pantalón, tenis y audífonos.' },
   'fes-cabello': { nombre: 'FES Aragón: sudadera y cabello largo', origen: 'Constancia Mundo 2', detalle: 'Sudadera azul con patita dorada, cabello largo, falda, tenis y audífonos.' },
+  // Rumbo al Nevado de Toluca: premio fijo del examen del Mundo 3 (ropa para el frío).
+  'nevado-gorro': { nombre: 'Nevado: chamarra y gorro', origen: 'Constancia Mundo 3', detalle: 'Gorro tejido con pompón, chamarra acolchonada, bufanda, guantes y botas para la nieve.' },
+  'nevado-orejeras': { nombre: 'Nevado: abrigo y orejeras', origen: 'Constancia Mundo 3', detalle: 'Orejeras peludas, abrigo largo con botones, bufanda, guantes y botas para la nieve.' },
   // Subculturas de la CDMX: premio del examen general del Mundo 1 (2 al azar, de estilos distintos).
   // Los nombres dicen cómo se ve el traje; cualquiera puede usar cualquiera.
   ...Object.fromEntries([

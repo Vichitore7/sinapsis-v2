@@ -21,6 +21,8 @@ docs/imagenes/
 │   │                                 dark y lucha libre), dos estilos de cada una, también en versión -cabeza
 │   ├── kiko-fes-gorra.png / kiko-fes-cabello.png   Premio del Mundo 2: rumbo a la FES Aragón (sudadera azul
 │   │                                 con patita dorada, tenis y audífonos), también en versión -cabeza
+│   ├── kiko-nevado-gorro.png / kiko-nevado-orejeras.png   Premio del Mundo 3: ropa para el frío, rumbo al
+│   │                                 Nevado de Toluca, también en versión -cabeza
 │   └── svg/                          Los mismos dibujos en SVG (se agrandan sin perder calidad;
 │                                     se editan en Figma o Illustrator)
 └── canal/                    Mundo 1 "El Canal de los Números" como stickers (borde blanco, 512 px)
@@ -31,6 +33,15 @@ docs/imagenes/
     ├── chinampa-cempasuchil.png
     ├── lirio.png, pez.png, flor.png, persona.png, sombrerito.png, jarrito.png, ramo.png
     └── svg/                          Los mismos dibujos en SVG (el borde blanco va incluido)
+└── fes/                      Mundo 3 "La FES de los Números" como stickers (borde blanco, 512 px)
+    ├── peluche-mascota.png           Sticker de premio: peluche de la mascota de la FES
+    ├── tlacuache.png                 Los 3 premios de cada nivel
+    ├── titulo-fes-aragon.png         Letrero "¡Bienvenido a la FES Aragón!" del mapa
+    ├── lugar-<lugar>.png             Lugares de los niveles: biblioteca, laboratorio, canchas, cafetería, auditorio,
+    │                                 torre, explanada, salón y entrada (sin número)
+    ├── campus-<cosa>.png             Decoración del mapa: torres, auditorio, mascota, hombre de morado, edificio,
+    │                                 laboratorio, cancha, cafetería, puesto, alumnos, árbol, bici y banca
+    └── svg/
 ```
 
 ## Reglas
@@ -42,13 +53,14 @@ docs/imagenes/
 
 ## Volver a generar los stickers
 
-Los stickers salen del mismo dibujo de la app: Kiko de `frontend/src/componentes/Ajolote.jsx` y el canal de `frontend/src/componentes/Canal.jsx`. Por eso un elemento que se repite (una trajinera, un pez, una flor) siempre es el mismo dibujo, en la app y aquí. Si cambia un dibujo o se agrega uno nuevo:
+Los stickers salen del mismo dibujo de la app: Kiko de `frontend/src/componentes/Ajolote.jsx`, el canal de `frontend/src/componentes/Canal.jsx` y la FES de `frontend/src/componentes/FES.jsx`. Por eso un elemento que se repite (una trajinera, un pez, una flor) siempre es el mismo dibujo, en la app y aquí. Si cambia un dibujo o se agrega uno nuevo:
 
 ```powershell
 cd frontend
 npm run stickers            # todo
 npm run stickers -- kiko    # solo Kiko
 npm run stickers -- canal   # solo el canal
+npm run stickers -- fes     # solo la FES
 ```
 
-El script (`frontend/scripts/exportar-stickers.mjs`) sobrescribe los archivos de `stickers/` y `canal/` (y sus `svg/`). En la app, el borde blanco lo pone la clase `.sticker` de `app.css`; en los SVG exportados va dibujado dentro del archivo para que se vea igual fuera de la app. Para el PNG usa Edge o Chrome sin abrir ventanas; no hay que instalar nada.
+El script (`frontend/scripts/exportar-stickers.mjs`) sobrescribe los archivos de `stickers/`, `canal/` y `fes/` (y sus `svg/`). En la app, el borde blanco lo pone la clase `.sticker` de `app.css`; en los SVG exportados va dibujado dentro del archivo para que se vea igual fuera de la app. Para el PNG usa Edge o Chrome sin abrir ventanas; no hay que instalar nada.
