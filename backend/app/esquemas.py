@@ -77,7 +77,7 @@ class RespuestaExamen(BaseModel):
 
 
 class CuidadoEntrada(BaseModel):
-    accion: Literal["alimentar", "jugar", "limpiar", "descansar"]
+    accion: Literal["alimentar", "limpiar", "descansar"]
 
 
 class MascotaCambio(BaseModel):

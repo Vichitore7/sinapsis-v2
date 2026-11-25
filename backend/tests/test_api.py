@@ -285,7 +285,7 @@ def test_canal_conteo_y_opcion(cliente):
     assert "respuesta" not in r and "6" not in str(r["diagnostico"])
     assert cliente.post("/api/ejercicios/x1-n01-1/intentos", json={"respuesta": "seis"}).status_code == 422
     r = cliente.post("/api/ejercicios/x1-n01-1/intentos", json={"respuesta": "6"}).json()
-    assert r["correcto"] is True and r["recompensa"] == {"ganadas": 2, "bono": 5, "repaso": False}
+    assert r["correcto"] is True and r["recompensa"] == {"ganadas": 2, "bono": 5, "repaso": False, "estrella_cuidado": 1}
     assert r["estado"]["mapa"]["x1"]["nodos"]["x1-n01-2"] == "actual"
     for e in canal.ejercicios()[1:6]:  # hasta la primera pregunta de opción (nivel 3)
         cliente.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]})
@@ -316,8 +316,8 @@ def test_reto_validado_en_servidor_con_senda(cliente):
     r = cliente.post("/api/ejercicios/m2-r1/intentos", json={"respuesta": "$36"}).json()
     assert r["correcto"] is True and r["respuesta"] == "36"
     # Se equivocó antes: 2 estrellas (el bono del día ya se ganó en el canal).
-    assert r["recompensa"] == {"ganadas": 2, "bono": 0, "repaso": False}
-    assert r["estado"]["estrellas"] == antes + 2
+    assert {k:r["recompensa"][k] for k in ("ganadas", "bono", "repaso")} == {"ganadas": 2, "bono": 0, "repaso": False}
+    assert r["estado"]["estrellas"] == antes + 2 + r["recompensa"]["estrella_cuidado"]
 
 
 def test_a_la_primera_da_3_y_repaso_no_da_nada(cliente):
@@ -326,10 +326,12 @@ def test_a_la_primera_da_3_y_repaso_no_da_nada(cliente):
     antes = _estrellas(cliente)
     r = cliente.post("/api/ejercicios/m2-r1/intentos", json={"respuesta": "36"}).json()
     assert r["recompensa"]["ganadas"] == 3
+    extra = r["recompensa"]["estrella_cuidado"]
     r = cliente.post("/api/ejercicios/m2-r2/intentos", json={"respuesta": "60", "pistas_usadas": 1}).json()
-    assert r["recompensa"] == {"ganadas": 2, "bono": 0, "repaso": False}
+    assert {k:r["recompensa"][k] for k in ("ganadas", "bono", "repaso")} == {"ganadas": 2, "bono": 0, "repaso": False}
+    extra += r["recompensa"]["estrella_cuidado"]
     r = cliente.post("/api/ejercicios/m2-r1/intentos", json={"respuesta": "36"}).json()
-    assert r["recompensa"]["repaso"] is True and r["estado"]["estrellas"] == antes + 3 + 2
+    assert r["recompensa"]["repaso"] is True and r["estado"]["estrellas"] == antes + 3 + 2 + extra
 
 
 def test_no_se_puede_saltar_retos(cliente):
@@ -367,7 +369,7 @@ def test_etapa_sube_y_medidores_bajan_al_jugar(cliente):
     est = cliente.get("/api/juego/estado").json()
     assert est["etapa_apoyo"] == 2  # 3 seguidos sin pistas
     assert est["mascota"]["comida"] == 3  # 4 retos -> bajó una marca (cada 3)
-    assert est["racha_dias"] == 1 and est["xp"] == est["estrellas"]
+    assert est["racha_dias"] == 1 and est["xp"] + 1 == est["estrellas"]
 
 
 def test_bienvenida_regala_trajes_y_se_puede_vestir(cliente):
@@ -390,11 +392,12 @@ def test_profesor_no_recibe_trajes(cliente):
 
 def test_cuidados_y_estrellas(cliente):
     registrar(cliente)
-    assert cliente.post("/api/mascota/cuidar", json={"accion": "jugar"}).status_code == 409  # sin estrellas
-    assert cliente.post("/api/mascota/cuidar", json={"accion": "limpiar"}).json()["mascota"]["pecera"] == 5
+    assert cliente.post("/api/mascota/cuidar", json={"accion": "jugar"}).status_code == 422
+    limpieza = cliente.post("/api/mascota/cuidar", json={"accion": "limpiar"}).json()
+    assert limpieza["mascota"]["pecera"] == 5 and limpieza["estrellas"] == 1 and limpieza["xp"] == 0
     cliente.post("/api/ejercicios/x1-n01-1/intentos", json={"respuesta": "6"})
     est = cliente.post("/api/mascota/cuidar", json={"accion": "alimentar"}).json()
-    assert est["estrellas"] == 3 + 5 - 1 and est["mascota"]["comida"] == 5
+    assert est["estrellas"] == 11 and est["xp"] == 8 and est["mascota"]["comida"] == 5
     assert cliente.post("/api/mascota/cuidar", json={"accion": "descansar"}).json()["mascota"]["dormido"] is True
     assert cliente.post("/api/mascota/cuidar", json={"accion": "volar"}).status_code == 422
 

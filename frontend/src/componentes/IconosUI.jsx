@@ -2,6 +2,7 @@
 // Los íconos tipo sticker de Iconos.jsx siguen usándose para premios y medidores.
 
 const P = {
+  habitacion: <><path d="M3 5l9-3 9 3v13l-9 4-9-4zM12 2v13M3 18l9-3 9 3M12 15v7" /></>,
   inicio: <><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h5v-6h4v6h5V9.5" /></>,
   mapa: <><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5z" /></>,
   escaner: <><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" /><path d="M8 9h8M8 12h8M8 15h5" /></>,

@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 
 from . import config
 from .db import Base, SesionLocal, engine, migrar_columnas
-from .rutas import ajustes, auth, aulas, diagnostico, juego, tutor
+from .rutas import ajustes, auth, aulas, diagnostico, juego, tutor, habitacion
 from .semilla import cargar_contenido
 
 
@@ -55,10 +55,18 @@ async def _validacion(_: Request, exc: RequestValidationError):
     return JSONResponse({"error": mensaje, "detalles": detalles}, status_code=422)
 
 
+@app.middleware("http")
+async def no_cache_api(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.get("/salud", tags=["Sistema"])
 def salud() -> dict:
     return {"ok": True}
 
 
-for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router, tutor.router):
+for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router, tutor.router, habitacion.router):
     app.include_router(r, prefix="/api")
