@@ -1,0 +1,57 @@
+<!-- @dsCard group="Mascota" height=300 subtitle="Ajolote explorador: feliz · curioso · celebrando · dormido" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Ajolote explorador — preview</title>
+<style>
+  .grid { display: flex; flex-wrap: wrap; gap: var(--espacio-4); padding: var(--espacio-4); align-items: flex-end; }
+  .item { display: flex; flex-direction: column; align-items: center; gap: var(--espacio-2); }
+  .item span { font-size: 14px; line-height: 20px; font-weight: 700; color: var(--tinta-suave); }
+  svg .o { fill: var(--superficie); stroke: var(--superficie); stroke-width: 16; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="gills"><ellipse cx="38" cy="70" rx="24" ry="9" transform="rotate(-35 38 70)"/><ellipse cx="30" cy="92" rx="24" ry="9" transform="rotate(-5 30 92)"/><ellipse cx="36" cy="114" rx="22" ry="9" transform="rotate(28 36 114)"/><ellipse cx="162" cy="70" rx="24" ry="9" transform="rotate(35 162 70)"/><ellipse cx="170" cy="92" rx="24" ry="9" transform="rotate(5 170 92)"/><ellipse cx="164" cy="114" rx="22" ry="9" transform="rotate(-28 164 114)"/></g>
+    <g id="body"><ellipse cx="72" cy="176" rx="14" ry="8"/><ellipse cx="128" cy="176" rx="14" ry="8"/><ellipse cx="100" cy="152" rx="36" ry="26"/><ellipse cx="100" cy="100" rx="62" ry="52"/></g>
+    <g id="hat"><ellipse cx="100" cy="54" rx="60" ry="12"/><path d="M62 54 Q62 22 100 22 Q138 22 138 54 Z"/></g>
+  </defs>
+</svg>
+<div id="root" class="grid"></div>
+<script>
+  function ajolote(estado) {
+    var gillFill = estado === 'celebrando' ? 'var(--sol)' : 'var(--magia)';
+    var ink = 'fill:var(--tinta)', line = 'fill:none;stroke:var(--tinta);stroke-width:3;stroke-linecap:round';
+    var cheeks = '<ellipse cx="62" cy="116" rx="10" ry="6" style="fill:var(--ajolote-rosa-profundo);opacity:.7"/><ellipse cx="138" cy="116" rx="10" ry="6" style="fill:var(--ajolote-rosa-profundo);opacity:.7"/>';
+    var face = '', extra = '';
+    if (estado === 'feliz') {
+      face = '<circle cx="78" cy="100" r="8" style="' + ink + '"/><circle cx="122" cy="100" r="8" style="' + ink + '"/><circle cx="81" cy="97" r="2.8" style="fill:var(--superficie)"/><circle cx="125" cy="97" r="2.8" style="fill:var(--superficie)"/><path d="M86 118 Q100 132 114 118" style="' + line + '"/>';
+    } else if (estado === 'curioso') {
+      face = '<circle cx="78" cy="102" r="7" style="' + ink + '"/><circle cx="122" cy="100" r="9" style="' + ink + '"/><circle cx="81" cy="99" r="2.6" style="fill:var(--superficie)"/><circle cx="125" cy="97" r="3" style="fill:var(--superficie)"/><path d="M112 82 Q122 74 134 80" style="' + line + '"/><ellipse cx="100" cy="124" rx="6" ry="7" style="' + ink + '"/>';
+      extra = '<circle cx="176" cy="30" r="20" style="fill:var(--pista);stroke:var(--superficie);stroke-width:6"/><text x="176" y="39" text-anchor="middle" style="font-family:var(--font-display);font-weight:800;font-size:26px;fill:var(--tinta)">?</text>';
+    } else if (estado === 'celebrando') {
+      face = '<path d="M69 102 Q78 92 87 102" style="' + line + '"/><path d="M113 102 Q122 92 131 102" style="' + line + '"/><path d="M84 116 Q100 140 116 116 Z" style="' + ink + '"/>';
+      extra = '<path d="M20 30 l5 12 12 5 -12 5 -5 12 -5 -12 -12 -5 12 -5z" style="fill:var(--sol);stroke:var(--tinta);stroke-width:2.5"/><path d="M178 60 l4 9 9 4 -9 4 -4 9 -4 -9 -9 -4 9 -4z" style="fill:var(--sol);stroke:var(--tinta);stroke-width:2.5"/>';
+    } else {
+      face = '<path d="M69 102 Q78 110 87 102" style="' + line + '"/><path d="M113 102 Q122 110 131 102" style="' + line + '"/><path d="M92 122 Q100 128 108 122" style="' + line + '"/>';
+      extra = '<text x="160" y="46" style="font-family:var(--font-display);font-weight:800;font-size:26px;fill:var(--tinta-suave)">z</text><text x="178" y="26" style="font-family:var(--font-display);font-weight:800;font-size:18px;fill:var(--tinta-suave)">z</text>';
+    }
+    var compass = '<circle cx="100" cy="166" r="9" style="fill:var(--sol);stroke:var(--tinta);stroke-width:2.5"/><path d="M100 160 L103 166 L100 172 L97 166 Z" style="fill:var(--tinta)"/>';
+    return '<svg viewBox="0 0 200 200" width="160" height="160" role="img" aria-label="Ajolote explorador ' + estado + '">' +
+      '<use class="o" href="#gills"/><use class="o" href="#body"/><use class="o" href="#hat"/>' +
+      '<use href="#gills" style="fill:' + gillFill + ';stroke:var(--tinta);stroke-width:2.5"/>' +
+      '<use href="#body" style="fill:var(--ajolote-rosa);stroke:var(--tinta);stroke-width:2.5"/>' +
+      cheeks + face +
+      '<use href="#hat" style="fill:var(--sol);stroke:var(--tinta);stroke-width:2.5"/>' +
+      '<rect x="63" y="42" width="74" height="9" style="fill:var(--selva);stroke:var(--tinta);stroke-width:2"/>' +
+      compass + extra + '</svg>';
+  }
+  var root = document.getElementById('root');
+  ['feliz', 'curioso', 'celebrando', 'dormido'].forEach(function (e) {
+    var d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = ajolote(e) + '<span>' + e + '</span>';
+    root.appendChild(d);
+  });
+</script>
+</body>
+</html>

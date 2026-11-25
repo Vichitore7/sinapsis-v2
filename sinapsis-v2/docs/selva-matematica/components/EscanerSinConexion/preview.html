@@ -1,0 +1,56 @@
+<!-- @dsCard group="Escáner de cuaderno" height=520 subtitle="Sin internet: la foto va en la mochila del ajolote y se piensa con 3 preguntas" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Escáner: sin conexión — preview</title>
+<style>
+  .wrap { max-width: 440px; margin: var(--espacio-4); }
+  .cab { display: flex; align-items: flex-end; gap: var(--espacio-3); margin-bottom: var(--espacio-3); }
+  .burbuja { flex: 1; background: var(--pista-suave); border: 2px solid var(--pista-texto); border-radius: var(--radio-lg); padding: var(--espacio-3); font-weight: 700; font-size: 18px; line-height: 26px; }
+  .estado { margin-bottom: var(--espacio-3); }
+  h3 { font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 24px; margin: 0 0 var(--espacio-2); }
+  ol { list-style: none; margin: 0 0 var(--espacio-3); padding: 0; display: flex; flex-direction: column; gap: var(--espacio-2); }
+  li { display: flex; align-items: center; gap: var(--espacio-3); padding: var(--espacio-2) var(--espacio-3); border: 2px solid var(--tinta); border-radius: var(--radio-sm); background: var(--superficie); font-size: 18px; line-height: 26px; }
+  .n { flex: none; width: 32px; height: 32px; border-radius: var(--radio-pill); border: 2px solid var(--tinta); background: var(--sol); display: grid; place-items: center; font-weight: 800; font-size: 16px; }
+  .cierre { margin: 0; font-size: 16px; line-height: 22px; font-weight: 700; color: var(--tinta-suave); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="gills"><ellipse cx="38" cy="70" rx="24" ry="9" transform="rotate(-35 38 70)"/><ellipse cx="30" cy="92" rx="24" ry="9" transform="rotate(-5 30 92)"/><ellipse cx="36" cy="114" rx="22" ry="9" transform="rotate(28 36 114)"/><ellipse cx="162" cy="70" rx="24" ry="9" transform="rotate(35 162 70)"/><ellipse cx="170" cy="92" rx="24" ry="9" transform="rotate(5 170 92)"/><ellipse cx="164" cy="114" rx="22" ry="9" transform="rotate(-28 164 114)"/></g>
+    <g id="body"><ellipse cx="72" cy="176" rx="14" ry="8"/><ellipse cx="128" cy="176" rx="14" ry="8"/><ellipse cx="100" cy="152" rx="36" ry="26"/><ellipse cx="100" cy="100" rx="62" ry="52"/></g>
+    <g id="hat"><ellipse cx="100" cy="54" rx="60" ry="12"/><path d="M62 54 Q62 22 100 22 Q138 22 138 54 Z"/></g>
+  </defs>
+</svg>
+<div class="sm-card wrap">
+  <span class="sm-chip estado" style="background: var(--pista-suave); color: var(--pista-texto);">En espera · 1 foto</span>
+  <div class="cab">
+    <svg viewBox="0 0 240 200" width="130" height="108" role="img" aria-label="Ajolote explorador con una mochila" style="flex:none">
+      <g transform="translate(40 0)">
+        <rect x="108" y="96" width="66" height="84" rx="22" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:14"/>
+        <rect x="108" y="96" width="66" height="84" rx="22" style="fill:var(--magia);stroke:var(--tinta);stroke-width:2.5"/>
+        <rect x="120" y="128" width="42" height="32" rx="8" style="fill:var(--sol);stroke:var(--tinta);stroke-width:2.5"/>
+        <rect x="124" y="82" width="34" height="22" rx="8" style="fill:var(--superficie);stroke:var(--tinta);stroke-width:2.5"/>
+      </g>
+      <g transform="translate(-20 0)">
+        <use href="#gills" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:16;stroke-linejoin:round"/><use href="#body" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:16;stroke-linejoin:round"/><use href="#hat" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:16;stroke-linejoin:round"/>
+        <use href="#gills" style="fill:var(--magia);stroke:var(--tinta);stroke-width:2.5"/><use href="#body" style="fill:var(--ajolote-rosa);stroke:var(--tinta);stroke-width:2.5"/>
+        <ellipse cx="62" cy="116" rx="10" ry="6" style="fill:var(--ajolote-rosa-profundo);opacity:.7"/><ellipse cx="138" cy="116" rx="10" ry="6" style="fill:var(--ajolote-rosa-profundo);opacity:.7"/>
+        <circle cx="78" cy="100" r="8" style="fill:var(--tinta)"/><circle cx="122" cy="100" r="8" style="fill:var(--tinta)"/><circle cx="81" cy="97" r="2.8" style="fill:var(--superficie)"/><circle cx="125" cy="97" r="2.8" style="fill:var(--superficie)"/>
+        <path d="M86 118 Q100 132 114 118" style="fill:none;stroke:var(--tinta);stroke-width:3;stroke-linecap:round"/>
+        <use href="#hat" style="fill:var(--sol);stroke:var(--tinta);stroke-width:2.5"/><rect x="63" y="42" width="74" height="9" style="fill:var(--selva);stroke:var(--tinta);stroke-width:2"/>
+      </g>
+    </svg>
+    <div class="burbuja">Tu foto está en mi mochila.</div>
+  </div>
+
+  <h3>Mientras llega, pensemos</h3>
+  <ol>
+    <li><span class="n">1</span><span>¿Qué te pide el problema?</span></li>
+    <li><span class="n">2</span><span>¿Qué datos tienes?</span></li>
+    <li><span class="n">3</span><span>¿Qué operación usaste y por qué?</span></li>
+  </ol>
+  <p class="cierre">Cuando haya internet, leeré tu foto.</p>
+</div>
+</body>
+</html>

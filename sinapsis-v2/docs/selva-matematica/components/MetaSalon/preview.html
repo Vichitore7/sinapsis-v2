@@ -1,0 +1,54 @@
+<!-- @dsCard group="Modo Aula" height=420 subtitle="Meta colectiva del salón y aviso privado de progreso" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Meta del salón — preview</title>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--espacio-4); padding: var(--espacio-4); align-items: start; }
+  .fila { display: flex; align-items: center; gap: var(--espacio-4); }
+  .titulo { font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 28px; margin: 0 0 var(--espacio-2); }
+  .barra { height: 24px; border: 2px solid var(--tinta); border-radius: var(--radio-pill); background: var(--bloqueado); overflow: hidden; }
+  .barra > div { height: 100%; width: 60%; background: var(--sol); border-right: 2px solid var(--tinta); }
+  .datos { display: flex; justify-content: space-between; gap: var(--espacio-2); margin-top: var(--espacio-2); font-size: 14px; line-height: 20px; font-weight: 700; color: var(--tinta-suave); }
+  .datos strong { color: var(--tinta); font-size: 18px; }
+  .aviso { background: var(--magia-suave); border: 2px solid var(--magia); border-radius: var(--radio-lg); padding: var(--espacio-4); }
+  .aviso p { margin: 0; }
+  .priv { display: inline-block; margin-top: var(--espacio-3); font-size: 14px; line-height: 20px; font-weight: 700; color: var(--magia-profundo); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="gills"><ellipse cx="38" cy="70" rx="24" ry="9" transform="rotate(-35 38 70)"/><ellipse cx="30" cy="92" rx="24" ry="9" transform="rotate(-5 30 92)"/><ellipse cx="36" cy="114" rx="22" ry="9" transform="rotate(28 36 114)"/><ellipse cx="162" cy="70" rx="24" ry="9" transform="rotate(35 162 70)"/><ellipse cx="170" cy="92" rx="24" ry="9" transform="rotate(5 170 92)"/><ellipse cx="164" cy="114" rx="22" ry="9" transform="rotate(-28 164 114)"/></g>
+    <g id="body"><ellipse cx="72" cy="176" rx="14" ry="8"/><ellipse cx="128" cy="176" rx="14" ry="8"/><ellipse cx="100" cy="152" rx="36" ry="26"/><ellipse cx="100" cy="100" rx="62" ry="52"/></g>
+    <g id="hat"><ellipse cx="100" cy="54" rx="60" ry="12"/><path d="M62 54 Q62 22 100 22 Q138 22 138 54 Z"/></g>
+  </defs>
+</svg>
+<div class="grid">
+
+  <div class="sm-card">
+    <div class="fila">
+      <svg viewBox="0 0 200 200" width="110" height="110" role="img" aria-label="Ajolote del 5.º B, feliz" style="flex:none">
+        <use href="#gills" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:16;stroke-linejoin:round"/><use href="#body" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:16;stroke-linejoin:round"/><use href="#hat" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:16;stroke-linejoin:round"/>
+        <use href="#gills" style="fill:var(--magia);stroke:var(--tinta);stroke-width:2.5"/><use href="#body" style="fill:var(--ajolote-rosa);stroke:var(--tinta);stroke-width:2.5"/>
+        <ellipse cx="62" cy="116" rx="10" ry="6" style="fill:var(--ajolote-rosa-profundo);opacity:.7"/><ellipse cx="138" cy="116" rx="10" ry="6" style="fill:var(--ajolote-rosa-profundo);opacity:.7"/>
+        <circle cx="78" cy="100" r="8" style="fill:var(--tinta)"/><circle cx="122" cy="100" r="8" style="fill:var(--tinta)"/><circle cx="81" cy="97" r="2.8" style="fill:var(--superficie)"/><circle cx="125" cy="97" r="2.8" style="fill:var(--superficie)"/>
+        <path d="M86 118 Q100 132 114 118" style="fill:none;stroke:var(--tinta);stroke-width:3;stroke-linecap:round"/>
+        <use href="#hat" style="fill:var(--sol);stroke:var(--tinta);stroke-width:2.5"/><rect x="63" y="42" width="74" height="9" style="fill:var(--selva);stroke:var(--tinta);stroke-width:2"/>
+      </svg>
+      <div style="flex:1;">
+        <h2 class="titulo">Expedición del 5.º B</h2>
+        <div class="barra" role="progressbar" aria-valuenow="36" aria-valuemin="0" aria-valuemax="60" aria-label="Estrellas del salón"><div></div></div>
+        <div class="datos"><strong>★ 36 de 60</strong><span>Meta: accesorio nuevo</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="aviso">
+    <p style="font-family: var(--font-display); font-weight:800; font-size:22px; line-height:28px; margin-bottom: var(--espacio-2);">¡Subiste en multiplicación, explorador!</p>
+    <p style="font-size:18px; line-height:26px;">Esta semana resolviste más retos de monedas sin ayuda. Sigue por ese sendero.</p>
+    <span class="priv">Aviso privado · solo lo ven Luna y su maestro</span>
+  </div>
+
+</div>
+</body>
+</html>

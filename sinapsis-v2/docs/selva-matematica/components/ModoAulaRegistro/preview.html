@@ -1,0 +1,50 @@
+<!-- @dsCard group="Modo Aula" height=560 subtitle="Lista del maestro: ✓ / ✗ y errores típicos" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Registro del maestro — preview</title>
+<style>
+  .tel { max-width: 400px; margin: var(--espacio-4); }
+  .enc { display: flex; justify-content: space-between; align-items: center; gap: var(--espacio-2); margin-bottom: var(--espacio-1); }
+  .enc h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 28px; margin: 0; }
+  .sub { margin: 0 0 var(--espacio-3); font-size: 14px; line-height: 20px; font-weight: 700; color: var(--tinta-suave); }
+  .fila { display: flex; align-items: center; gap: var(--espacio-3); min-height: 56px; padding: var(--espacio-1) var(--espacio-3); border: 2px solid var(--tinta); border-radius: var(--radio-sm); background: var(--superficie); }
+  .item { margin-bottom: var(--espacio-2); }
+  .item.mal .fila { border-color: var(--casi); border-width: 3px; background: var(--casi-suave); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .apodo { flex: 1; font-weight: 800; font-size: 18px; line-height: 26px; }
+  .mk { width: 48px; height: 48px; border: 2px solid var(--tinta); border-radius: var(--radio-md); background: var(--superficie); color: var(--tinta); font-family: var(--font-display); font-weight: 800; font-size: 22px; cursor: pointer; }
+  .mk:focus-visible { outline: 3px solid var(--pista); outline-offset: 3px; }
+  .mk.ok { background: var(--selva); }
+  .mk.no { background: var(--casi); }
+  .tipicos { display: flex; flex-wrap: wrap; gap: var(--espacio-2); padding: var(--espacio-2) var(--espacio-3) var(--espacio-3); border: 3px solid var(--casi); border-top: 0; border-radius: 0 0 var(--radio-sm) var(--radio-sm); background: var(--casi-suave); }
+  .tipicos .rotulo { width: 100%; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--casi-texto); }
+  .tip { font-family: var(--font-body); font-weight: 700; font-size: 14px; line-height: 20px; padding: var(--espacio-1) var(--espacio-2); min-height: 32px; border: 2px solid var(--tinta); border-radius: var(--radio-pill); background: var(--superficie); color: var(--tinta); cursor: pointer; }
+  .tip.sel { background: var(--casi); }
+  .pie { display: flex; align-items: center; justify-content: space-between; gap: var(--espacio-3); margin-top: var(--espacio-3); }
+  .pie .avance { font-size: 14px; line-height: 20px; font-weight: 700; color: var(--tinta-suave); }
+</style>
+</head>
+<body>
+<div class="sm-card tel">
+  <div class="enc"><h2>Reto 3 de 5 · 3 × $12</h2></div>
+  <p class="sub">Marca cómo le fue a cada quien</p>
+
+  <div class="item"><div class="fila"><span class="apodo">Luna</span><button class="mk ok" aria-label="Luna: acertó" aria-pressed="true">✓</button><button class="mk" aria-label="Luna: falló" aria-pressed="false">✗</button></div></div>
+
+  <div class="item mal">
+    <div class="fila"><span class="apodo">Teo</span><button class="mk" aria-label="Teo: acertó" aria-pressed="false">✓</button><button class="mk no" aria-label="Teo: falló" aria-pressed="true">✗</button></div>
+    <div class="tipicos">
+      <span class="rotulo">¿Qué pasó? (opcional)</span>
+      <button class="tip sel">Sumó en vez de multiplicar</button>
+      <button class="tip">Error de cálculo</button>
+      <button class="tip">Otro</button>
+    </div>
+  </div>
+
+  <div class="item"><div class="fila"><span class="apodo">Sol</span><button class="mk ok" aria-label="Sol: acertó" aria-pressed="true">✓</button><button class="mk" aria-label="Sol: falló" aria-pressed="false">✗</button></div></div>
+  <div class="item"><div class="fila"><span class="apodo">Mía</span><button class="mk" aria-label="Mía: acertó" aria-pressed="false">✓</button><button class="mk" aria-label="Mía: falló" aria-pressed="false">✗</button></div></div>
+  <div class="item"><div class="fila"><span class="apodo">Beto</span><button class="mk" aria-label="Beto: acertó" aria-pressed="false">✓</button><button class="mk" aria-label="Beto: falló" aria-pressed="false">✗</button></div></div>
+
+  <div class="pie"><span class="avance">3 de 5 marcados</span><button class="sm-btn">Siguiente reto</button></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!-- @dsCard group="Modo Aula" height=760 subtitle="Resumen del maestro: errores comunes, qué reforzar y quién necesita apoyo" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Panel del maestro — preview</title>
+<style>
+  .wrap { max-width: 640px; margin: var(--espacio-4); }
+  .enc { display: flex; justify-content: space-between; align-items: center; gap: var(--espacio-2); margin-bottom: var(--espacio-3); }
+  .enc h2 { font-family: var(--font-display); font-weight: 800; font-size: 22px; line-height: 28px; margin: 0; }
+  .sec { padding: var(--espacio-3) 0; border-top: 2px solid var(--bloqueado); }
+  .sec:first-of-type { border-top: 0; padding-top: 0; }
+  .sec h3 { font-family: var(--font-display); font-weight: 700; font-size: 18px; line-height: 24px; margin: 0 0 var(--espacio-2); }
+  .barra { height: 16px; border: 2px solid var(--tinta); border-radius: var(--radio-pill); background: var(--magia-suave); overflow: hidden; }
+  .barra > div { height: 100%; background: var(--magia); }
+  .fila { display: grid; grid-template-columns: 1fr 120px 36px; align-items: center; gap: var(--espacio-3); margin-bottom: var(--espacio-2); font-size: 16px; line-height: 22px; }
+  .fila b { font-weight: 800; text-align: right; }
+  .sug { background: var(--pista-suave); border: 2px solid var(--pista-texto); border-radius: var(--radio-sm); padding: var(--espacio-2) var(--espacio-3); font-size: 18px; line-height: 26px; }
+  .priv { display: inline-block; margin-top: var(--espacio-2); font-size: 14px; line-height: 20px; font-weight: 700; color: var(--magia-profundo); }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--espacio-2); }
+  .prog { display: grid; grid-template-columns: 90px 1fr auto; gap: var(--espacio-3); align-items: center; margin-bottom: var(--espacio-2); font-size: 16px; line-height: 22px; }
+  .marcas { display: flex; gap: 4px; }
+  .marca { width: 18px; height: 18px; border-radius: 6px; border: 2px solid var(--tinta); background: var(--bloqueado); }
+  .marca.on { background: var(--selva); }
+  .tinta-suave { color: var(--tinta-suave); font-size: 14px; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="sm-card wrap">
+  <div class="enc"><h2>Resultados · 3 × $12</h2><span class="sm-chip">5.º B · 28 alumnos</span></div>
+
+  <div class="sec">
+    <h3>Resultado del grupo</h3>
+    <div class="barra" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="28" aria-label="20 de 28 alumnos acertaron"><div style="width:71%"></div></div>
+    <p style="margin:var(--espacio-2) 0 0; font-size:18px; line-height:26px;"><strong>20 de 28</strong> acertaron</p>
+  </div>
+
+  <div class="sec">
+    <h3>Errores más comunes</h3>
+    <div class="fila"><span>Sumó en vez de multiplicar</span><div class="barra"><div style="width:100%"></div></div><b>5</b></div>
+    <div class="fila"><span>Error de cálculo</span><div class="barra"><div style="width:40%"></div></div><b>2</b></div>
+    <div class="fila"><span>Otro</span><div class="barra"><div style="width:20%"></div></div><b>1</b></div>
+    <span class="tinta-suave">Hay 8 alumnos con ✗; 3 no tienen un error marcado.</span>
+  </div>
+
+  <div class="sec">
+    <h3>Qué reforzar mañana</h3>
+    <div class="sug">Repasa con monedas por qué 3 × $12 es 12 + 12 + 12. Usa bolsitas con el grupo antes del siguiente reto.</div>
+  </div>
+
+  <div class="sec">
+    <h3>Alumnos que necesitan apoyo</h3>
+    <div class="chips"><span class="sm-chip">Beto</span><span class="sm-chip">Nina</span><span class="sm-chip">Teo</span></div>
+    <span class="priv">Privado · solo tú lo ves</span>
+  </div>
+
+  <div class="sec">
+    <h3>Progreso de cada alumno</h3>
+    <div class="prog"><b>Luna</b><span class="marcas" role="img" aria-label="Luna: 4 de 5 en multiplicación"><span class="marca on"></span><span class="marca on"></span><span class="marca on"></span><span class="marca on"></span><span class="marca"></span></span><span class="tinta-suave">Multiplicación</span></div>
+    <div class="prog"><b>Teo</b><span class="marcas" role="img" aria-label="Teo: 2 de 5 en multiplicación"><span class="marca on"></span><span class="marca on"></span><span class="marca"></span><span class="marca"></span><span class="marca"></span></span><span class="tinta-suave">Multiplicación</span></div>
+    <div class="prog"><b>Sol</b><span class="marcas" role="img" aria-label="Sol: 5 de 5 en multiplicación"><span class="marca on"></span><span class="marca on"></span><span class="marca on"></span><span class="marca on"></span><span class="marca on"></span></span><span class="tinta-suave">Multiplicación</span></div>
+  </div>
+</div>
+</body>
+</html>

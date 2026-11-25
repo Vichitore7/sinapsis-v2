@@ -1,0 +1,61 @@
+<!-- @dsCard group="Escáner de cuaderno" height=560 subtitle="El ajolote muestra lo que leyó; el alumno confirma o corrige" -->
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Escáner: lectura — preview</title>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--espacio-4); padding: var(--espacio-4); align-items: start; }
+  .cab { display: flex; align-items: flex-end; gap: var(--espacio-3); margin-bottom: var(--espacio-3); }
+  .burbuja { flex: 1; background: var(--pista-suave); border: 2px solid var(--pista-texto); border-radius: var(--radio-lg); padding: var(--espacio-3); font-weight: 700; font-size: 18px; line-height: 26px; }
+  .hoja { border: 2px solid var(--tinta); border-radius: var(--radio-sm); background-color: var(--superficie); background-image: linear-gradient(var(--pista-suave) 2px, transparent 2px), linear-gradient(90deg, var(--pista-suave) 2px, transparent 2px); background-size: 24px 24px; padding: var(--espacio-4); margin-bottom: var(--espacio-3); }
+  .num { font-family: var(--font-body); font-weight: 800; font-size: 32px; line-height: 40px; display: flex; align-items: center; gap: var(--espacio-2); flex-wrap: wrap; }
+  .dudoso { border-bottom: 4px solid var(--pista); }
+  .campo { font-family: var(--font-body); font-weight: 800; font-size: 32px; width: 84px; height: 56px; text-align: center; border: 2px solid var(--tinta); border-radius: var(--radio-sm); background: var(--fondo); color: var(--tinta); }
+  .campo:focus-visible { outline: 3px solid var(--pista); outline-offset: 3px; }
+  .acc { display: flex; gap: var(--espacio-3); flex-wrap: wrap; }
+  .nota { margin: var(--espacio-3) 0 0; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--tinta-suave); }
+  .estado { margin: 0 0 var(--espacio-2); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="gills"><ellipse cx="38" cy="70" rx="24" ry="9" transform="rotate(-35 38 70)"/><ellipse cx="30" cy="92" rx="24" ry="9" transform="rotate(-5 30 92)"/><ellipse cx="36" cy="114" rx="22" ry="9" transform="rotate(28 36 114)"/><ellipse cx="162" cy="70" rx="24" ry="9" transform="rotate(35 162 70)"/><ellipse cx="170" cy="92" rx="24" ry="9" transform="rotate(5 170 92)"/><ellipse cx="164" cy="114" rx="22" ry="9" transform="rotate(-28 164 114)"/></g>
+    <g id="body"><ellipse cx="72" cy="176" rx="14" ry="8"/><ellipse cx="128" cy="176" rx="14" ry="8"/><ellipse cx="100" cy="152" rx="36" ry="26"/><ellipse cx="100" cy="100" rx="62" ry="52"/></g>
+    <g id="hat"><ellipse cx="100" cy="54" rx="60" ry="12"/><path d="M62 54 Q62 22 100 22 Q138 22 138 54 Z"/></g>
+    <g id="ajo">
+      <use href="#gills" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:16;stroke-linejoin:round"/><use href="#body" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:16;stroke-linejoin:round"/><use href="#hat" style="fill:var(--superficie);stroke:var(--superficie);stroke-width:16;stroke-linejoin:round"/>
+      <use href="#gills" style="fill:var(--magia);stroke:var(--tinta);stroke-width:2.5"/><use href="#body" style="fill:var(--ajolote-rosa);stroke:var(--tinta);stroke-width:2.5"/>
+      <ellipse cx="62" cy="116" rx="10" ry="6" style="fill:var(--ajolote-rosa-profundo);opacity:.7"/><ellipse cx="138" cy="116" rx="10" ry="6" style="fill:var(--ajolote-rosa-profundo);opacity:.7"/>
+      <circle cx="78" cy="100" r="8" style="fill:var(--tinta)"/><circle cx="122" cy="100" r="8" style="fill:var(--tinta)"/><circle cx="81" cy="97" r="2.8" style="fill:var(--superficie)"/><circle cx="125" cy="97" r="2.8" style="fill:var(--superficie)"/>
+      <path d="M86 118 Q100 132 114 118" style="fill:none;stroke:var(--tinta);stroke-width:3;stroke-linecap:round"/>
+      <use href="#hat" style="fill:var(--sol);stroke:var(--tinta);stroke-width:2.5"/><rect x="63" y="42" width="74" height="9" style="fill:var(--selva);stroke:var(--tinta);stroke-width:2"/>
+    </g>
+  </defs>
+</svg>
+<div class="grid">
+
+  <div class="sm-card">
+    <span class="sm-chip estado">Confirmar</span>
+    <div class="cab">
+      <svg viewBox="0 0 200 200" width="96" height="96" role="img" aria-label="Ajolote explorador" style="flex:none"><use href="#ajo"/></svg>
+      <div class="burbuja">Leí esto en tu cuaderno. ¿Está bien?</div>
+    </div>
+    <div class="hoja"><div class="num"><span>3</span><span>×</span><span>12</span><span>=</span><span class="dudoso">26</span></div></div>
+    <div class="acc"><button class="sm-btn">¡Así es!</button><button class="sm-btn sm-btn-suave">Corregir</button></div>
+    <p class="nota">Después de leerla, borro la foto. Solo guardo lo que escribiste.</p>
+  </div>
+
+  <div class="sm-card">
+    <span class="sm-chip estado" style="background: var(--pista-suave); color: var(--pista-texto);">Corregir</span>
+    <div class="cab">
+      <svg viewBox="0 0 200 200" width="96" height="96" role="img" aria-label="Ajolote explorador" style="flex:none"><use href="#ajo"/></svg>
+      <div class="burbuja">Cámbialo como está en tu cuaderno.</div>
+    </div>
+    <div class="hoja"><div class="num"><input class="campo" value="3" aria-label="Primer número"><span>×</span><input class="campo" value="12" aria-label="Segundo número"><span>=</span><input class="campo" value="26" aria-label="Resultado"></div></div>
+    <div class="acc"><button class="sm-btn">Listo</button></div>
+    <p class="nota">Después de leerla, borro la foto. Solo guardo lo que escribiste.</p>
+  </div>
+
+</div>
+</body>
+</html>
