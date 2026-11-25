@@ -1036,7 +1036,7 @@ a.trajinera-nodo:focus-visible { outline: 3px solid var(--st-naranja-2); outline
 .canal-deco.monumento, .canal-deco.arbol { width: clamp(84px, 24%, 140px); }
 .canal-deco.monumento.izq, .canal-deco.arbol.izq { left: 0; transform: translateX(-22%); }
 .canal-deco.monumento.der, .canal-deco.arbol.der { right: 0; transform: translateX(22%); }
-.canal-deco .monumento { filter: drop-shadow(0 3px 0 rgba(0, 0, 0, .12)); }
+.canal-deco .monumento:not(.sticker) { filter: drop-shadow(0 3px 0 rgba(0, 0, 0, .12)); }
 /* Cosas de la calle (puestos, taxi, farol…): más chicas y un poco más adentro del pasto. */
 .canal-deco.cosa { width: clamp(64px, 17%, 92px); }
 /* Papel picado de orilla a orilla, colgando sobre la avenida. */
@@ -1246,3 +1246,78 @@ a.trajinera-nodo:focus-visible { outline: 3px solid var(--st-naranja-2); outline
 .fes-barra b { font: 900 16px/1 var(--font-body); color: var(--st-tinta); }
 .fes-barra span { width: 42px; border: 2.5px solid #1e1b3a; border-bottom: 0; border-radius: 6px 6px 0 0; }
 .fes-barra small { font: 800 13px/16px var(--font-body); color: var(--st-tinta); }
+
+/* ---------- Actividades del aula (Actividades.jsx, ActividadesProfe.jsx) ---------- */
+.fila { display: flex; align-items: center; flex-wrap: wrap; }
+.campo-etq { display: flex; flex-direction: column; gap: 4px; font: 700 13px/18px var(--font-body); color: var(--st-tinta); }
+.campo-etq textarea.entrada { resize: vertical; min-height: 56px; font: 500 14px/20px var(--font-body); }
+.caja-suave { border: 1px dashed var(--st-cont); border-radius: 14px; padding: 12px; margin: 0; }
+.caja-suave legend { padding: 0 6px; }
+.fila-op { display: grid; grid-template-columns: 1fr 72px 1fr; gap: 8px; max-width: 360px; }
+.chip-casi { background: #ffe0b8; color: #7a3d00; }
+.actividad-tarjeta { display: flex; align-items: center; gap: 12px; width: 100%; border: 0; cursor: pointer; font: inherit; color: inherit; }
+.actividad-tarjeta:hover { outline: 2px solid var(--st-cont); }
+.material-caja { background: var(--st-cont-bajo); border-radius: 14px; padding: 12px 14px; }
+.material-texto { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.problemas-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.problema { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; border-radius: 14px; background: var(--st-cont-bajo); }
+.problema-resuelto { background: #d9f8e8; }
+.problema-num { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #fff; font: 800 14px/1 var(--font-body); }
+.problema-op { font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.actividad-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-left: 6px solid #ffb347; }
+.actividad-banner.listo { border-left-color: #2a9d8f; background: #e9fbf2; }
+.banco-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+.banco-lista li { display: flex; align-items: center; gap: 10px; padding: 6px 4px; border-bottom: 1px solid var(--st-cont); }
+.actividad-profe { border-top: 1px solid var(--st-cont); padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.tabla-respuestas { border-collapse: collapse; width: 100%; font: 500 13px/18px var(--font-body); }
+.tabla-respuestas th, .tabla-respuestas td { border: 1px solid var(--st-cont); padding: 6px 8px; text-align: left; vertical-align: top; min-width: 120px; }
+.tabla-respuestas thead th { background: var(--st-cont-bajo); font-weight: 800; }
+.resp-bien { background: #e3faee; } .resp-con_ayuda { background: #f1f9e0; } .resp-mal { background: #fff0e6; } .resp-pendiente { color: var(--st-suave); }
+.resp-nota { font-size: 12px; }
+@media (max-width: 640px) { .fila-op { grid-template-columns: 1fr 64px 1fr; } }
+
+/* ---------- Comprensión por tema (ComprensionProfe.jsx) ----------
+   Rampa ordinal azul de un solo tono (dificultad → comprende → domina), validada con el validador de dataviz:
+   en claro sobre blanco y sobre --st-cont-bajo; en oscuro, pasos propios sobre --st-superficie (#1f1b38). */
+:root { --comp-dificultad: #6da7ec; --comp-comprende: #2a78d6; --comp-domina: #104281; --comp-texto-claro: #0b1f3a; }
+:root[data-tema="oscuro"] { --comp-dificultad: #184f95; --comp-comprende: #3987e5; --comp-domina: #9ec5f4; --comp-texto-claro: #ffffff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) { --comp-dificultad: #184f95; --comp-comprende: #3987e5; --comp-domina: #9ec5f4; --comp-texto-claro: #ffffff; }
+}
+.comp-filtros { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.comp-buscar { display: flex; align-items: center; gap: 6px; color: var(--st-suave); flex: 1 1 220px; max-width: 320px; }
+.comp-buscar input { flex: 1; min-width: 0; }
+.comp-muestra { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; }
+.comp-dificultad { background: var(--comp-dificultad); }
+.comp-comprende { background: var(--comp-comprende); }
+.comp-domina { background: var(--comp-domina); }
+.comp-grafica { position: relative; display: flex; flex-direction: column; gap: 10px; }
+.comp-fila { display: grid; grid-template-columns: minmax(110px, 190px) 1fr; align-items: center; gap: 10px; }
+.comp-tema { font: 700 13px/16px var(--font-body); color: var(--st-tinta); }
+.comp-barra { display: flex; gap: 2px; min-width: 40px; height: 26px; }
+.comp-seg { min-width: 22px; border: 0; border-radius: 0; color: #fff; font: 800 12px/1 var(--font-body); cursor: pointer; padding: 0 6px; text-align: right; }
+.comp-seg:first-child { border-radius: 4px 0 0 4px; }
+.comp-seg:last-child { border-radius: 0 4px 4px 0; }
+.comp-seg:only-child { border-radius: 4px; }
+.comp-seg.comp-dificultad { color: var(--comp-texto-claro); }
+:root[data-tema="oscuro"] .comp-seg.comp-domina { color: #0b1f3a; }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) .comp-seg.comp-domina { color: #0b1f3a; } }
+.comp-seg.atenuado { opacity: .3; }
+.comp-seg:focus-visible { outline: 2px solid var(--st-tinta); outline-offset: 2px; }
+.comp-tip { position: absolute; transform: translate(-50%, calc(-100% - 8px)); background: var(--st-tinta); color: var(--st-superficie, #fff);
+  font: 600 12px/16px var(--font-body); padding: 6px 10px; border-radius: 8px; max-width: 280px; pointer-events: none; z-index: 5; }
+.comp-leyenda { display: flex; flex-wrap: wrap; gap: 14px; font: 600 12px/16px var(--font-body); color: var(--st-suave); }
+.comp-lista { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font: 500 13px/18px var(--font-body); }
+.comp-lista .enlace { background: none; border: 0; padding: 0; font: inherit; font-weight: 800; cursor: pointer; }
+.sugiere-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.sugiere-tema { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 14px; background: var(--st-superficie, #fff); border-left: 5px solid var(--comp-comprende); }
+.sugiere-tema.sug-dificultad { border-left-color: var(--comp-dificultad); }
+.sugiere-tema.sug-domina { border-left-color: var(--comp-domina); }
+@media (max-width: 640px) { .comp-fila { grid-template-columns: 1fr; gap: 4px; } }
+.modulos-elegir { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.modulo-opcion { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 14px; border: 2px solid var(--st-cont);
+  background: var(--st-superficie, #fff); color: var(--st-tinta); font: 800 14px/18px var(--font-body); cursor: pointer; text-align: left; }
+.modulo-opcion.activo { border-color: var(--st-naranja-borde, #ee8a4e); background: var(--st-cont-bajo); }
+.banco-check { display: flex; align-items: flex-start; gap: 10px; width: 100%; cursor: pointer; }
+.banco-check input { margin-top: 3px; width: 18px; height: 18px; accent-color: #c2591a; }
+.modulo-titulo { margin: 6px 0 0; color: var(--st-suave); text-transform: uppercase; letter-spacing: .04em; font-size: 12px; }

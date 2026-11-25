@@ -196,6 +196,16 @@ export function resolvioEnChat(op, texto) {
   return !diagnosticarOperacion(op).correcto && yaLoDijo(op, quitarNegados(texto)) && !conDuda(texto);
 }
 
+/** "Tu sendero" de una operación que el alumno ya resolvió con Kiko: los pasos de la cuenta bien hecha (con el
+ *  resultado que encontró, no con el que había escrito), todos en verde. */
+export function senderoResuelto(op) {
+  const r = resultado(op);
+  const corregida = tipoDe(op) === 'division'
+    ? { ...op, c: String(r.cociente), residuo: String(r.residuo) }
+    : { ...op, c: textoDe(r.valor) };
+  return diagnosticarOperacion(corregida).pasos.map((p) => ({ ...p, estado: 'ok' }));
+}
+
 /** Después de resolverla (ya sabe el resultado), sin conexión: por qué da eso, en palabras sencillas. */
 export function explicacionResuelta(op) {
   const r = resultado(op);

@@ -80,6 +80,17 @@ export const api = {
   panel: (id) => pedir('GET', `/aulas/${id}/panel`),
   detalleAlumno: (id, alumnoId) => pedir('GET', `/aulas/${id}/alumnos/${alumnoId}`),
   unirse: (codigo) => pedir('POST', '/aulas/unirse', { codigo }),
+  // Actividades del aula (app/actividades.py): el profesor deja problemas; el alumno los resuelve y los escanea.
+  actividades: (aulaId) => pedir('GET', `/aulas/${aulaId}/actividades`),
+  actividad: (aulaId, actId) => pedir('GET', `/aulas/${aulaId}/actividades/${actId}`),
+  crearActividad: (aulaId, d) => pedir('POST', `/aulas/${aulaId}/actividades`, d),
+  borrarActividad: (aulaId, actId) => pedir('DELETE', `/aulas/${aulaId}/actividades/${actId}`),
+  bancoProblemas: () => pedir('GET', '/actividades/banco'),
+  escaneoActividad: (actId, problemaId, op) => pedir('POST', `/actividades/${actId}/problemas/${problemaId}/escaneo`, op),
+  resueltoEnChat: (actId, problemaId) => pedir('POST', `/actividades/${actId}/problemas/${problemaId}/resuelto-en-chat`),
+  entregarActividad: (actId) => pedir('POST', `/actividades/${actId}/entregar`),
+  comprensionGrupo: (aulaId) => pedir('GET', `/aulas/${aulaId}/comprension`),
+  comprensionAlumno: (aulaId, alumnoId) => pedir('GET', `/aulas/${aulaId}/alumnos/${alumnoId}/comprension`),
 
   // Examen diagnóstico (alumno)
   diagnostico: () => pedir('GET', '/diagnostico'),

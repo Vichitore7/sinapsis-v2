@@ -140,7 +140,7 @@ def test_responde_claude(cliente, claude):
     falso = claude(texto="¿Cuántas veces se repite el 7? 🦎")
     historial = [{"de": "kiko", "texto": "¡Hola explorador!"}, {"de": "yo", "texto": "hola"}, {"de": "kiko", "texto": "Mira tu operación"}]
     r = hablar(cliente, historial=historial).json()
-    assert r == {"respuesta": "¿Cuántas veces se repite el 7?", "origen": "claude", "dibujo": None}  # sin 🦎
+    assert r == {"respuesta": "¿Cuántas veces se repite el 7?", "origen": "claude", "dibujo": None, "resuelta": False}  # sin 🦎
     kw = falso.llamadas[0]
     assert kw["model"] == config.TUTOR_MODELO and kw["output_config"]["effort"] == config.TUTOR_ESFUERZO
     assert kw["output_config"]["format"]["type"] == "json_schema"
@@ -250,7 +250,7 @@ def test_dibujo_fuera_de_limites_se_descarta(cliente, claude, malo):
 def test_json_invalido_usa_reglas(cliente, claude):
     registrar(cliente)
     claude(crudo="esto no es json")
-    assert hablar(cliente).json() == {"respuesta": tutor.por_reglas(OP_MAL, "no le entiendo"), "origen": "reglas", "dibujo": None}
+    assert hablar(cliente).json() == {"respuesta": tutor.por_reglas(OP_MAL, "no le entiendo"), "origen": "reglas", "dibujo": None, "resuelta": False}
 
 
 def test_conversacion_larga_no_se_rechaza(cliente, claude):

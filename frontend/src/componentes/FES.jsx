@@ -20,7 +20,7 @@ export function Tlacuache({ tamano = 34, encendido = true }) {
   const t = { stroke: trazo, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round', strokeDasharray: encendido ? undefined : '3 3' };
   const f = (c) => (encendido ? c : 'none');
   return (
-    <svg width={tamano} height={tamano * 0.72} viewBox="0 0 60 43" aria-hidden="true" className={encendido ? 'tlacuache' : 'tlacuache tlacuache-apagado'}>
+    <svg width={tamano} height={tamano * 0.72} viewBox="0 0 60 43" aria-hidden="true" className={encendido ? 'tlacuache sticker' : 'tlacuache tlacuache-apagado'}>
       <path d="M14 30 Q2 30 4 20 Q6 12 12 16" fill="none" stroke={encendido ? '#f2a7b8' : trazo} strokeWidth="3.2" strokeLinecap="round" strokeDasharray={t.strokeDasharray} />
       <ellipse cx="27" cy="29" rx="15" ry="9.5" fill={f('#9a96a8')} {...t} />
       <path d="M18 37 V41 M34 37 V41" {...t} />
@@ -189,7 +189,7 @@ export function LugarNivel({ tipo = 'biblioteca', estado = 'bloq', tamano = 124,
   const bloq = estado === 'bloq';
   return (
     <span className={`trajinera-nivel transporte-nivel lugar-nivel trajinera-${estado}`} style={{ width: tamano, height: tamano * 0.74 }}>
-      <svg width={tamano} height={tamano * 0.74} viewBox="0 0 140 104" aria-hidden="true" className={bloq ? 'transporte-gris' : undefined}>
+      <svg width={tamano} height={tamano * 0.74} viewBox="0 0 140 104" aria-hidden="true" className={bloq ? 'transporte-gris sticker' : 'sticker'}>
         <ellipse cx="70" cy="96" rx="62" ry="6" fill="#000" opacity=".15" />
         <Lugar tipo={tipo} c={bloq ? GRIS : info.color} />
       </svg>
@@ -364,7 +364,7 @@ const CAMPUS = {
 
 /** Un lugar o una cosa del campus como decoración del mapa. */
 export function CampusDeco({ tipo }) {
-  return <svg viewBox="0 0 120 120" aria-hidden="true" className="monumento">{CAMPUS[tipo]}</svg>;
+  return <svg viewBox="0 0 120 120" aria-hidden="true" className="monumento sticker">{CAMPUS[tipo]}</svg>;
 }
 
 /** Banderines azul y oro de lado a lado. */
@@ -396,7 +396,7 @@ function Huella({ x, y, s = 1, color = ORO }) {
 export function TituloFES() {
   return (
     <div className="fes-titulo" role="img" aria-label="¡Bienvenido a la FES Aragón!">
-      <svg viewBox="0 0 360 128" aria-hidden="true">
+      <svg viewBox="0 0 360 128" aria-hidden="true" className="sticker">
         <defs>
           <linearGradient id="fes-titulo-fondo" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#2c55b3" /><stop offset="1" stopColor={AZUL} />
@@ -419,7 +419,7 @@ export function TituloFES() {
 /** Sticker del peluche de la mascota de la FES: premio al terminar el Mundo 3. */
 export function PelucheMascota({ tamano = 72 }) {
   return (
-    <svg width={tamano} height={tamano} viewBox="0 0 100 100" aria-hidden="true" className="peluche-mascota">
+    <svg width={tamano} height={tamano} viewBox="0 0 100 100" aria-hidden="true" className="peluche-mascota sticker">
       <g {...L} strokeWidth="2.5">
         <ellipse cx="50" cy="74" rx="26" ry="20" fill={ORO} />
         <ellipse cx="50" cy="78" rx="14" ry="12" fill="#fff4d6" strokeWidth="1.5" />
@@ -501,7 +501,7 @@ function Pizzas({ fracciones }) {
         });
         return (
           <figure key={k} className="fes-pizza">
-            <svg viewBox="0 0 100 100" width="104" height="104" aria-hidden="true">
+            <svg viewBox="0 0 100 100" width="104" height="104" aria-hidden="true" className="sticker">
               <circle cx="50" cy="50" r="48" fill="#e8b36b" stroke={TINTA} strokeWidth="2.5" />
               {rebanadas}
               {Array.from({ length: f.den }, (_, i) => {
@@ -580,7 +580,7 @@ function Triangulo({ lados, unidad, mostrar = true }) {
   };
   const etiquetas = [[afuera(medio(P[0], P[2])), a], [afuera(medio(P[1], P[2])), b], [afuera(medio(P[0], P[1])), c]];
   return (
-    <svg className="canal-figura" viewBox="-20 0 240 180" role="img" aria-label={mostrar ? `Triángulo de lados ${a}, ${b} y ${c} ${unidad}` : 'Triángulo'}>
+    <svg className="canal-figura sticker" viewBox="-20 0 240 180" role="img" aria-label={mostrar ? `Triángulo de lados ${a}, ${b} y ${c} ${unidad}` : 'Triángulo'}>
       <polygon points={P.map((p) => p.join(',')).join(' ')} fill="#ffe08a" stroke={TINTA} strokeWidth="3" strokeLinejoin="round" />
       {P.map(([px, py], i) => <circle key={i} cx={px} cy={py} r="4.5" fill={TINTA} />)}
       {mostrar && etiquetas.map(([[mx, my], v], i) => (
@@ -593,7 +593,7 @@ function Triangulo({ lados, unidad, mostrar = true }) {
 /** Fachada de un edificio con figuras escondidas: 3 triángulos (techo, ventana de arriba y bandera). */
 function Fachada() {
   return (
-    <svg className="canal-figura" viewBox="0 0 220 180" role="img" aria-label="Fachada de un edificio hecha con figuras geométricas">
+    <svg className="canal-figura sticker" viewBox="0 0 220 180" role="img" aria-label="Fachada de un edificio hecha con figuras geométricas">
       <rect x="4" y="4" width="212" height="172" rx="16" fill="#dff1ff" />
       <g stroke={TINTA} strokeWidth="2.5" strokeLinejoin="round">
         <path d="M160 14 V58" fill="none" />
@@ -638,7 +638,7 @@ function Rectangulo({ largo, ancho, unidad }) {
   const x0 = 110 - w / 2;
   const y0 = 20 + (110 - h) / 2;
   return (
-    <svg className="canal-figura" viewBox="0 0 220 160" role="img" aria-label={`Rectángulo de ${largo} por ${ancho} ${unidad}`}>
+    <svg className="canal-figura sticker" viewBox="0 0 220 160" role="img" aria-label={`Rectángulo de ${largo} por ${ancho} ${unidad}`}>
       <rect x={x0} y={y0} width={w} height={h} rx="4" fill="#9fdc8a" stroke={TINTA} strokeWidth="3" />
       {Array.from({ length: 6 }, (_, i) => <circle key={i} cx={x0 + 16 + i * ((w - 32) / 5)} cy={y0 + h / 2} r="5" fill={['#ff5fa2', ORO, '#fff'][i % 3]} stroke={TINTA} strokeWidth="1.5" />)}
       <text x="110" y={y0 - 6} textAnchor="middle" fontFamily="'Nunito', sans-serif" fontWeight="900" fontSize="14" fill="var(--st-tinta)">{largo} {unidad}</text>
@@ -659,7 +659,7 @@ function RelojFES({ hora, minutos, sectores = [], sinManecillas = false }) {
     return <path key={i} d={`M100 80 L${x0} ${y0} A66 66 0 ${m1 - m0 > 30 ? 1 : 0} 1 ${x1} ${y1} Z`} fill={color} opacity=".55" />;
   };
   return (
-    <svg className="canal-figura" viewBox="0 0 200 160" role="img" aria-label="Reloj de manecillas">
+    <svg className="canal-figura sticker" viewBox="0 0 200 160" role="img" aria-label="Reloj de manecillas">
       <defs><radialGradient id={id}><stop offset="0" stopColor="#fff" /><stop offset="1" stopColor="#eef2fb" /></radialGradient></defs>
       <circle cx="100" cy="80" r="70" fill={`url(#${id})`} stroke={AZUL} strokeWidth="5" />
       {sectores.map(sector)}

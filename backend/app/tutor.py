@@ -560,6 +560,27 @@ def _anotar_si_lo_resolvio(db, alumno_id: int, operacion: dict | None, mensaje: 
 def responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: list[dict],
               grado: str | None = None, ejercicio: str | None = None, db=None,
               turno: str | None = None, recibido: str | None = None) -> dict:
+    """Contrato: {"respuesta": str, "origen": "claude" | "reglas", "dibujo": dict | None, "resuelta": bool}.
+
+    `resuelta`: su ejercicio ya está resuelto (en este mensaje o antes). El navegador marca "Tu sendero" como
+    terminado y ya no ofrece pistas de ese ejercicio.
+    """
+    marca: dict = {}
+    salida = _responder(alumno_id, operacion, mensaje, historial, grado, ejercicio, db, turno, recibido, marca)
+    return {**salida, "resuelta": bool(salida.get("resuelta") or marca.get("resuelta"))}
+
+
+# El ejercicio terminó: Kiko cierra (antes, con la plática llena de preguntas de pasos, seguía preguntando sin fin).
+TERMINADO = ("Su ejercicio ({op}) está TERMINADO: ya lo resolvió. No le hagas más preguntas de pasos ni de cuentas "
+             "sobre ese ejercicio, ni le pidas otra vez que lo explique. Si te cuenta cómo lo pensó, reconócelo en una o "
+             "dos frases y cierra con calidez (puede escanear otro cuando quiera). Si te pregunta algo, respóndele en "
+             "pocas palabras, sin convertirlo en otro ejercicio.")
+CIERRE = "¡Lo lograste! 🌟 Tu ejercicio quedó resuelto. Cuando quieras, escanea otro y lo vemos juntos."
+
+
+def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: list[dict],
+               grado: str | None, ejercicio: str | None, db, turno: str | None, recibido: str | None,
+               marca: dict) -> dict:
     """Contrato: {"respuesta": str, "origen": "claude" | "reglas", "dibujo": dict | None}.
 
     Con `db`, lee y actualiza la memoria de aprendizaje del alumno (app/aprendizaje.py).
@@ -610,6 +631,8 @@ def responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: l
             resolvio = _anotar_si_lo_resolvio(db, alumno_id, operacion, mensaje)
     del_chat = del_chat and operacion is not None
     ya_resuelta = resuelta_antes is not None or (operacion is None and resuelta_chat)
+    terminado = bool(resolvio or ya_resuelta)
+    marca["resuelta"] = terminado
     reglas = {"respuesta": YA_RESUELTA if ya_resuelta and not operacion else por_reglas(operacion, mensaje),
               "origen": "reglas", "dibujo": None}
     if not config.TUTOR_ACTIVO:
@@ -635,6 +658,7 @@ def responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: l
     def entregar(respuesta: dict, dibujo_tipo: str | None = None, anota_ayuda: bool = False) -> dict:
         """Guarda y entrega. Con turno, el avance de la escalera y la ayuda en la memoria quedan pendientes de que
         el navegador confirme (en su siguiente mensaje) que mostró esta respuesta. Sin turno, se guardan ya."""
+        respuesta = {**respuesta, "resuelta": terminado}  # así un reintento del turno también la trae
         if db is not None:
             ayuda = ({"concepto": concepto[0], "nombre": concepto[1], "dibujo": dibujo_tipo}
                      if anota_ayuda and concepto else None)
@@ -670,8 +694,9 @@ def responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: l
     if resolvio and operacion:
         r = operaciones.resultado_texto(operacion)
         nota = (f"El alumno ACABA DE RESOLVER su ejercicio ({operacion['a']} {operacion['op']} {operacion['b']} = {r}): "
-                "lo dijo en este mensaje. Reconócelo sin exagerar y pídele que te explique cómo lo pensó. "
-                "No le hagas más preguntas de pasos ni le digas que algo está mal.")
+                "lo dijo en este mensaje. El ejercicio TERMINÓ. Felicítalo con calidez, sin exagerar, y pídele UNA sola "
+                "vez que te cuente cómo lo pensó. No le hagas más preguntas de pasos ni de cuentas, ni le digas que "
+                "algo está mal.")
         verificacion = f"{verificacion}\n{nota}" if verificacion else nota
         op_contexto = None  # ya no está pendiente: que el contexto no lo describa como ejercicio por resolver
     if duda:
@@ -679,20 +704,20 @@ def responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: l
                 "confirmes todavía ni le digas que está mal: pídele que te cuente cómo llegó a ese número o cómo "
                 "podría comprobarlo. Cuando lo afirme, ya cuenta como resuelto.")
         verificacion = f"{verificacion}\n{nota}" if verificacion else nota
-    if resuelta_antes:
-        r = operaciones.resultado_texto(resuelta_antes)
-        nota = (f"El alumno YA RESOLVIÓ su operación del cuaderno ({resuelta_antes['a']} {resuelta_antes['op']} "
-                f"{resuelta_antes['b']} = {r}) aquí en el chat. No le vuelvas a preguntar sus pasos. Respóndele lo que diga; "
-                "puedes sugerirle corregirla en su cuaderno y escanear otra, o proponerle UNA parecida para practicar "
-                "(escríbela como «¿cuánto es a + b?»).")
-        verificacion = f"{verificacion}\n{nota}" if verificacion else nota
-    if not paso and (posicional := _valor_posicional(mensaje, historial)):
+    if ya_resuelta:
+        # Sin "VERIFICADO… avanza al siguiente paso": con el ejercicio cerrado eso lo hacía seguir preguntando.
+        hecha = resuelta_antes
+        verificacion = TERMINADO.format(op=(f"{hecha['a']} {hecha['op']} {hecha['b']} = {operaciones.resultado_texto(hecha)}"
+                                            if hecha else "la cuenta que escribió"))
+    if not paso and not ya_resuelta and (posicional := _valor_posicional(mensaje, historial)):
         verificacion = f"{verificacion}\n{posicional}" if verificacion else posicional
     salida = _preguntar_a_claude(op_contexto, grado, mensaje, historial, ejercicio, memoria, paso,
                                  del_chat=del_chat and op_contexto is not None, verificacion=verificacion)
     if not salida:
         return sin_claude("Claude no respondió")
     texto = _sin_genero(salida["respuesta"])
+    if ya_resuelta and "?" in texto and _EXPRESION.search(texto):
+        texto = CIERRE  # red de seguridad: con el ejercicio terminado, Kiko ya no pregunta cuentas
     if paso and paso.get("texto_fijo"):
         # Escalones 4 y 5: las cuentas (y la pregunta) las pone el código, verificadas. Del modelo solo una frase de ánimo.
         texto = f"{estrategia.frase_de_animo(texto, paso['escalon'], paso.get('modo'))} {paso['texto_fijo']}"

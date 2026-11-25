@@ -113,7 +113,7 @@ def test_si_lo_resuelve_ya_no_se_lo_vuelve_a_preguntar(cliente, claude):
     hablar(cliente, "ya se, es 56", op)
     r = hablar(cliente, "solamente sume lo que me ibas poniendo", op)  # la operación sigue "escaneada" en la pantalla
     datos = falso.llamadas[-1]["system"][1]["text"]
-    assert "YA RESOLVIÓ" in datos and "PASITO" not in datos and "PASO 1" not in datos
+    assert "TERMINADO" in datos and "PASITO" not in datos and "PASO 1" not in datos
     assert "5 grupos de 8" not in r["respuesta"]
 
 
@@ -426,7 +426,7 @@ def test_escanear_otra_vez_mal_la_misma_cuenta_es_un_intento_nuevo_sin_repetir_l
     falso = claude()
     hablar(cliente, "Dame otra pista")
     datos = falso.llamadas[-1]["system"][1]["text"]
-    assert "YA RESOLVIÓ" not in datos  # no se toma como resuelta
+    assert "TERMINADO" not in datos  # no se toma como resuelta
     assert "PASO 1" not in instruccion(falso)  # la pista del error ya la mostró la pantalla: sigue el primer pasito
 
 
@@ -535,8 +535,13 @@ def test_negar_o_dudar_un_pasito_no_es_acierto():
     p = pasitos.pasitos(operaciones.validar({"a": "312", "op": "+", "b": "258", "c": "560"}))[0]  # 2 + 8
     assert p.entero == 10
     assert estrategia.clasificar("es 10", p) == "acierto"
-    for mensaje in ("no es 10", "10 no", "¿10?", "creo que 10"):
+    for mensaje in ("no es 10", "10 no"):
         assert estrategia.clasificar(mensaje, p) != "acierto", mensaje
+    # En un pasito intermedio, contestar con duda sí avanza (insistir desespera); en el final, no.
+    for mensaje in ("¿10?", "creo que 10"):
+        assert estrategia.clasificar(mensaje, p) == "acierto", mensaje
+    final = pasitos.Pasito(pregunta="¿Cuánto da?", reexplicar="", final=True, entero=570)
+    assert estrategia.clasificar("¿570?", final) != "acierto"
 
 
 def test_un_reintento_viejo_no_borra_el_turno_mas_reciente(cliente, claude):
@@ -549,7 +554,7 @@ def test_un_reintento_viejo_no_borra_el_turno_mas_reciente(cliente, claude):
     escalon, pendiente = antes.escalon, antes.pendiente
     falso = claude()
     r = _turno(cliente, "ok", "v:2", recibido="v:1")  # la red entrega tarde una copia del turno 2
-    assert r == estrategia.TURNO_VIEJO and falso.llamadas == []
+    assert r["respuesta"] == estrategia.TURNO_VIEJO["respuesta"] and falso.llamadas == []
     e = _db().query(estrategia.Escalera).one()
     assert (e.escalon, e.pendiente) == (escalon, pendiente)  # el turno 3 sigue pendiente, intacto
     _turno(cliente, "ok", "v:4", recibido="v:3")  # y se confirma normal después
@@ -572,3 +577,51 @@ def test_la_memoria_anota_la_ayuda_solo_cuando_el_navegador_la_mostro(cliente, c
     assert ayudas() == 1                                   # m:2 no se anota
     cliente.post("/api/tutor", json={"operacion": OP, "mensaje": "no entiendo"})  # cliente sin turnos: como antes
     assert ayudas() == 2
+
+
+
+# ---------------- 25 nov: caso real 312 + 258 = 470 (pasitos rígidos y bucle al terminar) ----------------
+
+OP_SUMA = {"a": "312", "op": "+", "b": "258", "c": "470"}
+
+
+def test_las_decenas_aceptan_las_formas_en_que_contesta_un_nino():
+    p = pasitos.pasitos(operaciones.validar(OP_SUMA))[1]  # decenas: 10 + 50
+    for mensaje in ("60", "6", "seis decenas", "7", "es 7", "70", "siete decenas", "6 + 1 = 7 porque llevo 1", "¿7?"):
+        assert estrategia.clasificar(mensaje, p) == "acierto", mensaje
+    for mensaje in ("5", "50", "no es 7"):
+        assert estrategia.clasificar(mensaje, p) != "acierto", mensaje
+    assert "1 ramo y 5 ramos" in p.reexplicar
+
+
+def test_contestar_7_en_las_decenas_avanza_y_no_repite(cliente, claude):
+    registrar(cliente)
+    cliente.post("/api/escaner/resultado", json=OP_SUMA)
+    falso = claude()
+    for m in ("Dame otra pista", "10"):
+        cliente.post("/api/tutor", json={"operacion": OP_SUMA, "mensaje": m})
+    r = cliente.post("/api/tutor", json={"operacion": OP_SUMA, "mensaje": "7"}).json()
+    assert "centenas" in r["respuesta"] and "ramos" not in r["respuesta"]  # avanzó, no re-explicó las decenas
+    assert falso.llamadas  # (Claude sí se consultó para la frase de ánimo)
+
+
+def test_al_resolver_termina_de_verdad(cliente, claude):
+    registrar(cliente)
+    cliente.post("/api/escaner/resultado", json=OP_SUMA)
+    claude()
+    r = cliente.post("/api/tutor", json={"operacion": OP_SUMA, "mensaje": "ya me salió 570"}).json()
+    assert r["resuelta"] is True
+    # Después: Kiko ya no recibe "avanza al siguiente paso" aunque conteste una cuenta suya, y no pregunta cuentas.
+    historial = [{"de": "kiko", "texto": "El 1 y el 5 dan 6, y llevas 1. ¿Cuánto es 6 más 1?"}]
+    falso = claude(texto="¡Bien! Ahora dime, ¿cuánto es 300 + 200?")
+    r = cliente.post("/api/tutor", json={"operacion": OP_SUMA, "mensaje": "7", "historial": historial}).json()
+    datos = falso.llamadas[-1]["system"][1]["text"]
+    assert "TERMINADO" in datos and "siguiente paso" not in datos
+    assert r["resuelta"] is True and r["respuesta"] == tutor.CIERRE  # la red de seguridad corta la pregunta
+
+
+def test_sin_resolver_la_respuesta_dice_resuelta_falso(cliente, claude):
+    registrar(cliente)
+    claude()
+    r = cliente.post("/api/tutor", json={"operacion": OP_SUMA, "mensaje": "no entiendo"}).json()
+    assert r["resuelta"] is False
