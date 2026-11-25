@@ -219,7 +219,10 @@ export default function Aulas() {
             <section className="tarjeta">
               <div className="fila-entre" style={{ marginBottom: 10 }}>
                 <h2 className="t-md" style={{ margin: 0 }}><I n="aula" tamano={20} className="texto-naranja" /> Alumnos del grupo</h2>
-                <a className="enlace" href="#/diagnostico">Ver diagnóstico</a>
+                <span className="fila" style={{ gap: 12 }}>
+                  <a className="enlace" href="#/actividades">Actividades</a>
+                  <a className="enlace" href="#/diagnostico">Ver diagnóstico</a>
+                </span>
               </div>
               {sel.alumnos.length === 0 ? <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Comparte el código para que se unan.</p> : (
                 <ul className="lista-alumnos">

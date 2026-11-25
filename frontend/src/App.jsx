@@ -14,6 +14,7 @@ import Reto from './pantallas/Reto.jsx';
 import Habitacion from './pantallas/Habitacion.jsx';
 import Escaner from './pantallas/Escaner.jsx';
 import Aulas from './pantallas/Aulas.jsx';
+import ActividadesAula from './pantallas/ActividadesAula.jsx';
 import Perfil from './pantallas/Perfil.jsx';
 import MiAula from './pantallas/MiAula.jsx';
 import DiagnosticoProfe from './pantallas/DiagnosticoProfe.jsx';
@@ -33,6 +34,7 @@ const NAV = {
   ],
   profesor: [
     { id: 'aulas', texto: 'Modo Aula', corto: 'Aula', icono: 'aula' },
+    { id: 'actividades', texto: 'Actividades', corto: 'Tareas', icono: 'libro' },
     { id: 'diagnostico', texto: 'Diagnóstico', corto: 'Diagnóstico', icono: 'cerebro' },
     { id: 'perfil', texto: 'Perfil', corto: 'Perfil', icono: 'perfil' },
   ],
@@ -40,7 +42,7 @@ const NAV = {
 
 const PANTALLAS = {
   alumno: { inicio: Inicio, mapa: Mapa, reto: Reto, examen: ExamenMundo, habitacion: Habitacion, mochila: Habitacion, mascota: Habitacion, escaner: Escaner, aula: MiAula, perfil: Perfil, logros: Perfil },
-  profesor: { aulas: Aulas, diagnostico: DiagnosticoProfe, perfil: Perfil },
+  profesor: { aulas: Aulas, actividades: ActividadesAula, diagnostico: DiagnosticoProfe, perfil: Perfil },
 };
 
 function Avisos({ estado, rol }) {

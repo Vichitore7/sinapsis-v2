@@ -47,6 +47,8 @@ COLUMNAS_NUEVAS = {
     "diagnosticos": {"grado": "VARCHAR(3)"},
     # Escalera de pistas: avance que el navegador todavía no confirma (turnos del tutor).
     "escaleras": {"pendiente": "JSON"},
+    # Tareas del aula organizadas por módulo.
+    "actividades": {"modulo": "VARCHAR(40)"},
 }
 
 

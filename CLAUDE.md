@@ -27,7 +27,7 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
 - **Backend:** FastAPI + SQLAlchemy + SQLite, con `uv`, en `backend/`.
   - `uv run uvicorn app.main:app --port 8000 --reload`
   - Datos de prueba: `uv run python -m app.semilla --demo`
-  - Pruebas: `uv run pytest` (216). Si falla todo, revisa que no esté exportada una `DATABASE_URL` vieja.
+  - Pruebas: `uv run pytest` (232). Si falla todo, revisa que no esté exportada una `DATABASE_URL` vieja.
 - **Seguridad:**
   - Contraseñas con argon2, sesión con JWT en cookie httpOnly y freno a intentos repetidos.
   - Código de recuperación guardado con HMAC.
@@ -45,6 +45,13 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
   - **Examen diagnóstico:** arranca solo la primera vez que entra el alumno. **Según el grado** (de Samuel, 25 nov): el grado que elige al crear su cuenta se guarda en el servidor (`usuarios.grado`) y hay un examen de 8 preguntas por grado (P1 a S3) en `diagnostico.py`; las cuentas sin grado siguen con el examen general.
   - **Mascota → Habitación** (de Adrian, 25 nov): acuario con stickers (día y noche), tienda y escenario (`frontend/src/habitacion/`, `pantallas/Habitacion.jsx`, `rutas/habitacion.py`). Los cuidados no cuestan estrellas; hay un tiempo de espera entre cuidados (`mascotas.cuidados_hasta`) y para dormir hay que poner la cama.
 - **Profesor:** Modo Aula, Diagnóstico y Perfil.
+  - **Actividades del aula (25 nov):** `app/actividades.py` + `rutas/actividades.py` (pruebas en `tests/test_actividades.py`); frontend en `componentes/ActividadesProfe.jsx` (Modo Aula), `componentes/Actividades.jsx` (Mi Aula) y `componentes/ComprensionProfe.jsx` (Diagnóstico). Separadas del Mapa: el Aula y el Escáner son para estudiar.
+    - **Por módulo** (Suma y resta, Multiplicación, División, Fracciones; `MODULOS`): el profesor elige el módulo y dentro marca los ejercicios del banco de su grado o escribe los suyos (deben ser de ese módulo). El alumno y el profesor ven las tareas agrupadas por módulo, y la gráfica y "Tutor sugiere" también van por módulo.
+    - El profesor crea una actividad con título, instrucciones, **material de texto y enlaces** (sin archivos por ahora), fecha límite opcional y **problemas**: los escribe o los toma del **banco de prueba por grado** (`BANCO`, P1 a S3, texto propio; temas según el estándar de contenidos). Solo operaciones que el escáner revisa (naturales y fracciones con + − × ÷).
+    - El alumno los resuelve **en su cuaderno y los escanea** (`#/escaner/:aula.:actividad.:problema`): Kiko revisa cada uno (filtro obligatorio) y le ayuda si algo está mal; lo resuelve al escanear la corrección o cuando Kiko confirma en el chat que ya lo resolvió. Solo puede **entregar** cuando todos los problemas pasaron por el escáner. Si escanea otra operación, Kiko le avisa que no es la del problema.
+    - El profesor ve quién entregó y cada respuesta en palabras ("Pregunta 1: 6 × 7: primero contestó 13 (sumó en lugar de multiplicar); lo corrigió con ayuda de Kiko").
+    - **El profesor solo ve lo de sus clases y tareas, nada del Mapa** (25 nov): Diagnóstico ya no muestra progreso de la selva, retos, estrellas, racha ni exámenes de los mundos; el panel por alumno usa `resumen_alumno` (tareas entregadas, ejercicios a la primera / con ayuda / sin corregir, errores) y el CSV también. El endpoint viejo `/aulas/{id}/panel` sigue en el backend, pero la pantalla ya no lo usa.
+    - **Diagnóstico:** el "Examen diagnóstico de entrada" se quitó de la pantalla del profesor (el alumno lo sigue haciendo); en su lugar, una **gráfica por tema** (dificultad / comprende / domina, rampa azul ordinal validada para daltonismo) con filtros por categoría y por alumno (apodo). "Tutor sugiere" usa lo de las actividades: qué domina, qué no termina de comprender, qué no entendió, el error que repite y qué le ha funcionado (los dibujos de Kiko que ayudaron). La categoría la decide el código, nunca el modelo; solo conteos y etiquetas, nunca el texto del chat.
   - **Modo Aula:** grupos con varios módulos. Los alumnos entran solo con el código o con aprobación del profe.
   - **Diagnóstico:** resultados por habilidad y por alumno, con exportación a CSV.
 - **Contenido jugable:**

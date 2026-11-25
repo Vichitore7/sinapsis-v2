@@ -1,12 +1,14 @@
 // Mi Aula (alumno), tipo Classroom: el Aula es para ESTUDIAR (el Mapa es para divertirse aprendiendo).
 // #/aula       → mis clases + unirme con código
-// #/aula/:id   → una clase: módulos del año con mi avance y el avance promedio del grupo (sin nombres ni rankings)
+// #/aula/:id   → una clase: actividades del profesor, y módulos del año con mi avance y el promedio del grupo
+// #/aula/:id.:actividad → una actividad (problemas para resolver en el cuaderno y escanear con Kiko)
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useJuego } from '../estado/store.jsx';
 import { ir } from '../ruta.js';
 import I from '../componentes/IconosUI.jsx';
 import { nodosDeMundo } from '../logica/juego.js';
+import { ActividadAlumno, ListaActividades } from '../componentes/Actividades.jsx';
 
 const PORTADAS = ['portada-a', 'portada-b', 'portada-c', 'portada-d'];
 const portada = (id) => PORTADAS[id % PORTADAS.length];
@@ -143,6 +145,8 @@ function Clase({ aulaId }) {
         </div>
       </section>
 
+      <ListaActividades aulaId={aulaId} />
+
       <div className="pila-md">
         {c.modulos.length === 0 && <p className="cuerpo-md texto-suave">Tu maestra o maestro todavía no agrega módulos a esta clase.</p>}
         {c.modulos.map((m, n) => (
@@ -195,5 +199,7 @@ function Clase({ aulaId }) {
 }
 
 export default function MiAula({ retoId }) {
-  return retoId ? <Clase aulaId={Number(retoId)} /> : <ListaClases />;
+  if (!retoId) return <ListaClases />;
+  const [aula, actividad] = String(retoId).split('.').map(Number);
+  return actividad ? <ActividadAlumno aulaId={aula} actividadId={actividad} /> : <Clase aulaId={aula} />;
 }

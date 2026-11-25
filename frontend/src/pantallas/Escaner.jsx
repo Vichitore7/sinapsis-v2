@@ -8,7 +8,8 @@ import SendaPasos from '../componentes/SendaPasos.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import { leerArchivo, recortarYComprimir } from '../logica/imagen.js';
 import { leerFoto, pistasEscaner } from '../logica/lector.js';
-import { conDuda, diagnosticarOperacion, explicacionResuelta, quitarNegados, resolvioEnChat, esFraccion, pistasGenerales, tipoDe, validar, yaLoDijo } from '../logica/operaciones.js';
+import { BannerActividad } from '../componentes/Actividades.jsx';
+import { conDuda, diagnosticarOperacion, explicacionResuelta, senderoResuelto, quitarNegados, resolvioEnChat, esFraccion, pistasGenerales, tipoDe, validar, yaLoDijo } from '../logica/operaciones.js';
 import { ejemploParecido } from '../logica/pistas.js';
 import { hoy } from '../logica/juego.js';
 import { api } from '../api.js';
@@ -283,8 +284,22 @@ function pistasDe(op, d) {
 }
 
 // ---------- 4. Diagnóstico ----------
-function Diagnostico({ operacion, pista, onOtra }) {
+function Diagnostico({ operacion, pista, onOtra, resuelta = false }) {
   const diag = diagnosticarOperacion(operacion);
+  if (!diag.correcto && resuelta) {
+    // La resolvió platicando con Kiko: el sendero se endereza y queda como terminado.
+    return (
+      <div className="pila">
+        <div className="centro"><Ajolote estado="celebrando" tamano={110} /></div>
+        <SendaPasos pasos={senderoResuelto(operacion)} numeroPista={0} />
+        <div className="sm-acierto" role="status">
+          <h2 className="titulo" style={{ margin: '0 0 var(--espacio-2)' }}>✓ ¡Lo resolviste!</h2>
+          <p className="cuerpo" style={{ margin: '0 0 var(--espacio-3)' }}>Encontraste el resultado pensando con Kiko. Corrígelo en tu cuaderno cuando quieras.</p>
+          <button className="sm-btn" onClick={onOtra}>Escanear otro ejercicio</button>
+        </div>
+      </div>
+    );
+  }
   if (diag.correcto) {
     return (
       <div className="pila">
@@ -406,8 +421,18 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
   );
 }
 
-export default function Escaner() {
+/** #/escaner/:aula.:actividad.:problema → el escáner revisa un problema de una actividad del aula. */
+function contextoActividad(param) {
+  const [aula, actividad, problema] = String(param || '').split('.');
+  return aula && actividad && problema ? { aula: Number(aula), actividad: Number(actividad), problema } : null;
+}
+
+export default function Escaner({ retoId }) {
   const { estado, actualizar, usuario } = useJuego();
+  const ctxAct = contextoActividad(retoId);
+  const [actividad, setActividad] = useState(null);
+  const refrescarActividad = () => { if (ctxAct) api.actividad(ctxAct.aula, ctxAct.actividad).then(setActividad).catch(() => {}); };
+  useEffect(refrescarActividad, [retoId]); // eslint-disable-line react-hooks/exhaustive-deps
   const enLinea = useEnLinea();
   const [paso, setPaso] = useState('captura');
   const [foto, setFoto] = useState(null);
@@ -418,6 +443,11 @@ export default function Escaner() {
   // Turnos del tutor: el último turno cuya respuesta SÍ se mostró. El servidor solo cuenta un avance de la escalera
   // cuando el siguiente mensaje lo confirma; si una respuesta se descarta, ese pasito se repite en vez de perderse.
   const ultimoRecibido = useRef(null);
+  useEffect(() => {
+    if (resuelta && ctxAct && navigator.onLine) {
+      api.resueltoEnChat(ctxAct.actividad, ctxAct.problema).then(refrescarActividad).catch(() => {});
+    }
+  }, [resuelta]); // eslint-disable-line react-hooks/exhaustive-deps
   const [pista, setPista] = useState(1);
   const [mensajes, setMensajes] = useState([SALUDO]);
   // Cambia al reiniciar la plática y al confirmar otro ejercicio: una respuesta que llegue tarde de lo anterior
@@ -435,6 +465,14 @@ export default function Escaner() {
     setMensajes((xs) => xs.filter((m) => !m.pensando));
   };
   const registrar = (op) => api.registrarEscaneo(op).then(() => true, () => false);
+  // Modo actividad: el escaneo cuenta para el problema (y el servidor también lo registra para Kiko).
+  const escanearParaActividad = (op) => api.escaneoActividad(ctxAct.actividad, ctxAct.problema, op).then((r) => {
+    if (!r.coincide) {
+      decir({ de: 'kiko', texto: `Ojo: esta no es la operación del problema (${r.problema}). Revisa tu foto o tu cuaderno y escanéalo otra vez. 🔍` });
+    }
+    refrescarActividad();
+    return true;
+  }, () => false);
   // Ejercicio que el escáner no sabe revisar (problema de texto…) y que el alumno confirmó en el chat.
   const [ejercicio, setEjercicio] = useState(null);
   const pendientes = estado.escaner.pendientes;
@@ -512,7 +550,7 @@ export default function Escaner() {
     setOperacion(op);
     nuevoEjercicio(); // una respuesta pendiente de la cuenta anterior se descarta
     // Memoria de aprendizaje en el servidor (así Kiko recuerda entre sesiones). Si falla, la app sigue igual.
-    registro.current = enLinea ? { op, ok: registrar(op) } : null;
+    registro.current = enLinea ? { op, ok: ctxAct ? escanearParaActividad(op) : registrar(op) } : null;
     setPista(1);
     setResuelta(false); // intento nuevo, aunque sea la misma cuenta
     const d = diagnosticarOperacion(op);
@@ -652,6 +690,8 @@ export default function Escaner() {
         });
         if (vieja()) return;
         ultimoRecibido.current = turno; // esta respuesta sí se muestra: el próximo mensaje lo confirma al servidor
+        // El servidor dice que su ejercicio quedó resuelto: "Tu sendero" se marca como terminado y se apagan las pistas.
+        if (r.resuelta && contexto.operacion && contexto.operacion === operacion) setResuelta(true);
         setMensajes((xs) => [...sinPensando(xs), { de: 'kiko', texto: r.respuesta, dibujo: r.dibujo }]);
         return;
       } catch {
@@ -697,6 +737,7 @@ export default function Escaner() {
         <span className="chip chip-verde"><I n="escudo" tamano={14} /> Modo Seguro Escolar</span>
       </section>
       {!enLinea && <div className="aviso-red etiqueta">Sin internet: la app sigue funcionando.</div>}
+      {ctxAct && <BannerActividad aulaId={ctxAct.aula} actividad={actividad} problemaId={ctxAct.problema} />}
 
       <div className="escaner-layout">
         <div className="escaner-col" ref={columnaEscaner}>
@@ -718,7 +759,7 @@ export default function Escaner() {
             </section>
           )}
           {paso === 'lectura' && <Lectura lectura={lectura} onConfirmar={confirmar} />}
-          {paso === 'diagnostico' && operacion && <Diagnostico operacion={operacion} pista={pista} onOtra={reiniciar} />}
+          {paso === 'diagnostico' && operacion && <Diagnostico operacion={operacion} pista={pista} onOtra={reiniciar} resuelta={resuelta} />}
         </div>
         <div className="escaner-col" ref={columnaChat}>
           <ChatTutor
