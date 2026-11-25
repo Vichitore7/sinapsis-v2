@@ -34,6 +34,7 @@ class Usuario(Base):
     recuperacion_hash: Mapped[str] = mapped_column(String(64))
     version_sesion: Mapped[int] = mapped_column(Integer, default=0)  # sube al cerrar sesión o recuperar: invalida tokens viejos
     avatar: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    grado: Mapped[str | None] = mapped_column(String(3), nullable=True)  # P1–P6 o S1–S3 (solo alumnos); elige su diagnóstico
     creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
     ultimo_acceso: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -224,6 +225,7 @@ class Diagnostico(Base):
     aciertos: Mapped[int] = mapped_column(Integer)
     total: Mapped[int] = mapped_column(Integer)
     fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
+    grado: Mapped[str | None] = mapped_column(String(3), nullable=True)  # examen de qué grado hizo (None = el general)
 
 
 class ExamenMundo(Base):
