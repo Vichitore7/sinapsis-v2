@@ -87,7 +87,7 @@ function Panel({ datos, aulaNombre, onAlumno }) {
       )}
 
       <div className="pila-md" style={{ marginTop: 16 }}>
-        {lista.length === 0 && <p className="cuerpo-md texto-suave">{filtro ? 'Nadie necesita apoyo por ahora. 🎉' : 'Comparte el código para que tus alumnos se unan.'}</p>}
+        {lista.length === 0 && <p className="cuerpo-md texto-suave">{filtro ? 'Nadie necesita apoyo por ahora.' : 'Comparte el código para que tus alumnos se unan.'}</p>}
         {lista.map(({ a, l }, n) => {
           const r = a.resumen;
           const pct = r.ejercicios ? Math.round((100 * (r.a_la_primera + r.con_ayuda)) / r.ejercicios) : 0;

@@ -9,7 +9,7 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
 - **Nombres (25 nov):** la app se llamaba "Selva Matemática" y el ajolote "Kiko"; ahora **la app y el ajolote se llaman Mix** (la app lleva el nombre de su guía; un rato fueron "Sinapsis" y "Mih"). El repo sigue siendo `sinapsis-v2`.
   - Solo cambió lo que se ve. Los nombres internos siguen con "kiko": clases CSS `kiko-*`, archivos de stickers `kiko-*.png`, el componente `CabezaKiko` y `de: "kiko"` en el chat.
   - Al arrancar, los ajolotes que se llamaban "Kiko" (o "Mih", el nombre que tuvo un rato) pasan a "Mix" (`main.py`).
-- Equipo de 4 estudiantes de FES Aragón para el **UniconHub Hack / Claude Build Day**. **Entrega: 28 nov 2026.**
+- **Equipo Sinapsis** (5 integrantes; casi todo el equipo es de la FES Aragón) para el **UniconHub Hack / Claude Build Day**. **Fase 1 (video + ficha): 25 nov. Día de hack presencial: 28 nov 2026.**
 - Repo: GitHub `Vichitore7/sinapsis-v2`. El proyecto anterior está en `~/Documentos/Unicon-hub` (solo como referencia; no copiar código sin preguntar).
 
 ## Reglas del producto (no negociables)
@@ -26,11 +26,11 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
 - **Frontend:** React 18 + Vite, en `frontend/`.
   - Router por hash (`ruta.js`) y estado en un context (`estado/store.jsx`, `useJuego`).
   - Estilos: `styles/app.css` + `styles/stitch.css` (rediseño Stitch, naranja pastel, tokens `--st-*`).
-  - `npm run dev` arranca en :5173 y manda `/api` al backend por el proxy de Vite. Pruebas: `npm test` (40).
+  - `npm run dev` arranca en :5173 y manda `/api` al backend por el proxy de Vite. Pruebas: `npm test` (41).
 - **Backend:** FastAPI + SQLAlchemy + SQLite, con `uv`, en `backend/`.
   - `uv run uvicorn app.main:app --port 8000 --reload`
   - Datos de prueba: `uv run python -m app.semilla --demo`
-  - Pruebas: `uv run pytest` (232). Si falla todo, revisa que no esté exportada una `DATABASE_URL` vieja.
+  - Pruebas: `uv run pytest` (243). Si falla todo, revisa que no esté exportada una `DATABASE_URL` vieja.
 - **Seguridad:**
   - Contraseñas con argon2, sesión con JWT en cookie httpOnly y freno a intentos repetidos.
   - Código de recuperación guardado con HMAC.
@@ -102,6 +102,7 @@ Al hacer commit de otra cosa, agrega solo las rutas de ese cambio. Si hay que to
 - **Manual del tutor: `backend/app/agente.md`.** Personalidad, regla de oro (ayuda, no respuesta), formato, escalera de ayuda, cómo adaptarse al grado y a la forma de aprender (visual, auditiva, kinestésica, lógica, narrativa), fuentes confiables, emociones y seguridad. Se manda en cada mensaje junto con `docs/material-de-estudio/` (la progresión de todos los grados y el archivo del grado del alumno, sin las "Ideas de mundo"). **Para cambiar cómo se comporta Mix, edita ese archivo.**
 - `app/tutor.py` (carga el manual, filtro que bloquea respuestas con el resultado, límite por alumno), `app/rutas/tutor.py` (`POST /api/tutor`) y `tests/test_tutor.py` (Claude simulado, no gasta saldo).
 - **Dibujos:** Claude no genera imágenes. Contesta con un JSON fijo (`output_config.format`, esquema en `app/dibujos.py`) con el texto y, si ayuda, un `dibujo` (objetos, grupos, quitar, recta, decenas, monedas, gráfica o figura) que el chat pinta con los stickers del Mundo 1 (`VisualCanal` de `Canal.jsx`). Un dibujo fuera de límites se descarta; uno que al contarlo da el resultado hace que se use la respuesta por reglas.
+- **Sin emojis (25 nov):** la app no usa emojis (solo los símbolos ✓, ✗ y ★). `agente.md` le pide a Claude no usarlos y `tutor._sin_emojis` quita los que se le escapen.
 - Mix también contesta dudas de temas sin operación escaneada. Si el alumno escribe una cuenta en el chat ("cuánto es 345 x 12"), el filtro también bloquea su resultado.
 - **Contrato:** recibe `{ operacion?: {a, op, b, c}, mensaje, historial, grado?, ejercicio?, turno?, recibido? }` (el grado es el que eligió al registrarse, p. ej. `"Primaria • 4°"`; `turno` y `recibido`, ver "Sincronía" abajo) y regresa `{ respuesta, origen: "claude" | "reglas", dibujo }`.
 - **Clave:** `ANTHROPIC_API_KEY` en `backend/.env`; nunca se sube. **Sin clave, sin internet, si Claude rechaza o si el alumno pasa su límite (40/hora, 150/día), usa las pistas por reglas.** Así a nadie se le rompe la app. Cada quien puede trabajar sin clave.
@@ -180,6 +181,15 @@ Limpieza (baja prioridad):
 - `docs/selva-matematica` es del diseño anterior.
 
 Por ahora no: la Mochila (la hace Adrian), más pantallas ni más personalización.
+
+## Video y ficha de entrega (25 nov)
+
+- **Video pitch final:** `~/Documentos/mix-video/out/mix-final.mp4` (2:41, música "Happy Mistake" de RKVC). Está fuera del repo; es un proyecto de Remotion (`src/Escuela.jsx`, estilo de hoja de cuaderno) que reusa `node_modules` del video de VNV.
+  - Orden: problemática → Mix ("no piensa por ti… ¡piensa contigo!") → demo en vivo (6 × 7 = 13) → profe → por qué es diferente → mascota y cuarto → Hecho para México → "Hecho por el equipo Sinapsis".
+  - El equipo se presenta como **equipo Sinapsis** (son 5 y una integrante no es de la FES Aragón).
+  - La demo se grabó con `demo.mjs` (puppeteer). **No tomar capturas mientras se graba:** cada `page.screenshot` mete cuadros "acercados" en la grabación.
+- **Ficha técnica:** `docs/ficha-tecnica.md` (stack, adecuación a México y qué falta para llevarlo a la realidad).
+- Arreglo que salió al grabar: en una multiplicación a la que solo le falta un grupo, el pasito ya no dice "¿cuánto son 1 grupos de 7?", sino "Te falta 1 grupo de 7. Súmaselo: ¿cuánto es 35 + 7?" (`pasitos.py`).
 
 ## Documentos
 
