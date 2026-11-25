@@ -13,6 +13,7 @@ import Mapa from './pantallas/Mapa.jsx';
 import Reto from './pantallas/Reto.jsx';
 import Habitacion from './pantallas/Habitacion.jsx';
 import Escaner from './pantallas/Escaner.jsx';
+import EscanerTarea from './pantallas/EscanerTarea.jsx';
 import Aulas from './pantallas/Aulas.jsx';
 import ActividadesAula from './pantallas/ActividadesAula.jsx';
 import Perfil from './pantallas/Perfil.jsx';
@@ -92,7 +93,9 @@ export default function App() {
   const nav = NAV[rol];
   const pantallas = PANTALLAS[rol];
   const id = pantallas[pantalla] ? pantalla : nav[0].id;
-  const Pantalla = pantallas[id];
+  // #/escaner/:aula.:actividad → escanear las páginas de una tarea completa; con .:problema, el escáner de siempre.
+  const tareaCompleta = rol === 'alumno' && id === 'escaner' && String(param || '').split('.').length === 2;
+  const Pantalla = tareaCompleta ? EscanerTarea : pantallas[id];
   const activa = ['mochila', 'mascota'].includes(id) ? 'habitacion' : id === 'reto' || id === 'examen' ? 'mapa' : id === 'logros' ? 'perfil' : id;
   const alumno = rol === 'alumno';
 
@@ -101,7 +104,7 @@ export default function App() {
       <aside className="lateral" aria-label="Menú">
         <a href="#/" className="logo">
           <span className="logo-icono"><CabezaKiko tamano={38} /></span>
-          <span className="logo-texto">Selva<small>Matemática</small></span>
+          <span className="logo-texto">Mix</span>
         </a>
 
         {alumno ? (
@@ -130,14 +133,14 @@ export default function App() {
         <a href={alumno ? '#/habitacion' : '#/perfil'} className="tarjeta-kiko">
           <span className="kiko-icono"><CabezaKiko tamano={34} /></span>
           <span>
-            <b>{alumno ? `${estado.nombreAjolote} el Ajolote` : 'Kiko el Ajolote'}</b>
+            <b>{alumno ? `${estado.nombreAjolote} el Ajolote` : 'Mix el Ajolote'}</b>
             <small>{alumno && estado.dormido ? 'Está dormido. ¡Despiértalo!' : '¡Listo para aprender!'}</small>
           </span>
         </a>
       </aside>
 
       <header className="barra-top">
-        <a href="#/" className="logo logo-movil" aria-label="Selva Matemática">
+        <a href="#/" className="logo logo-movil" aria-label="Mix">
           <span className="logo-icono"><CabezaKiko tamano={32} /></span>
         </a>
         <div className="pastillas">
@@ -148,7 +151,7 @@ export default function App() {
               <button className="pastilla pastilla-estrellas solo-movil" onClick={() => ir('/habitacion')} aria-label={`${estado.estrellas} estrellas`}><I n="estrella" tamano={16} /> {estado.estrellas}</button>
             </>
           ) : (
-            <span className="pastilla"><I n="wifi" tamano={16} className="texto-selva" /> <span className="solo-ancho">Sincronizado con Selva</span></span>
+            <span className="pastilla"><I n="wifi" tamano={16} className="texto-selva" /> <span className="solo-ancho">Sincronizado</span></span>
           )}
         </div>
         <div className="top-derecha">
@@ -158,7 +161,7 @@ export default function App() {
       </header>
 
       <main className="contenido" id="contenido">
-        <Pantalla key={id === 'reto' ? param : ['mochila', 'mascota'].includes(id) ? 'habitacion' : id} retoId={param} />
+        <Pantalla key={id === 'reto' || id === 'escaner' ? `${id}:${param || ''}` : ['mochila', 'mascota'].includes(id) ? 'habitacion' : id} retoId={param} />
       </main>
     </div>
   );

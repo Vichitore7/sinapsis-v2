@@ -1,6 +1,6 @@
 // Actividades del aula (profesor): crear actividades con material y problemas (propios o del banco por grado),
 // ver quién entregó y qué contestó cada alumno en cada problema. Los alumnos las resuelven en su cuaderno y las
-// escanean; Kiko las revisa (app/actividades.py).
+// escanean; Mix las revisa (app/actividades.py).
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import I from './IconosUI.jsx';
@@ -236,7 +236,7 @@ export default function ActividadesProfe({ aulaId, nivel }) {
         {!creando && <button className="btn btn-naranja btn-chico" onClick={() => setCreando(true)}>+ Nueva tarea</button>}
       </div>
       <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>
-        Tus alumnos resuelven los problemas en su cuaderno y los escanean: Kiko revisa cada uno y les ayuda si algo está mal.
+        Tus alumnos resuelven los problemas en su cuaderno y los escanean: Mix revisa cada uno y les ayuda si algo está mal.
         Lo que resuelven alimenta la gráfica de comprensión en Diagnóstico.
       </p>
       {creando && <NuevaActividad aulaId={aulaId} nivel={nivel} onCreada={() => { setCreando(false); cargar(); }} onCancelar={() => setCreando(false)} />}

@@ -1,7 +1,7 @@
 // Examen general al final de un mundo temático (Canal, Centro…). Ruta: #/examen/<leccion_id>
 // - Una pregunta por nivel, con pistas y hasta 3 intentos. Si falla los 3, queda "para practicar" y sigue: no se castiga.
 // - Al terminar: certificado del mundo + 2 trajes de subculturas (uno de cada estilo).
-// - El mundo siguiente se abre cuando Kiko se pone uno de esos trajes.
+// - El mundo siguiente se abre cuando Mix se pone uno de esos trajes.
 // Todo lo que pasa (respuestas, fallas, pistas y tiempos) lo guarda el servidor para el reporte del profesor.
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
@@ -178,7 +178,7 @@ function Resultado({ examen, mundo, siguiente }) {
       <div className="diploma certificado" id="diploma-imprimible">
         <span className="diploma-deco" aria-hidden="true" />
         <div className="fila-entre">
-          <span className="diploma-marca"><span className="diploma-sm">SM</span> Selva Matemática</span>
+          <span className="diploma-marca"><span className="diploma-sm">M</span> Mix</span>
           <span className="chip chip-oro">Mundo {mundo.numero} terminado</span>
         </div>
         <p className="diploma-titulo">{diploma}</p>

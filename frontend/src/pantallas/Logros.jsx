@@ -91,7 +91,7 @@ export function SeccionMedallas({ estado, mundos }) {
 }
 
 /**
- * Stickers especiales (temáticos): se ven y se le ponen a Kiko aquí, en el Perfil.
+ * Stickers especiales (temáticos): se ven y se le ponen a Mix aquí, en el Perfil.
  * Los stickers normales de los mundos se equipan en la Mochila.
  */
 function StickersEspeciales() {
@@ -198,7 +198,7 @@ export function SeccionStickers({ estado, mundos }) {
 }
 
 export function SeccionDiplomas({ estado, mundos }) {
-  // Un mundo con examen general da su certificado al terminar el examen (aunque Kiko aún no se ponga el traje nuevo).
+  // Un mundo con examen general da su certificado al terminar el examen (aunque Mix aún no se ponga el traje nuevo).
   const conExamen = Object.entries(estado.examenes || {}).filter(([, e]) => e.estado === 'terminado').map(([id]) => id);
   const terminados = [...new Set([...conExamen, ...(estado.mundosTerminados || [])])];
   const ultimo = mundos.find((m) => m.id === terminados[terminados.length - 1]);
@@ -215,7 +215,7 @@ export function SeccionDiplomas({ estado, mundos }) {
         <div className={`diploma${ultimo ? '' : ' borrador'}`} id="diploma-imprimible">
           <span className="diploma-deco" aria-hidden="true" />
           <div className="fila-entre">
-            <span className="diploma-marca"><span className="diploma-sm">SM</span> Selva Matemática</span>
+            <span className="diploma-marca"><span className="diploma-sm">M</span> Mix</span>
             <span className="chip chip-oro">{ultimo ? `Mundo ${ultimo.numero} superado` : 'En camino'}</span>
           </div>
           <p className="diploma-titulo">Certificado de explorador de honor</p>

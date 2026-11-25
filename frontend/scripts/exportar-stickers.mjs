@@ -1,4 +1,4 @@
-// Exporta los stickers de Kiko (sin traje y con cada traje típico) como SVG y PNG con fondo transparente.
+// Exporta los stickers de Mix (sin traje y con cada traje típico) como SVG y PNG con fondo transparente.
 // Usa el mismo componente Ajolote.jsx de la app, así que si cambia el dibujo basta con volver a correrlo.
 //
 //   cd frontend
@@ -20,7 +20,7 @@ const SALIDA_SVG = join(SALIDA, 'svg');
 const TEMP = join(FRONTEND, 'node_modules', '.cache', 'stickers');
 const LADO = 512; // px del lado más largo del PNG
 
-// Colores con los que se ve Kiko en la app (tema Día del rediseño Stitch). En los stickers no cambian con el tema.
+// Colores con los que se ve Mix en la app (tema Día del rediseño Stitch). En los stickers no cambian con el tema.
 const COLORES = {
   '--tinta': '#1e1b3a', '--contorno': '#1e1b3a', '--superficie': '#ffffff', '--borde-sticker': '#ffffff',
   '--tinta-suave': '#47454f', '--sol': '#fbbf24', '--sol-profundo': '#f59e0b', '--selva': '#10b981',
@@ -232,7 +232,7 @@ function aSvgCanal(markup) {
   const svg = markup.match(/<svg[\s\S]*<\/svg>/)[0]; // TrajineraNivel y Ramo vienen dentro de un <span>
   const [vx, vy, vw, vh] = svg.match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number);
   const lado = Math.max(vw, vh);
-  const borde = +(lado * 0.035).toFixed(2); // grosor del borde blanco (≈ el de Kiko)
+  const borde = +(lado * 0.035).toFixed(2); // grosor del borde blanco (≈ el de Mix)
   const caida = +(lado * 0.025).toFixed(2); // sombrita de abajo
   const m = borde * 2 + caida;
   const [x, y, w, h] = [vx - m, vy - m, vw + 2 * m, vh + 2 * m];

@@ -127,7 +127,7 @@ def test_sin_memoria_empieza_sencillo(cliente, claude):
 
 
 def test_indicaciones_segun_el_estado(cliente, claude):
-    """El código (no solo el prompt) le dice a Kiko qué hacer según lo que domina o le cuesta."""
+    """El código (no solo el prompt) le dice a Mix qué hacer según lo que domina o le cuesta."""
     registrar(cliente)
     for a, b in [(6, 7), (8, 4), (9, 3)]:
         escanear(cliente, a, "×", b, a * b)

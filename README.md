@@ -1,4 +1,4 @@
-# Selva Matemática (sinapsis-v2)
+# Mix (sinapsis-v2)
 
 **IA que enseña a pensar.** Plataforma gamificada de matemáticas básicas para alumnas y alumnos de 9 a 15 años en México. Se explora una selva de mundos y retos junto a un ajolote guía que nunca castiga el error: lo convierte en una pista.
 
@@ -334,4 +334,4 @@ Alimentar, limpiar y dormir son gratuitos y tienen recargas independientes de tr
 
 La tienda desbloquea decoraciones según las trajineras completadas de El Canal de los Números, no según la XP. Los accesorios especiales se desbloquean al superar las trajineras 3, 6, 9 y 12. Los precios, estrellas verdes e inventario previo se conservan. No se requiere ninguna migración adicional ni dependencias nuevas. Consulta [Habitación](docs/selva-matematica/Habitacion.md).
 
-En Tienda y Trajes v4, el personaje de Habitación usa el ajolote original de Sinapsis (Sin traje especial por defecto). El armario permite volver a ese aspecto sin perder los trajes ni el progreso.
+En Tienda y Trajes v4, el personaje de Habitación usa el ajolote original de Mix (sin traje especial por defecto). El armario permite volver a ese aspecto sin perder los trajes ni el progreso.

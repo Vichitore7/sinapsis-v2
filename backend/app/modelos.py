@@ -203,7 +203,7 @@ class Mascota(Base):
     __tablename__ = "mascotas"
 
     alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
-    nombre: Mapped[str] = mapped_column(String(20), default="Kiko")
+    nombre: Mapped[str] = mapped_column(String(20), default="Mix")
     comida: Mapped[int] = mapped_column(Integer, default=4)
     pecera: Mapped[int] = mapped_column(Integer, default=4)
     alegria: Mapped[int] = mapped_column(Integer, default=4)

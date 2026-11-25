@@ -52,7 +52,7 @@ export const api = {
   responderExamen: (leccionId, preguntaId, d) => pedir('POST', `/examenes/${encodeURIComponent(leccionId)}/preguntas/${encodeURIComponent(preguntaId)}`, d),
   terminarExamen: (leccionId) => pedir('POST', `/examenes/${encodeURIComponent(leccionId)}/terminar`),
 
-  // Tutor de IA (Kiko en el chat del escáner). Regresa { respuesta, origen: 'claude' | 'reglas' }.
+  // Tutor de IA (Mix en el chat del escáner). Regresa { respuesta, origen: 'claude' | 'reglas' }.
   tutor: (d) => pedir('POST', '/tutor', d),
   // Lee la operación de la foto del cuaderno. Regresa { lectura: { a, op, b, c, dudoso } | null, origen }.
   leerFoto: (foto) => pedir('POST', '/escaner/leer', { foto }),
@@ -86,6 +86,8 @@ export const api = {
   crearActividad: (aulaId, d) => pedir('POST', `/aulas/${aulaId}/actividades`, d),
   borrarActividad: (aulaId, actId) => pedir('DELETE', `/aulas/${aulaId}/actividades/${actId}`),
   bancoProblemas: () => pedir('GET', '/actividades/banco'),
+  // Foto de una página completa: Mix lee todas sus operaciones y las acomoda en los problemas (no registra nada).
+  leerPagina: (actId, foto) => pedir('POST', `/actividades/${actId}/leer-pagina`, { foto }),
   escaneoActividad: (actId, problemaId, op) => pedir('POST', `/actividades/${actId}/problemas/${problemaId}/escaneo`, op),
   resueltoEnChat: (actId, problemaId) => pedir('POST', `/actividades/${actId}/problemas/${problemaId}/resuelto-en-chat`),
   entregarActividad: (actId) => pedir('POST', `/actividades/${actId}/entregar`),

@@ -12,7 +12,7 @@ export default function Tienda({ catalogo, inventario, trajineras, saldo, ocupad
   const superadas = trajineras.filter(t => t.superada).length;
   return <>
     <div className="hab-seccion-head"><h2>Tienda de stickers</h2><span className="hab-seccion-badge">Saldo <I n="estrella" tamano={15} className="texto-selva hab-estrella"/> {saldo}</span></div>
-    <p>Supera trajineras de {catalogo.mapaTienda.nombre} para desbloquear decoraciones. Compra con las estrellas verdes de Sinapsis.</p>
+    <p>Supera trajineras de {catalogo.mapaTienda.nombre} para desbloquear decoraciones. Compra con tus estrellas verdes.</p>
     <div className="hab-tienda-progreso">
       <div className="hab-tienda-progreso-head"><strong>{superadas} de {trajineras.length} trajineras superadas</strong><a href="#/mapa" className="hab-enlace">Ir al mapa</a></div>
       <progress value={superadas} max={trajineras.length || 1} aria-label="Trajineras superadas"/>

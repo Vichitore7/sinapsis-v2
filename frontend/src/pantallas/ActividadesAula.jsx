@@ -1,5 +1,5 @@
 // Actividades (profesor): dejar problemas y material a cada grupo y ver qué contestó cada alumno.
-// Los alumnos los resuelven en su cuaderno y los escanean; Kiko los revisa (app/actividades.py).
+// Los alumnos los resuelven en su cuaderno y los escanean; Mix los revisa (app/actividades.py).
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import I from '../componentes/IconosUI.jsx';
@@ -20,7 +20,7 @@ export default function ActividadesAula() {
     <div className="pila-lg">
       <div className="fila-entre">
         <div>
-          <span className="sobre"><I n="libro" tamano={14} /> Para estudiar con Kiko</span>
+          <span className="sobre"><I n="libro" tamano={14} /> Para estudiar con Mix</span>
           <h1 className="t-xl" style={{ margin: '4px 0 0' }}>Actividades</h1>
         </div>
         <div className="chips" style={{ margin: 0 }}>

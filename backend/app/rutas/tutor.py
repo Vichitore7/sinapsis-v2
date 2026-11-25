@@ -1,4 +1,4 @@
-"""Chat con Kiko, el tutor de IA del escáner."""
+"""Chat con Mix, el tutor de IA del escáner."""
 from __future__ import annotations
 
 from typing import Literal
@@ -55,7 +55,7 @@ class TutorEntrada(BaseModel):
 
 @router.post("/tutor")
 def hablar_con_kiko(datos: TutorEntrada, u: Usuario = Depends(solo_alumno), db: Session = Depends(get_db)) -> dict:
-    """Kiko contesta con una pista socrática. Regresa {respuesta, origen: "claude" | "reglas", dibujo}; nunca da el resultado.
+    """Mix contesta con una pista socrática. Regresa {respuesta, origen: "claude" | "reglas", dibujo}; nunca da el resultado.
 
     `dibujo` (o null) lo pinta el frontend con VisualCanal (los stickers del Mundo 1).
     """

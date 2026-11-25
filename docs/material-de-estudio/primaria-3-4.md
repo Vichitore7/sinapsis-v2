@@ -24,7 +24,7 @@ Fuente: SEP, Programa Sintético Fase 4 (2024), pp. 48–52. Los temas están re
 | Conocer 1/10 y 1/100 con el metro graduado | Encontrar el entero a partir de una fracción de él |
 
 Ideas de mundo:
-- **3.º** "La pizza de Kiko" (medios, cuartos, octavos) y "¿Cuál es el entero?".
+- **3.º** "La pizza de Mix" (medios, cuartos, octavos) y "¿Cuál es el entero?".
 - **4.º** "El metro de bambú" (décimos y centésimos) y "Monedas y centavos" (decimales con dinero).
 
 ## Suma y resta — **Suma y resta, su relación como operaciones inversas**

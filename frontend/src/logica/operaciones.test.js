@@ -75,7 +75,7 @@ describe('explicación después de resolver (sin conexión)', () => {
   });
 });
 
-describe('sendero de una operación resuelta con Kiko', () => {
+describe('sendero de una operación resuelta con Mix', () => {
   it('muestra el resultado que encontró, no el que había escrito, y todo en verde', () => {
     const pasos = senderoResuelto(validar({ a: 312, op: '+', b: 258, c: 470 }));
     expect(pasos.every((p) => p.estado === 'ok')).toBe(true);

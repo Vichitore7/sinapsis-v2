@@ -1,4 +1,4 @@
-"""API de Selva Matemática.
+"""API de Mix.
 
     uv run uvicorn app.main:app --reload       # http://localhost:8000/docs (Swagger)
 """
@@ -11,9 +11,11 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import update
 
 from . import config
 from .db import Base, SesionLocal, engine, migrar_columnas
+from .modelos import Mascota
 from .rutas import actividades, ajustes, auth, aulas, diagnostico, juego, tutor, habitacion, escaner
 from .semilla import cargar_contenido
 
@@ -33,13 +35,16 @@ async def ciclo(_: FastAPI):
     migrar_columnas(engine)
     with SesionLocal() as db:
         cargar_contenido(db)  # idempotente: así aparecen los módulos nuevos sin volver a sembrar
+        # 25 nov: el ajolote se llamaba Kiko por defecto (y un rato Mih); ahora es Mix. El que le puso otro nombre lo conserva.
+        db.execute(update(Mascota).where(Mascota.nombre.in_(["Kiko", "Mih"])).values(nombre="Mix"))
+        db.commit()
     yield
 
 
 app = FastAPI(
-    title="Selva Matemática API",
+    title="Mix API",
     version="0.1.0",
-    description="Backend de Selva Matemática: cuentas sin correo, retos validados en el servidor, progreso, ajolote y aulas.",
+    description="Backend de Mix: cuentas sin correo, retos validados en el servidor, progreso, ajolote y aulas.",
     lifespan=ciclo,
 )
 

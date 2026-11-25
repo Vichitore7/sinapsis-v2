@@ -99,7 +99,7 @@ def _examen(c, mundo):
 
 
 def _terminar(c, mundo, siguiente):
-    """Niveles + examen general + vestir a Kiko con un traje del premio (así se abre el mundo siguiente)."""
+    """Niveles + examen general + vestir a Mix con un traje del premio (así se abre el mundo siguiente)."""
     _niveles(c, mundo)
     premio = _examen(c, mundo)
     assert c.put("/api/mascota/traje", json={"traje": premio[0]}).json()["mapa"][siguiente]["abierta"] is True

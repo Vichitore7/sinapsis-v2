@@ -14,7 +14,7 @@ Base: Sinapsis V2.0 Habitación V5.1.
 1. Entrar a Habitación y cambiar entre tema claro, oscuro y sistema.
 2. Comparar las imágenes en Decorar y Tienda; deben corresponder al tema.
 3. Colocar objetos y cambiar su capa; alternar el tema y confirmar que las posiciones no varían.
-4. Dormir y despertar a Kiko en ambos temas: la oscuridad por dormir sigue siendo independiente del tema global.
+4. Dormir y despertar a Mix en ambos temas: la oscuridad por dormir sigue siendo independiente del tema global.
 5. Comprobar los cuidados, los trajes, las compras y el guardado en un navegador de escritorio y móvil.
 
 No se requiere migración. Conservar `.env` y la base de datos de la instalación funcional (con el servidor detenido y una copia de respaldo). Ejecutar `npm ci`, `npm run dev` o `npm run build` como en V5.1.

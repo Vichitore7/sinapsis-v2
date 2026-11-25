@@ -79,7 +79,7 @@ function Extra({ estado }) {
 }
 
 // ---------- Trajes típicos de las trajineras de Xochimilco ----------
-// Colores fijos (no dependen del tema): son la ropa de Kiko, igual de día y de noche.
+// Colores fijos (no dependen del tema): son la ropa de Mix, igual de día y de noche.
 const ROPA = {
   manta: '#fbf8f0', palma: '#f1dfa8', palmaHilo: '#cfae62', liston: '#2b2738',
   faja: '#5b6fa8', rojo: '#d62839', rosa: '#ff6fa5', amarillo: '#ffc83d', verde: '#1fa971',
@@ -227,8 +227,8 @@ function Tocado({ traje }) {
   return null;
 }
 
-// cabeza: solo la cabecita (logo del inicio de sesión y saludos de Kiko).
-// traje: 'trajinero' | 'trajinera' | null (regalo de bienvenida, se elige en Perfil > Vestir a Kiko).
+// cabeza: solo la cabecita (logo del inicio de sesión y saludos de Mix).
+// traje: 'trajinero' | 'trajinera' | null (regalo de bienvenida, se elige en Perfil > Vestir a Mix).
 export default function Ajolote({ estado = 'feliz', tamano = 140, mundosSuperados = 0, accesorios = [], etiqueta, cabeza = false, traje = null }) {
   const recorte = `cuerpo-${useId().replace(/:/g, '')}`;
   const brilla = estado === 'celebrando';

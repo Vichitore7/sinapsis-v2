@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { SeccionStickers } from '../pantallas/Logros.jsx';
-const { jugador }=vi.hoisted(()=>({jugador:{nombreAjolote:'Kiko',trajes:['trajinero','trajinera'],traje:null,stickers:[]}}));
+const { jugador }=vi.hoisted(()=>({jugador:{nombreAjolote:'Mix',trajes:['trajinero','trajinera'],traje:null,stickers:[]}}));
 vi.mock('../estado/store.jsx',()=>({useJuego:()=>({estado:jugador,aplicarServidor:()=>{}})}));
 describe('Armario de Sinapsis',()=>{
  it('muestra primero el aspecto original como activo al iniciar',()=>{

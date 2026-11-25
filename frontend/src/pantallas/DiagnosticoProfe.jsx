@@ -2,7 +2,7 @@
 // - Gráfica de comprensión por módulo (dificultad / comprende / domina).
 // - Panel por alumno: cómo va con sus tareas, qué domina, qué le cuesta y qué sugiere el tutor.
 // - Detalle: "Tutor sugiere" por módulo y sus respuestas en palabras.
-// Todo sale de las tareas escaneadas y revisadas por Kiko (app/actividades.py). Reglas: solo apodos, sin rankings
+// Todo sale de las tareas escaneadas y revisadas por Mix (app/actividades.py). Reglas: solo apodos, sin rankings
 // (orden alfabético) y privado (no se proyecta).
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api.js';
@@ -20,10 +20,10 @@ function lectura(a, temas) {
   const cuesta = de((v) => v.categoria === 'dificultad' || v.frase === 'No lo termina de comprender');
   const necesita = cuesta.length > 0;
 
-  let fortaleza = 'Todavía no hay ejercicios revisados por Kiko.';
+  let fortaleza = 'Todavía no hay ejercicios revisados por Mix.';
   if (domina.length) fortaleza = `Domina ${domina.join(', ')}.`;
   else if (r.a_la_primera) fortaleza = `Resolvió ${r.a_la_primera} ejercicio${r.a_la_primera === 1 ? '' : 's'} a la primera.`;
-  else if (r.con_ayuda) fortaleza = `Corrige sus errores con ayuda de Kiko (${r.con_ayuda}).`;
+  else if (r.con_ayuda) fortaleza = `Corrige sus errores con ayuda de Mix (${r.con_ayuda}).`;
 
   let oportunidad = { texto: 'Va bien con sus tareas.', tono: '' };
   if (!r.escaneados) oportunidad = { texto: r.tareas ? 'Aún no empieza sus tareas.' : 'Todavía no hay tareas en este grupo.', tono: 'casi' };
@@ -33,13 +33,13 @@ function lectura(a, temas) {
   else if (r.sin_corregir) oportunidad = { texto: `Tiene ${r.sin_corregir} ejercicio${r.sin_corregir === 1 ? '' : 's'} sin corregir.`, tono: 'casi' };
 
   const sugiere = sugerenciaCorta(a, temas)
-    || (r.tareas ? 'Recuérdale escanear sus tareas para que Kiko las revise.' : 'Deja una tarea en Actividades para empezar.');
+    || (r.tareas ? 'Recuérdale escanear sus tareas para que Mix las revise.' : 'Deja una tarea en Actividades para empezar.');
   return { fortaleza, oportunidad, sugiere, necesita };
 }
 
 function descargarCsv(datos, aulaNombre) {
   const filas = [['Apodo', 'Usuario', 'Tareas entregadas', 'Tareas', 'Ejercicios revisados', 'Ejercicios', 'A la primera',
-    'Con ayuda de Kiko', 'Sin corregir', ...datos.temas.map((t) => t.nombre), 'Error más frecuente']];
+    'Con ayuda de Mix', 'Sin corregir', ...datos.temas.map((t) => t.nombre), 'Error más frecuente']];
   datos.alumnos.forEach((a) => {
     const r = a.resumen;
     filas.push([a.apodo, a.usuario, r.entregadas, r.tareas, r.escaneados, r.ejercicios, r.a_la_primera, r.con_ayuda, r.sin_corregir,
@@ -116,7 +116,7 @@ function Panel({ datos, aulaNombre, onAlumno }) {
               <div className="caja-diag">
                 <span className="diag-titulo texto-selva"><I n="checkCirculo" tamano={16} /> Fortaleza</span>
                 <p className="cuerpo-sm" style={{ margin: 0, flex: 1 }}>{l.fortaleza}</p>
-                <small className="texto-suave"><I n="pulso" tamano={12} /> {r.escaneados} revisados por Kiko</small>
+                <small className="texto-suave"><I n="pulso" tamano={12} /> {r.escaneados} revisados por Mix</small>
               </div>
               <div className={`caja-diag${l.oportunidad.tono === 'casi' ? ' caja-casi' : ''}`}>
                 <span className={`diag-titulo ${l.oportunidad.tono === 'casi' ? 'texto-casi' : 'texto-suave'}`}><I n="info" tamano={16} /> Oportunidad</span>
@@ -150,7 +150,7 @@ function DetalleAlumno({ aulaId, alumno, resumen, onCerrar, onExpulsar }) {
         <div className="chips" style={{ margin: '16px 0' }}>
           <span className="pastilla">{resumen.entregadas} de {resumen.tareas} tareas entregadas</span>
           <span className="pastilla">{resumen.a_la_primera} a la primera</span>
-          <span className="pastilla">{resumen.con_ayuda} con ayuda de Kiko</span>
+          <span className="pastilla">{resumen.con_ayuda} con ayuda de Mix</span>
           <span className="pastilla">{resumen.sin_corregir} sin corregir</span>
         </div>
       )}

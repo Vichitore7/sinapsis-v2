@@ -85,7 +85,7 @@ export default function Habitacion() {
           <span className="hab-chip"><I n="estrella" tamano={16} className="texto-selva"/> Tienda por mapas</span>
         </div>
       </div>
-      <div className="hab-saldo" aria-label="Saldo de estrellas de Sinapsis"><span><Estrella/> {estado.estrellas}</span><small>Estrellas disponibles para decorar</small></div>
+      <div className="hab-saldo" aria-label="Tu saldo de estrellas"><span><Estrella/> {estado.estrellas}</span><small>Estrellas disponibles para decorar</small></div>
     </header>
 
     <div className="hab-medidores">{medidores.map(([id,t,ayuda])=><article className="hab-medidor-card" key={id}><span className="hab-medidor-titulo">{t}</span><strong className="hab-medidor-numero">{bienestar[id]??0}/5</strong><progress value={bienestar[id]??0} max="5" aria-label={t}/><small>{ayuda}</small></article>)}</div>

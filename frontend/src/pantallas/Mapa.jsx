@@ -151,7 +151,7 @@ function SenderoTematico({ mundo, estado }) {
             <>
               {examen.estado !== 'terminado' && <span className="kiko-aqui"><CabezaKiko tamano={22} /> ¡Último reto!</span>}
               <a href={`#/examen/${mundo.id}`} className="nodo-s nodo-actual nodo-examen"
-                aria-label={examen.estado === 'terminado' ? 'Examen terminado: viste a Kiko para abrir el siguiente mundo' : 'Examen general: ¡preséntalo!'}>
+                aria-label={examen.estado === 'terminado' ? 'Examen terminado: viste a Mix para abrir el siguiente mundo' : 'Examen general: ¡preséntalo!'}>
                 <I n={examen.estado === 'terminado' ? 'logros' : 'birrete'} tamano={30} />
               </a>
             </>
@@ -160,7 +160,7 @@ function SenderoTematico({ mundo, estado }) {
           )}
           <span className="etq-nodo">{examen.estado === 'terminado' ? `Certificado · ${examen.aciertos}/${examen.total}` : 'Examen general'}</span>
           <small className="etq-tema">
-            {cofre === 'abierto' ? 'Mundo terminado' : examen.estado === 'terminado' ? 'Viste a Kiko con su traje nuevo'
+            {cofre === 'abierto' ? 'Mundo terminado' : examen.estado === 'terminado' ? 'Viste a Mix con su traje nuevo'
               : examen.estado === 'en_curso' ? 'Examen a medias: ¡termínalo!' : 'Gana tu certificado y 2 trajes'}
           </small>
         </li>
@@ -267,7 +267,7 @@ export default function Mapa() {
         </div>
         <div className="chips">
           <span className="pastilla"><I n="estrella" tamano={16} className="texto-selva" /> {hechos} / {total}</span>
-          <span className="pastilla"><I n="rayo" tamano={16} className="c-fuego" /> {estado.dormido ? 'Kiko dormido' : 'Energía al 100%'}</span>
+          <span className="pastilla"><I n="rayo" tamano={16} className="c-fuego" /> {estado.dormido ? 'Mix dormido' : 'Energía al 100%'}</span>
         </div>
       </section>
 
@@ -317,7 +317,7 @@ export default function Mapa() {
                   <section key={mundo.id} className="tarjeta-suave mundo-bloqueado">
                     {cabecera}
                     {desplegado && (temaDe(previo) ? (
-                      // Después de un mundo con examen, en lugar de una llave se pide vestir a Kiko con un traje ganado en él.
+                      // Después de un mundo con examen, en lugar de una llave se pide vestir a Mix con un traje ganado en él.
                       <div id={`mundo-${mundo.id}`} className="tarjeta cofre-secreto" style={{ marginTop: 14 }}>
                         <span className="icono-caja ic-gris grande"><CabezaKiko tamano={40} /></span>
                         <div style={{ flex: 1 }}>
@@ -358,12 +358,12 @@ export default function Mapa() {
                     // En un mundo temático, el último paso es el examen general (no un cofre).
                     const ex = tema && paso.tipo === 'cofre' ? examenDe(estado, mundo.id) : null;
                     const titulo = paso.tipo === 'reto' ? paso.reto.titulo
-                      : ex ? (ex.estado === 'terminado' ? 'Viste a Kiko con su traje nuevo' : 'Examen general') : 'Cofre del mundo';
+                      : ex ? (ex.estado === 'terminado' ? 'Viste a Mix con su traje nuevo' : 'Examen general') : 'Cofre del mundo';
                     const texto = paso.tipo === 'reto' ? paso.reto.enunciado
                       : ex ? (ex.estado === 'terminado' ? 'Ponte uno de los trajes que ganaste para abrir el siguiente mundo.'
-                        : 'Una pregunta de cada nivel. Gana tu certificado y 2 trajes nuevos para Kiko.')
+                        : 'Una pregunta de cada nivel. Gana tu certificado y 2 trajes nuevos para Mix.')
                         : '¡Ábrelo para ganar un sticker!';
-                    const boton = paso.tipo === 'reto' ? 'Jugar Ahora' : ex ? (ex.estado === 'terminado' ? 'Vestir a Kiko' : ex.estado === 'en_curso' ? 'Seguir examen' : 'Presentar examen') : 'Abrir cofre';
+                    const boton = paso.tipo === 'reto' ? 'Jugar Ahora' : ex ? (ex.estado === 'terminado' ? 'Vestir a Mix' : ex.estado === 'en_curso' ? 'Seguir examen' : 'Presentar examen') : 'Abrir cofre';
                     const accion = () => (paso.tipo === 'reto' ? ir(`/reto/${paso.reto.id}`) : ex ? ir(`/examen/${mundo.id}`) : abrir(mundo));
                     return (
                       <div className="siguiente-desafio">
