@@ -3,6 +3,7 @@
 // Mapa.jsx, Reto.jsx y ExamenMundo.jsx usan esto, así un mundo nuevo solo agrega su tema aquí.
 import { COLORES_NIVEL, ChinampaIsla, Lirio, PecesNivel, TrajineraNivel, VisualCanal } from './Canal.jsx';
 import { CacomixtlesNivel, Monumento, PapelPicado, TRANSPORTES, TransporteNivel, VisualCDMX } from './CDMX.jsx';
+import { BanderinesFES, CampusDeco, LUGARES, LugarNivel, TituloFES, TlacuachesNivel, VisualFES, lugarDe } from './FES.jsx';
 
 // Decoración del canal: chinampas y lirios esparcidos por las orillas (top en % del alto del mapa).
 const DECO_CANAL = [
@@ -43,6 +44,31 @@ const DECO_CDMX = [
   { tipo: 'cosa', lado: 'der', top: '96.5%', x: '2%', cual: 'elotes' },
   // Papel picado de lado a lado
   { tipo: 'banderines', top: '3.5%' }, { tipo: 'banderines', top: '49%' }, { tipo: 'banderines', top: '95%' },
+];
+
+// Decoración de la FES Aragón: torres, auditorio, la mascota, el hombre de morado, edificios, laboratorios,
+// canchas y cafetería en las orillas; alumnos, puestos de comida, bicis y árboles en los huecos del pasto.
+const DECO_FES = [
+  // Lugares grandes del campus (orillas)
+  { tipo: 'monumento', lado: 'izq', top: '4%', cual: 'torres' }, { tipo: 'monumento', lado: 'der', top: '8%', cual: 'mascota' },
+  { tipo: 'monumento', lado: 'izq', top: '15%', cual: 'auditorio' }, { tipo: 'monumento', lado: 'der', top: '21%', cual: 'laboratorio' },
+  { tipo: 'monumento', lado: 'izq', top: '28%', cual: 'morado' }, { tipo: 'monumento', lado: 'der', top: '34%', cual: 'cafeteria' },
+  { tipo: 'monumento', lado: 'izq', top: '41%', cual: 'cancha' }, { tipo: 'monumento', lado: 'der', top: '47%', cual: 'edificio' },
+  { tipo: 'monumento', lado: 'izq', top: '54%', cual: 'laboratorio' }, { tipo: 'monumento', lado: 'der', top: '60%', cual: 'torres' },
+  { tipo: 'monumento', lado: 'izq', top: '67%', cual: 'edificio' }, { tipo: 'monumento', lado: 'der', top: '73%', cual: 'auditorio' },
+  { tipo: 'monumento', lado: 'izq', top: '80%', cual: 'cafeteria' }, { tipo: 'monumento', lado: 'der', top: '86%', cual: 'cancha' },
+  { tipo: 'monumento', lado: 'izq', top: '92%', cual: 'mascota' },
+  // La vida en el campus (en los huecos, un poco más adentro)
+  { tipo: 'cosa', lado: 'der', top: '14%', x: '4%', cual: 'alumnos' }, { tipo: 'cosa', lado: 'izq', top: '10.5%', x: '4%', cual: 'puesto' },
+  { tipo: 'cosa', lado: 'izq', top: '22%', x: '3%', cual: 'arbol' }, { tipo: 'cosa', lado: 'der', top: '28%', x: '3%', cual: 'bici' },
+  { tipo: 'cosa', lado: 'izq', top: '35%', x: '4%', cual: 'alumnos' }, { tipo: 'cosa', lado: 'der', top: '41%', x: '4%', cual: 'puesto' },
+  { tipo: 'cosa', lado: 'izq', top: '48%', x: '3%', cual: 'banca' }, { tipo: 'cosa', lado: 'der', top: '54%', x: '3%', cual: 'alumnos' },
+  { tipo: 'cosa', lado: 'izq', top: '61%', x: '4%', cual: 'puesto' }, { tipo: 'cosa', lado: 'der', top: '67%', x: '4%', cual: 'arbol' },
+  { tipo: 'cosa', lado: 'izq', top: '74%', x: '3%', cual: 'alumnos' }, { tipo: 'cosa', lado: 'der', top: '80%', x: '3%', cual: 'bici' },
+  { tipo: 'cosa', lado: 'izq', top: '86.5%', x: '4%', cual: 'arbol' }, { tipo: 'cosa', lado: 'der', top: '92%', x: '4%', cual: 'alumnos' },
+  { tipo: 'cosa', lado: 'izq', top: '97.5%', x: '5%', cual: 'banca' }, { tipo: 'cosa', lado: 'der', top: '97.5%', x: '3%', cual: 'puesto' },
+  // Banderines azul y oro de lado a lado
+  { tipo: 'banderines', top: '17.5%' }, { tipo: 'banderines', top: '57%' }, { tipo: 'banderines', top: '95%' },
 ];
 
 const transporteDe = (nivel) => TRANSPORTES[(nivel - 1) % TRANSPORTES.length];
@@ -102,6 +128,34 @@ export const TEMAS = {
       'En la recta numérica, sumar es avanzar y restar es regresar.',
       'Multiplicar es sumar grupos iguales: 3 × 4 es 4 + 4 + 4.',
       'Cada transporte lleva 3 cacomixtles: resuelve sus 3 ejercicios para encontrarlos.',
+    ],
+  },
+  fes: {
+    clase: 'tema-fes',
+    claseMapa: 'canal-mapa fes-mapa',
+    Titulo: TituloFES,
+    Visual: VisualFES,
+    Medallas: TlacuachesNivel,
+    Nodo: ({ nivel, estado, children }) => <LugarNivel tipo={lugarDe(nivel)} estado={estado}>{children}</LugarNivel>,
+    nombreNodo: (nivel) => LUGARES[lugarDe(nivel)].nombre,
+    deco: DECO_FES,
+    Deco: ({ d }) => (d.tipo === 'banderines' ? <BanderinesFES /> : <CampusDeco tipo={d.cual} />),
+    palabras: {
+      premios: 'tlacuaches',
+      encontrar: '¡Encontraste un tlacuache!',
+      llenar: (n) => `¡Recorriste el lugar ${n} del campus!`,
+      enEste: 'en este lugar del campus',
+      siguiente: 'Con los 3 tlacuaches se abre el siguiente lugar del campus.',
+      irSiguiente: 'Ir al siguiente lugar',
+      examenListo: 'Ya puedes presentar el examen general de la FES.',
+      diploma: 'Constancia de universitario',
+      premioTitulo: '¡Abrígate, nos vamos al Nevado de Toluca!',
+    },
+    consejos: [
+      'Para comparar números de 4 cifras, empieza por los millares.',
+      'Una fracción con MÁS pedazos tiene pedazos más chicos: 1/8 es menos que 1/4.',
+      'Dividir es repartir en partes iguales. Compruébalo multiplicando.',
+      'Cada lugar del campus esconde 3 tlacuaches: resuelve sus 3 ejercicios para encontrarlos.',
     ],
   },
 };

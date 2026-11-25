@@ -1,5 +1,6 @@
 from app import contenido_canal as canal
 from app import contenido_cdmx as cdmx
+from app import contenido_fes as fes
 from app import juego
 from app.contenido import TRAJES_SUBCULTURAS
 from tests.conftest import registrar
@@ -64,7 +65,7 @@ def test_contenido_no_trae_respuestas(cliente):
     texto = cliente.get("/api/contenido").text
     assert '"respuesta"' not in texto and "explicacion" not in texto
     mundos = cliente.get("/api/contenido").json()["mundos"]
-    assert [m["id"] for m in mundos[:3]] == ["x1", "c2", "m2"] and "m1" not in [m["id"] for m in mundos]
+    assert [m["id"] for m in mundos[:4]] == ["x1", "c2", "f3", "m2"] and "m1" not in [m["id"] for m in mundos]
     canal_ = mundos[0]
     assert canal_["nombre"] == "El Canal de los Números" and canal_["tema"] == "xochimilco"
     assert len(canal_["retos"]) == 36 and {r["nivel"] for r in canal_["retos"]} == set(range(1, 13))
@@ -73,7 +74,9 @@ def test_contenido_no_trae_respuestas(cliente):
     assert centro["nombre"] == "El Centro de los Números" and centro["tema"] == "cdmx" and len(centro["retos"]) == 36
     fases = {r["nivel"]: r["fase_cpa"] for r in centro["retos"]}
     assert [fases[n] for n in (1, 4, 5, 8, 9, 12)] == ["concreto", "concreto", "pictórico", "pictórico", "abstracto", "abstracto"]
-    assert mundos[2]["retos"][0]["id"] == "m2-r1" and len(mundos[2]["retos"][0]["pistas"]) == 3
+    fes_ = mundos[2]
+    assert fes_["nombre"] == "La FES de los Números" and fes_["tema"] == "fes" and len(fes_["retos"]) == 36
+    assert mundos[3]["retos"][0]["id"] == "m2-r1" and len(mundos[3]["retos"][0]["pistas"]) == 3
 
 
 def _niveles(c, mundo):
@@ -109,12 +112,35 @@ def _terminar_canal(c):
 
 
 def _hasta_el_mercado(c):
-    """Canal + Centro: deja abierto El mercado (Mundo 3, multiplicación)."""
+    """Canal + Centro + FES: deja abierto El mercado (Mundo 4, multiplicación)."""
     _terminar(c, canal, "c2")
-    _terminar(c, cdmx, "m2")
+    _terminar(c, cdmx, "f3")
+    _terminar(c, fes, "m2")
 
 
-def test_centro_division_y_examen_abren_el_mercado(cliente):
+def test_fes_tercero_y_premio_para_el_frio(cliente):
+    registrar(cliente)
+    _terminar(cliente, canal, "c2")
+    _terminar(cliente, cdmx, "f3")
+    est = cliente.get("/api/juego/estado").json()
+    assert est["mapa"]["f3"]["nodos"]["f3-n01-1"] == "actual" and est["mapa"]["m2"]["abierta"] is False
+    # Resta de 3 cifras con ceros (500 − 347): el diagnóstico no da la respuesta.
+    for e in fes.ejercicios()[:7]:
+        assert cliente.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]}).json()["correcto"], e["id"]
+    r = cliente.post("/api/ejercicios/f3-n03-2/intentos", json={"respuesta": "253"}).json()
+    assert r["correcto"] is False and "153" not in r["diagnostico"]["pregunta"]
+    assert cliente.post("/api/ejercicios/f3-n03-2/intentos", json={"respuesta": "153"}).json()["correcto"]
+    # Fracciones como opción
+    for e in fes.ejercicios()[8:]:
+        assert cliente.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]}).json()["correcto"], e["id"]
+    premio = _examen(cliente, fes)
+    est = cliente.get("/api/juego/estado").json()
+    assert "peluche" in est["stickers"] and premio == ["nevado-gorro", "nevado-orejeras"]
+    assert est["mapa"]["m2"]["abierta"] is False
+    assert cliente.put("/api/mascota/traje", json={"traje": premio[0]}).json()["mapa"]["m2"]["abierta"] is True
+
+
+def test_centro_division_y_examen_abren_la_fes(cliente):
     registrar(cliente)
     _terminar_canal(cliente)
     est = cliente.get("/api/juego/estado").json()
@@ -132,8 +158,8 @@ def test_centro_division_y_examen_abren_el_mercado(cliente):
     est = cliente.get("/api/juego/estado").json()
     assert est["examenes"]["c2"]["estado"] == "terminado" and "tarjeta" in est["stickers"]
     assert premio == ["fes-gorra", "fes-cabello"]  # premio fijo: los 2 atuendos de la FES Aragón (no subculturas al azar)
-    assert set(premio) <= set(est["mascota"]["trajes"]) and est["mapa"]["m2"]["abierta"] is False
-    assert cliente.put("/api/mascota/traje", json={"traje": premio[1]}).json()["mapa"]["m2"]["abierta"] is True
+    assert set(premio) <= set(est["mascota"]["trajes"]) and est["mapa"]["f3"]["abierta"] is False
+    assert cliente.put("/api/mascota/traje", json={"traje": premio[1]}).json()["mapa"]["f3"]["abierta"] is True
 
 
 def test_cargar_contenido_quita_mundos_retirados(tmp_path):
@@ -553,3 +579,19 @@ def test_diagnostico_de_entrada(cliente, nuevo_cliente):
     suma = next(h for h in grupo["habilidades"] if h["habilidad"] == "suma")
     assert suma["logrado"] == 1 and suma["de"] == 1
     assert cliente.post("/api/diagnostico", json={"respuestas": {}}).status_code == 403  # solo alumnos
+
+
+def test_opciones_caben_en_la_respuesta():
+    """Reto.jsx manda la respuesta recortada a 60 caracteres (y el servidor acepta 60): ninguna opción puede ser más larga."""
+    for mundo in (canal, cdmx, fes):
+        for e in mundo.ejercicios() + mundo.examen():
+            for o in e.get("opciones") or []:
+                assert len(o) <= 60, (e["id"], o)
+
+
+def test_fes_respeta_el_programa_de_tercero():
+    """3.º: sumas y restas hasta 3 cifras y productos de hasta 3 cifras (las de 4 cifras son de 4.º)."""
+    for e in fes.ejercicios() + fes.examen():
+        if e["tipo"] == "numerica":
+            assert len(str(e["a"])) <= 3 and len(str(e["b"])) <= 3 and len(e["respuesta"]) <= 3, e["id"]
+        assert (e.get("visual") or {}).get("tipo") not in ("barras", "rectangulo"), e["id"]  # gráficas de barras y perímetro: 4.º

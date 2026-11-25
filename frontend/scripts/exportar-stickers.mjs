@@ -38,7 +38,7 @@ const STICKERS = [
     'manif-xochimilco', 'manif-ajolote', 'ska-sombrero', 'ska-cuadros', 'rap-gorra', 'rap-chongo', 'rock-chopo', 'rock-mezclilla',
     'dark-capa', 'dark-encaje', 'lucha-azul', 'lucha-rosa',
     // Rumbo a la FES Aragón (premio del Mundo 2)
-    'fes-gorra', 'fes-cabello'].map((t) => ({ archivo: `kiko-${t}`, traje: t })),
+    'fes-gorra', 'fes-cabello', 'nevado-gorro', 'nevado-orejeras'].map((t) => ({ archivo: `kiko-${t}`, traje: t })),
 ];
 
 async function cargarAjolote() {
@@ -133,6 +133,35 @@ function stickersCanal(C) {
   ];
 }
 
+// ---------- Mundo 3 "La FES de los Números": peluche de la mascota, tlacuache, título, lugares y campus ----------
+
+const SALIDA_FES = resolve(FRONTEND, '..', 'docs', 'imagenes', 'fes');
+const SALIDA_FES_SVG = join(SALIDA_FES, 'svg');
+
+async function cargarFes() {
+  mkdirSync(TEMP, { recursive: true });
+  const destino = join(TEMP, 'FES.mjs');
+  await build({
+    entryPoints: [join(FRONTEND, 'src', 'componentes', 'FES.jsx')],
+    bundle: true, format: 'esm', platform: 'node', jsx: 'automatic',
+    external: ['react', 'react/jsx-runtime'], outfile: destino, logLevel: 'silent',
+  });
+  return import(pathToFileURL(destino).href);
+}
+
+/** Los dibujos de la FES que se exportan (los mismos componentes que usa la app). */
+function stickersFes(F) {
+  const h = createElement;
+  return [
+    { archivo: 'peluche-mascota', el: h(F.PelucheMascota, {}) },
+    { archivo: 'tlacuache', el: h(F.Tlacuache, {}) },
+    { archivo: 'titulo-fes-aragon', el: h(F.TituloFES) },
+    ...Object.keys(F.LUGARES).map((tipo) => ({ archivo: `lugar-${tipo}`, el: h(F.LugarNivel, { tipo, estado: 'hecho' }) })),
+    ...['torres', 'auditorio', 'mascota', 'morado', 'edificio', 'laboratorio', 'cancha', 'cafeteria', 'puesto', 'alumnos', 'arbol', 'bici', 'banca']
+      .map((tipo) => ({ archivo: `campus-${tipo}`, el: h(F.CampusDeco, { tipo }) })),
+  ];
+}
+
 /**
  * Deja el SVG listo para usarse solo: con margen y con el borde blanco de sticker dibujado por un filtro
  * (en la app ese borde lo pone la clase .sticker de app.css, que fuera de la app no existe).
@@ -160,7 +189,7 @@ function aSvgCanal(markup) {
   return { svg: `<?xml version="1.0" encoding="UTF-8"?>\n${salida}\n`, ancho, alto };
 }
 
-// Qué exportar: `npm run stickers` hace todo; `npm run stickers -- kiko` o `-- canal` solo esa parte.
+// Qué exportar: `npm run stickers` hace todo; `npm run stickers -- kiko`, `-- canal` o `-- fes` solo esa parte.
 const solo = process.argv[2];
 mkdirSync(SALIDA_SVG, { recursive: true });
 const navegador = buscarNavegador();
@@ -193,5 +222,18 @@ if (!solo || solo === 'canal') {
     console.log(`✓ canal/${s.archivo} (${ancho}×${alto})`);
   }
   console.log(`Listo: ${SALIDA_CANAL}`);
+}
+
+if (!solo || solo === 'fes') {
+  const Fes = await cargarFes();
+  mkdirSync(SALIDA_FES_SVG, { recursive: true });
+  for (const s of stickersFes(Fes)) {
+    const { svg, ancho, alto } = aSvgCanal(renderToStaticMarkup(s.el));
+    const rutaSvg = join(SALIDA_FES_SVG, `${s.archivo}.svg`);
+    writeFileSync(rutaSvg, svg);
+    if (navegador) aPng(navegador, rutaSvg, join(SALIDA_FES, `${s.archivo}.png`), ancho, alto);
+    console.log(`✓ fes/${s.archivo} (${ancho}×${alto})`);
+  }
+  console.log(`Listo: ${SALIDA_FES}`);
 }
 rmSync(join(TEMP, 'perfil-navegador'), { recursive: true, force: true });

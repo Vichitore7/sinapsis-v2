@@ -6,10 +6,12 @@ import I from '../componentes/IconosUI.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import { STICKERS, TRAJES } from '../contenido/mundos.js';
 import { TarjetaMetro } from '../componentes/CDMX.jsx';
+import { PelucheMascota } from '../componentes/FES.jsx';
 
 const ARTE = {
   flor: { icono: 'chispa', fondo: 'sticker-rosa' },
   tarjeta: { icono: 'chispa', fondo: 'sticker-ambar' },
+  peluche: { icono: 'chispa', fondo: 'sticker-cielo' },
   mochila: { icono: 'mochila', fondo: 'sticker-ambar' },
   bufanda: { icono: 'chispa', fondo: 'sticker-cielo' },
   sombrero: { icono: 'sombrero', fondo: 'sticker-oro' },
@@ -176,7 +178,7 @@ export function SeccionStickers({ estado, mundos }) {
           return (
             <div key={s.id} className={`sticker-carta${tiene ? '' : ' falta'}`}>
               <span className={`sticker-arte ${tiene ? arte.fondo : ''}`}>
-                {tiene && s.id === 'tarjeta' ? <TarjetaMetro tamano={62} /> : <I n={tiene ? arte.icono : 'candado'} tamano={34} />}
+                {tiene && s.id === 'tarjeta' ? <TarjetaMetro tamano={62} /> : tiene && s.id === 'peluche' ? <PelucheMascota tamano={62} /> : <I n={tiene ? arte.icono : 'candado'} tamano={34} />}
               </span>
               <b>{tiene ? s.nombre : '¿Secreto?'}</b>
               <small className={tiene ? 'texto-selva' : ''}>{s.mundo ? `Mundo ${s.mundo.numero}` : 'Pronto'}</small>

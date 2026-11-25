@@ -235,12 +235,15 @@ function Audifonos() {
   );
 }
 
-/** Patita dorada al centro de la sudadera. */
+/** Patita dorada al centro de la sudadera. Va en la franja que se ve entre la cabeza (llega a y≈152) y los tenis
+ * (desde y≈170), grande y con borde oscuro para que se lea bien sobre el azul. */
 function Patita() {
   return (
-    <g fill={ORO}>
-      <ellipse cx="100" cy="161" rx="7" ry="5.5" />
-      {[[90, 153], [96, 148], [104, 148], [110, 153]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="3" />)}
+    <g fill={ORO} stroke="#7a5600" strokeWidth="1.4" strokeLinejoin="round">
+      <path d="M100 160.5 C106 160.5 109.5 165 108.5 168 C107.5 170.5 104 169.5 100 169.5 C96 169.5 92.5 170.5 91.5 168 C90.5 165 94 160.5 100 160.5 Z" />
+      {[[90, 159.5, -22], [95.5, 156, -8], [104.5, 156, 8], [110, 159.5, 22]].map(([x, y, r]) => (
+        <ellipse key={x} cx={x} cy={y} rx="2.6" ry="3.3" transform={`rotate(${r} ${x} ${y})`} />
+      ))}
     </g>
   );
 }
@@ -249,8 +252,7 @@ function Sudadera({ abajo }) {
   return (
     <g>
       <rect x="60" y="124" width="80" height="58" fill={AZUL_FES} />
-      <path d="M92 132 V144 M108 132 V144" stroke={R.blanco} strokeWidth="2" strokeLinecap="round" />
-      <Patita />
+            <Patita />
       {abajo}
     </g>
   );
@@ -267,7 +269,38 @@ function Tenis() {
   );
 }
 
-// ---------- Los 20 trajes de subculturas + los 2 atuendos de la FES ----------
+// ---------- Piezas de la ropa para el frío (premio del Mundo 3, rumbo al Nevado de Toluca) ----------
+
+function Bufanda({ color, raya }) {
+  return (
+    <g {...C} strokeWidth="2">
+      <path d="M62 128 Q100 142 138 128 L136 140 Q100 152 64 140 Z" fill={color} />
+      <path d="M118 138 L124 170 L112 172 L108 141 Z" fill={color} />
+      {[148, 156, 164].map((y) => <path key={y} d={`M110 ${y} L123 ${y - 1}`} stroke={raya} strokeWidth="3" />)}
+      <path d="M112 172 V178 M117 171 V177 M122 170 V176" stroke={color} strokeWidth="2.5" />
+    </g>
+  );
+}
+
+function Guantes({ color }) {
+  return (
+    <g fill={color} {...C} strokeWidth="2">
+      <ellipse cx="62" cy="158" rx="8" ry="9" /><ellipse cx="138" cy="158" rx="8" ry="9" />
+      <path d="M56 152 L52 146 M144 152 L148 146" strokeWidth="4" stroke={color} />
+    </g>
+  );
+}
+
+function BotasNieve({ color }) {
+  return (
+    <g {...C} strokeWidth="2">
+      <ellipse cx="72" cy="177" rx="17" ry="9" fill={color} /><ellipse cx="128" cy="177" rx="17" ry="9" fill={color} />
+      <path d="M58 172 Q72 166 86 172 M114 172 Q128 166 142 172" stroke={R.blanco} strokeWidth="5" />
+    </g>
+  );
+}
+
+// ---------- Los 20 trajes de subculturas + los 2 atuendos de la FES + los 2 del Nevado ----------
 
 export const SUBCULTURAS = {
   'emo-rayas': {
@@ -620,7 +653,7 @@ export const SUBCULTURAS = {
       </g>
     ),
     silueta: () => <><path d="M46 70 Q48 28 100 26 Q152 28 154 70 Z" /><rect x="26" y="86" width="20" height="34" rx="8" /><rect x="154" y="86" width="20" height="34" rx="8" /></>,
-    ropa: () => <Sudadera abajo={<rect x="60" y="166" width="80" height="16" fill="#3a4a6b" />} />,
+    ropa: () => <Sudadera abajo={<rect x="60" y="171" width="80" height="11" fill="#3a4a6b" />} />,
     detalles: () => <Tenis />,
   },
   'fes-cabello': {
@@ -635,11 +668,62 @@ export const SUBCULTURAS = {
     ropa: () => (
       <Sudadera abajo={(
         <g>
-          <rect x="60" y="164" width="80" height="18" fill="#c9c6d8" />
-          {[68, 80, 92, 104, 116, 128].map((x) => <path key={x} d={`M${x} 164 L${x + 4} 182`} stroke="#9a96b0" strokeWidth="2" />)}
+          <rect x="60" y="171" width="80" height="11" fill="#c9c6d8" />
+          {[68, 80, 92, 104, 116, 128].map((x) => <path key={x} d={`M${x} 171 L${x + 3} 182`} stroke="#9a96b0" strokeWidth="2" />)}
         </g>
       )} />
     ),
     detalles: () => <Tenis />,
+  },
+
+  // ---------- Rumbo al Nevado de Toluca (premio del Mundo 3): ropa para el frío ----------
+  'nevado-gorro': {
+    tocado: () => (
+      <g {...C}>
+        <path d="M44 74 Q44 22 100 20 Q156 22 156 74 Z" fill="#d62839" />
+        {[52, 76, 100, 124, 148].map((x) => <path key={x} d={`M${x} 30 L${x - 8} 42 L${x} 54 L${x + 8} 42 Z`} fill={R.blanco} strokeWidth="1.5" />)}
+        <rect x="40" y="62" width="120" height="16" rx="7" fill={R.blanco} />
+        {[52, 64, 76, 88, 100, 112, 124, 136, 148].map((x) => <path key={x} d={`M${x} 65 V75`} stroke={R.grisClaro} strokeWidth="2" />)}
+        <circle cx="100" cy="16" r="11" fill={R.blanco} />
+      </g>
+    ),
+    silueta: () => <path d="M38 80 Q40 0 100 4 Q160 0 162 80 Z" />,
+    ropa: () => (
+      <g>
+        <rect x="60" y="124" width="80" height="58" fill="#f37021" />
+        {[138, 152, 166].map((y) => <path key={y} d={`M60 ${y} Q100 ${y + 6} 140 ${y}`} stroke="#b84d0c" strokeWidth="2.5" fill="none" />)}
+        <path d="M100 124 V182" stroke="#1f1b2e" strokeWidth="2.5" />
+        <rect x="97" y="134" width="6" height="8" rx="1" fill="#c9c6d8" />
+      </g>
+    ),
+    detalles: () => <g><Bufanda color="#2e9e44" raya={R.blanco} /><Guantes color="#d62839" /><BotasNieve color="#6b4226" /></g>,
+  },
+  'nevado-orejeras': {
+    tocado: () => (
+      <g>
+        <path d="M44 92 Q42 30 100 28 Q158 30 156 92" fill="none" stroke={R.morado} strokeWidth="6" strokeLinecap="round" />
+        <g fill="#f3e7ff" {...C}>
+          {[[40, 98], [160, 98]].map(([x, y]) => (
+            <g key={x}>
+              <circle cx={x} cy={y} r="15" />
+              {[0, 60, 120, 180, 240, 300].map((a) => (
+                <circle key={a} cx={x + 12 * Math.cos((a * Math.PI) / 180)} cy={y + 12 * Math.sin((a * Math.PI) / 180)} r="5" strokeWidth="1.5" />
+              ))}
+              <circle cx={x} cy={y} r="8" fill="#c7a6ff" strokeWidth="1.5" />
+            </g>
+          ))}
+        </g>
+      </g>
+    ),
+    silueta: () => <><path d="M40 96 Q38 24 100 22 Q162 24 160 96 Z" /><circle cx="40" cy="98" r="20" /><circle cx="160" cy="98" r="20" /></>,
+    ropa: () => (
+      <g>
+        <rect x="60" y="124" width="80" height="58" fill="#1f9aa8" />
+        <path d="M100 124 V182" stroke="#13707b" strokeWidth="2.5" />
+        {[138, 152, 166].map((y) => <circle key={y} cx="108" cy={y} r="3" fill={R.amarillo} stroke="var(--tinta)" strokeWidth="1.5" />)}
+        <rect x="60" y="174" width="80" height="8" fill="#f3e7ff" />
+      </g>
+    ),
+    detalles: () => <g><Bufanda color={R.morado} raya={R.rosaClaro} /><Guantes color="#f3e7ff" /><BotasNieve color="#7b5cd6" /></g>,
   },
 };

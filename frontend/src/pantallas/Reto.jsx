@@ -117,7 +117,7 @@ export default function Reto({ retoId }) {
     setErrorRed(null);
     try {
       const r = await api.intentar(reto.id, {
-        respuesta: respuesta.trim().slice(0, 20),
+        respuesta: respuesta.trim().slice(0, 60),
         pistas_usadas: pistasUsadas,
         tiempo_ms: Date.now() - inicio.current,
       });

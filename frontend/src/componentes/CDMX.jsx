@@ -409,7 +409,16 @@ function Boleto({ t = 28 }) {
   );
 }
 
-const ICONOS_PICTO = { persona: Persona, boleto: Boleto };
+function Libro({ t = 24 }) {
+  return (
+    <svg width={t} height={t} viewBox="0 0 30 30" aria-hidden="true">
+      <path d="M4 6 Q10 3 15 7 Q20 3 26 6 V25 Q20 22 15 26 Q10 22 4 25 Z" fill="#1d3f8f" {...L} strokeWidth="1.5" />
+      <path d="M15 7 V26" stroke="#f5b700" strokeWidth="2" />
+    </svg>
+  );
+}
+
+const ICONOS_PICTO = { persona: Persona, boleto: Boleto, libro: Libro };
 
 function Pictograma({ titulo, icono, valor, filas }) {
   const Icono = ICONOS_PICTO[icono] || Persona;
@@ -497,19 +506,22 @@ function Recta({ desde, hasta, paso, etiquetas = 1, inicio }) {
   );
 }
 
-/** Algoritmo en columnas con tabla de valor (decenas y unidades). */
+/** Algoritmo en columnas con tabla de valor: decenas y unidades (2.º) o hasta millares (3.º). */
 function TablaValor({ filas, op }) {
-  const cifras = (n) => String(n).padStart(2, ' ').split('');
+  const cols = Math.max(2, ...filas.map((n) => String(n).length));
+  const CAB = ['UM', 'C', 'D', 'U'].slice(4 - cols);
+  const CLASE = ['m', 'c', 'd', 'u'].slice(4 - cols);
+  const cifras = (n) => String(n).padStart(cols, ' ').split('');
   return (
-    <div className="cdmx-algoritmo" role="img" aria-label={`${filas[0]} ${op} ${filas[1]} en columnas de decenas y unidades`}>
-      <span /><span className="cab d">D</span><span className="cab u">U</span>
+    <div className="cdmx-algoritmo" style={{ gridTemplateColumns: `repeat(${cols + 1}, ${cols > 2 ? 44 : 52}px)` }}
+      role="img" aria-label={`${filas[0]} ${op} ${filas[1]} en columnas de valor posicional`}>
+      <span />{CAB.map((c, i) => <span key={c} className={`cab ${CLASE[i]}`}>{c}</span>)}
       {filas.map((n, i) => [
         <span key={`s${i}`} className="signo">{i === 1 ? op : ''}</span>,
-        <span key={`d${i}`} className="d">{cifras(n)[0]}</span>,
-        <span key={`u${i}`} className="u">{cifras(n)[1]}</span>,
+        ...cifras(n).map((d, k) => <span key={`${i}-${k}`} className={CLASE[k]}>{d}</span>),
       ])}
       <span className="raya" />
-      <span /><span className="d falta">?</span><span className="u falta">?</span>
+      <span />{CLASE.map((c) => <span key={c} className={`${c} falta`}>?</span>)}
     </div>
   );
 }

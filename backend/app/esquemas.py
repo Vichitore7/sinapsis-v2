@@ -65,13 +65,13 @@ class PerfilCambio(BaseModel):
 
 
 class IntentoEntrada(BaseModel):
-    respuesta: str = Field(min_length=1, max_length=20)
+    respuesta: str = Field(min_length=1, max_length=60)
     pistas_usadas: int = Field(default=0, ge=0, le=10)
     tiempo_ms: int | None = Field(default=None, ge=0, le=86_400_000)
 
 
 class RespuestaExamen(BaseModel):
-    respuesta: str | None = Field(default=None, max_length=20)  # None = "No sé todavía"
+    respuesta: str | None = Field(default=None, max_length=60)  # None = "No sé todavía"
     pistas_usadas: int = Field(default=0, ge=0, le=10)
     tiempo_ms: int | None = Field(default=None, ge=0, le=86_400_000)
 

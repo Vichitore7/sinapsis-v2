@@ -105,8 +105,10 @@ function SenderoTematico({ mundo, estado }) {
     if (!g) niveles.push((g = { nivel: n.reto.nivel, tema: n.reto.nivelTema, titulo: n.reto.nivelTitulo, fase: n.reto.faseCPA, nodos: [] }));
     g.nodos.push(n);
   }
+  const { Titulo } = tema;
   return (
     <div className={tema.claseMapa}>
+      {Titulo && <Titulo />}
       {tema.deco.map((d, k) => (
         <span key={k} className={`canal-deco ${d.lado || ''} ${d.tipo}`} aria-hidden="true"
           style={{ top: d.top, ...(d.x ? { [d.lado === 'izq' ? 'left' : 'right']: d.x } : {}) }}><Deco d={d} /></span>

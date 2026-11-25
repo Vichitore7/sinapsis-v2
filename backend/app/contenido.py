@@ -9,6 +9,7 @@ import random
 
 from . import contenido_canal as canal
 from . import contenido_cdmx as cdmx
+from . import contenido_fes as fes
 from .juego import pistas_multiplicacion
 
 # Cada reto de multiplicación: (id, título, enunciado, a, b, objeto, etapa_min)
@@ -17,8 +18,10 @@ UNIDADES = [
     {"id": "primero", "nombre": "Números y conteo (1.º)", "orden": 0, "prerrequisito": None, "lecciones": [canal.LECCION]},
     # Mundo 2 (2.º de primaria): sus 12 niveles viven en contenido_cdmx.py.
     {"id": "segundo", "nombre": "Números y operaciones (2.º)", "orden": 1, "prerrequisito": None, "lecciones": [cdmx.LECCION]},
+    # Mundo 3 (3.º de primaria): sus 12 niveles viven en contenido_fes.py (la FES Aragón).
+    {"id": "tercero", "nombre": "Números, fracciones y operaciones (3.º)", "orden": 2, "prerrequisito": None, "lecciones": [fes.LECCION]},
     {
-        "id": "multiplicacion", "nombre": "Multiplicación", "orden": 2, "prerrequisito": None,
+        "id": "multiplicacion", "nombre": "Multiplicación", "orden": 3, "prerrequisito": None,
         "lecciones": [
             {
                 "id": "m2", "nombre": "El mercado", "concepto": "Multiplicación con bolsitas y barras", "sticker": "bufanda",
@@ -33,19 +36,20 @@ UNIDADES = [
             },
         ],
     },
-    {"id": "division", "nombre": "División", "orden": 3, "prerrequisito": "multiplicacion", "proximamente": True, "lecciones": []},
-    {"id": "fracciones", "nombre": "Fracciones", "orden": 4, "prerrequisito": "division", "proximamente": True, "lecciones": []},
+    {"id": "division", "nombre": "División", "orden": 4, "prerrequisito": "multiplicacion", "proximamente": True, "lecciones": []},
+    {"id": "fracciones", "nombre": "Fracciones", "orden": 5, "prerrequisito": "division", "proximamente": True, "lecciones": []},
     # Módulos del año escolar que el profesor ya puede agregar a su aula; el contenido llega después.
-    {"id": "suma-resta", "nombre": "Suma y resta", "orden": 5, "prerrequisito": None, "proximamente": True, "lecciones": []},
-    {"id": "valor-posicional", "nombre": "Valor posicional", "orden": 6, "prerrequisito": None, "proximamente": True, "lecciones": []},
-    {"id": "decimales", "nombre": "Decimales", "orden": 7, "prerrequisito": "fracciones", "proximamente": True, "lecciones": []},
-    {"id": "geometria", "nombre": "Geometría", "orden": 8, "prerrequisito": None, "proximamente": True, "lecciones": []},
-    {"id": "medicion", "nombre": "Medición", "orden": 9, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "suma-resta", "nombre": "Suma y resta", "orden": 6, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "valor-posicional", "nombre": "Valor posicional", "orden": 7, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "decimales", "nombre": "Decimales", "orden": 8, "prerrequisito": "fracciones", "proximamente": True, "lecciones": []},
+    {"id": "geometria", "nombre": "Geometría", "orden": 9, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "medicion", "nombre": "Medición", "orden": 10, "prerrequisito": None, "proximamente": True, "lecciones": []},
 ]
 
 STICKERS = {
     "flor": "Flor de la chinampa",
     "tarjeta": "Tarjeta del Metro",
+    "peluche": "Peluche de la mascota de la FES",
     "mochila": "Mochila de la selva",
     "bufanda": "Bufanda del mercado",
     "sombrero": "Sombrero del río",
@@ -58,6 +62,9 @@ TRAJES = {
     # Premio del examen del Mundo 2 (rumbo a la FES Aragón): sudadera azul con patita dorada, tenis y audífonos.
     "fes-gorra": "FES Aragón: sudadera y gorra",
     "fes-cabello": "FES Aragón: sudadera y cabello largo",
+    # Premio del examen del Mundo 3 (rumbo al Nevado de Toluca): ropa para el frío.
+    "nevado-gorro": "Nevado: chamarra y gorro",
+    "nevado-orejeras": "Nevado: abrigo y orejeras",
 }
 
 # Premio del examen general del Mundo 1: subculturas de la CDMX, cada una con dos estilos.
@@ -94,7 +101,7 @@ def sortear_trajes_subcultura(ya_tiene: list[str], rnd: random.Random | None = N
 
 
 # Mundos temáticos por niveles (cada uno con 12 niveles de 3 ejercicios y examen general al final).
-MUNDOS_TEMATICOS = {canal.LECCION_ID: canal, cdmx.LECCION_ID: cdmx}
+MUNDOS_TEMATICOS = {canal.LECCION_ID: canal, cdmx.LECCION_ID: cdmx, fes.LECCION_ID: fes}
 
 
 def ejercicio_canal(e: dict, orden: int) -> dict:
