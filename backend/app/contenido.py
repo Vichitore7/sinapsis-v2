@@ -8,28 +8,21 @@ from __future__ import annotations
 import random
 
 from . import contenido_canal as canal
+from . import contenido_cdmx as cdmx
 from .juego import pistas_multiplicacion
 
 # Cada reto de multiplicación: (id, título, enunciado, a, b, objeto, etapa_min)
 UNIDADES = [
     # Mundo 1 (1.º de primaria): sus 12 niveles viven en contenido_canal.py.
     {"id": "primero", "nombre": "Números y conteo (1.º)", "orden": 0, "prerrequisito": None, "lecciones": [canal.LECCION]},
+    # Mundo 2 (2.º de primaria): sus 12 niveles viven en contenido_cdmx.py.
+    {"id": "segundo", "nombre": "Números y operaciones (2.º)", "orden": 1, "prerrequisito": None, "lecciones": [cdmx.LECCION]},
     {
-        "id": "multiplicacion", "nombre": "Multiplicación", "orden": 1, "prerrequisito": None,
+        "id": "multiplicacion", "nombre": "Multiplicación", "orden": 2, "prerrequisito": None,
         "lecciones": [
             {
-                "id": "m1", "nombre": "La tiendita", "concepto": "Multiplicación con monedas", "sticker": "mochila",
-                "entrada": "¡Bienvenido a la tiendita, explorador! Aquí las monedas cuentan historias.",
-                "ejemplo": {"a": 2, "b": 5},
-                "retos": [
-                    ("m1-r1", "Primera compra", "Teo compra 3 paletas. Cada una cuesta $6. ¿Cuánto paga en total?", 3, 6, "paletas", 1),
-                    ("m1-r2", "Los chicles del recreo", "Luna compra 4 chicles de $3 cada uno. ¿Cuánto gasta?", 4, 3, "chicles", 1),
-                    ("m1-r3", "Tortas para todos", "Mía lleva 2 tortas a la escuela. Cada torta cuesta $12. ¿Cuánto pagó?", 2, 12, "tortas", 1),
-                    ("m1-r4", "Aguas frescas", "Beto invita 5 aguas frescas de $8. ¿Cuánto paga en la tiendita?", 5, 8, "aguas", 1),
-                ],
-            },
-            {
                 "id": "m2", "nombre": "El mercado", "concepto": "Multiplicación con bolsitas y barras", "sticker": "bufanda",
+                "ejemplo": {"a": 2, "b": 5},
                 "entrada": "¡El mercado abre sus puestos! Aquí las cuentas crecen, explorador.",
                 "retos": [
                     ("m2-r1", "Misión en el mercado", "Kiko quiere comprar 3 mangos. Cada uno cuesta $12. ¿Cuánto paga en total?", 3, 12, "mangos", 1),
@@ -40,14 +33,14 @@ UNIDADES = [
             },
         ],
     },
-    {"id": "division", "nombre": "División", "orden": 2, "prerrequisito": "multiplicacion", "proximamente": True, "lecciones": []},
-    {"id": "fracciones", "nombre": "Fracciones", "orden": 3, "prerrequisito": "division", "proximamente": True, "lecciones": []},
+    {"id": "division", "nombre": "División", "orden": 3, "prerrequisito": "multiplicacion", "proximamente": True, "lecciones": []},
+    {"id": "fracciones", "nombre": "Fracciones", "orden": 4, "prerrequisito": "division", "proximamente": True, "lecciones": []},
     # Módulos del año escolar que el profesor ya puede agregar a su aula; el contenido llega después.
-    {"id": "suma-resta", "nombre": "Suma y resta", "orden": 4, "prerrequisito": None, "proximamente": True, "lecciones": []},
-    {"id": "valor-posicional", "nombre": "Valor posicional", "orden": 5, "prerrequisito": None, "proximamente": True, "lecciones": []},
-    {"id": "decimales", "nombre": "Decimales", "orden": 6, "prerrequisito": "fracciones", "proximamente": True, "lecciones": []},
-    {"id": "geometria", "nombre": "Geometría", "orden": 7, "prerrequisito": None, "proximamente": True, "lecciones": []},
-    {"id": "medicion", "nombre": "Medición", "orden": 8, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "suma-resta", "nombre": "Suma y resta", "orden": 5, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "valor-posicional", "nombre": "Valor posicional", "orden": 6, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "decimales", "nombre": "Decimales", "orden": 7, "prerrequisito": "fracciones", "proximamente": True, "lecciones": []},
+    {"id": "geometria", "nombre": "Geometría", "orden": 8, "prerrequisito": None, "proximamente": True, "lecciones": []},
+    {"id": "medicion", "nombre": "Medición", "orden": 9, "prerrequisito": None, "proximamente": True, "lecciones": []},
 ]
 
 STICKERS = {
@@ -96,9 +89,13 @@ def sortear_trajes_subcultura(ya_tiene: list[str], rnd: random.Random | None = N
     return salida
 
 
+# Mundos temáticos por niveles (cada uno con 12 niveles de 3 ejercicios y examen general al final).
+MUNDOS_TEMATICOS = {canal.LECCION_ID: canal, cdmx.LECCION_ID: cdmx}
+
+
 def ejercicio_canal(e: dict, orden: int) -> dict:
-    """Un ejercicio del Canal de los Números en el formato de la tabla `ejercicios`."""
-    claves_datos = ("a", "b", "op", "moneda", "opciones", "visual", "pregunta_error", "nivel", "nivel_tema", "nivel_titulo")
+    """Un ejercicio de un mundo temático (Canal, Centro…) en el formato de la tabla `ejercicios`."""
+    claves_datos = ("a", "b", "op", "moneda", "opciones", "visual", "pregunta_error", "nivel", "nivel_tema", "nivel_titulo", "fase_cpa")
     return {
         "id": e["id"], "orden": orden, "tipo": e["tipo"], "titulo": e["titulo"], "enunciado": e["enunciado"],
         "datos": {k: e[k] for k in claves_datos if k in e},

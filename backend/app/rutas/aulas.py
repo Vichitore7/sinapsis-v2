@@ -239,7 +239,12 @@ def panel(aula_id: int, profe: Usuario = Depends(solo_profesor), db: Session = D
     ]
     refuerzo = None
     if errores_comunes:
-        ej = db.scalars(select(Ejercicio).order_by(Ejercicio.leccion_id, Ejercicio.orden)).first()
+        # Los consejos de refuerzo hablan de montones (multiplicación): se toma un reto con a × b,
+        # de preferencia del mundo donde el grupo se equivoca más.
+        mult = [e for e in db.scalars(select(Ejercicio).order_by(Ejercicio.leccion_id, Ejercicio.orden))
+                if e.datos.get("op") == "×" and "a" in e.datos and "b" in e.datos]
+        orden_mundos = [l for l, _ in por_mundo.most_common()]
+        ej = next((e for l in orden_mundos for e in mult if e.leccion_id == l), mult[0] if mult else None)
         plantilla = ERRORES.get(errores_comunes[0]["id"], {}).get("refuerzo")
         if plantilla and ej:
             refuerzo = plantilla.format(a=ej.datos["a"], b=ej.datos["b"])

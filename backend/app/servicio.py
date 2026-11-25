@@ -7,9 +7,8 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from . import contenido_canal as canal
 from . import juego
-from .contenido import STICKERS, TRAJES, sortear_trajes_subcultura
+from .contenido import MUNDOS_TEMATICOS, STICKERS, TRAJES, sortear_trajes_subcultura
 from .modelos import Diagnostico, Ejercicio, EstadoJuego, ExamenMundo, Intento, Leccion, Mascota, Progreso, Unidad, Usuario
 
 
@@ -41,7 +40,7 @@ def ejercicio_publico(e: Ejercicio) -> dict:
         "opciones": d.get("opciones"), "pistas": e.pistas, "dificultad": e.dificultad,
         # Mundos por niveles (El Canal de los Números): a qué chinampa pertenece y qué dibujar.
         "nivel": d.get("nivel"), "nivel_tema": d.get("nivel_tema"), "nivel_titulo": d.get("nivel_titulo"),
-        "visual": d.get("visual"),
+        "visual": d.get("visual"), "fase_cpa": d.get("fase_cpa"),  # fase del método CPA: concreto, pictórico o abstracto
     }
 
 
@@ -60,7 +59,7 @@ def mundos_publicos(db: Session) -> list[dict]:
         mundos.append({
             "id": l.id, "numero": numero, "nombre": l.nombre, "entrada": l.entrada, "concepto": l.concepto,
             "sticker": l.sticker, "unidad": {"id": u.id, "nombre": u.nombre}, "proximamente": u.proximamente,
-            "tema": canal.TEMA if l.id == canal.LECCION_ID else None,
+            "tema": MUNDOS_TEMATICOS[l.id].TEMA if l.id in MUNDOS_TEMATICOS else None,
             "estado_revision": l.estado_revision, "retos": [ejercicio_publico(e) for e in l.ejercicios],
         })
     return mundos
@@ -292,7 +291,7 @@ def vestir(db: Session, alumno: Usuario, traje: str | None) -> dict:
 
 # ---------------- Examen general al final de un mundo ----------------
 
-EXAMENES = {canal.LECCION_ID: canal.examen}  # mundos que terminan con examen (en lugar de cofre)
+EXAMENES = {lid: mundo.examen for lid, mundo in MUNDOS_TEMATICOS.items()}  # mundos que terminan con examen (en lugar de cofre)
 MAX_INTENTOS_EXAMEN = 3
 LOGRADAS = ("a_la_primera", "con_ayuda")
 
@@ -305,7 +304,7 @@ def _preguntas_examen(leccion_id: str) -> list[dict]:
 
 def _pregunta_publica(p: dict) -> dict:
     """Lo que ve el alumno de una pregunta del examen. Nunca incluye la respuesta."""
-    claves = ("id", "tipo", "titulo", "enunciado", "a", "b", "op", "moneda", "opciones", "visual", "pistas", "nivel", "nivel_tema")
+    claves = ("id", "tipo", "titulo", "enunciado", "a", "b", "op", "moneda", "opciones", "visual", "pistas", "nivel", "nivel_tema", "fase_cpa")
     return {k: p.get(k) for k in claves}
 
 

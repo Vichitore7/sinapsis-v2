@@ -12,6 +12,8 @@ Tipos de ejercicio:
 """
 from __future__ import annotations
 
+from .juego import OPERACIONES_EJERCICIOS as OPERACIONES
+
 TEMA = "xochimilco"
 LECCION_ID = "x1"
 
@@ -23,7 +25,8 @@ def _conteo(id_, titulo, enunciado, respuesta, visual, pistas, error, moneda=Fal
 
 
 def _cuenta(id_, titulo, enunciado, a, op, b, visual, pistas):
-    resultado = a + b if op == "+" else a - b
+    resultado = OPERACIONES[op](a, b)
+    assert op != "÷" or a % b == 0, f"{id_}: el reparto debe ser exacto"
     return {"id": id_, "tipo": "numerica", "titulo": titulo, "enunciado": enunciado, "respuesta": str(resultado),
             "a": a, "b": b, "op": op, "visual": visual, "pistas": pistas,
             "explicacion": f"{a} {op} {b} = {resultado}."}

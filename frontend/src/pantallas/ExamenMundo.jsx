@@ -1,4 +1,4 @@
-// Examen general al final de un mundo (hoy: Mundo 1, El Canal de los Números). Ruta: #/examen/<leccion_id>
+// Examen general al final de un mundo temático (Canal, Centro…). Ruta: #/examen/<leccion_id>
 // - Una pregunta por nivel, con pistas y hasta 3 intentos. Si falla los 3, queda "para practicar" y sigue: no se castiga.
 // - Al terminar: certificado del mundo + 2 trajes de subculturas (uno de cada estilo).
 // - El mundo siguiente se abre cuando Kiko se pone uno de esos trajes.
@@ -11,7 +11,7 @@ import Ajolote from '../componentes/Ajolote.jsx';
 import I from '../componentes/IconosUI.jsx';
 import SendaPasos from '../componentes/SendaPasos.jsx';
 import { DiceAjolote } from '../componentes/Comunes.jsx';
-import { VisualCanal } from '../componentes/Canal.jsx';
+import { ChipFase, temaDe } from '../componentes/Temas.jsx';
 import { TRAJES } from '../contenido/mundos.js';
 import { MAX_PISTAS } from '../logica/pistas.js';
 
@@ -33,7 +33,7 @@ function Progreso({ preguntas, actual }) {
   );
 }
 
-function Pregunta({ leccionId, pregunta, numero, total, preguntas, onCerrada }) {
+function Pregunta({ leccionId, pregunta, numero, total, preguntas, onCerrada, Visual }) {
   const [respuesta, setRespuesta] = useState('');
   const [pistas, setPistas] = useState(0);
   const [diag, setDiag] = useState(null);
@@ -96,7 +96,8 @@ function Pregunta({ leccionId, pregunta, numero, total, preguntas, onCerrada }) 
           </div>
           <h2 className="subtitulo" style={{ margin: '0 0 var(--espacio-2)' }}>{pregunta.titulo}</h2>
           <p className="cuerpo" style={{ margin: '0 0 var(--espacio-3)' }}>{pregunta.enunciado}</p>
-          <VisualCanal visual={pregunta.visual} />
+          <ChipFase fase={pregunta.fase_cpa} />
+          <Visual visual={pregunta.visual} />
           {opcion ? (
             <div className="canal-opciones" role="radiogroup" aria-label="Elige tu respuesta">
               {pregunta.opciones.map((o) => (
@@ -255,7 +256,7 @@ export default function ExamenMundo({ retoId: leccionId }) {
 
   const indice = examen.preguntas.findIndex((p) => p.estado === 'pendiente');
   return (
-    <div className="pila-lg tema-canal reto-canal">
+    <div className={`pila-lg tema-canal reto-canal ${temaDe(mundo)?.clase || ''}`}>
       <header className="canal-portada examen-portada">
         <span className="canal-portada-arco">
           <span className="sobre">{examen.terminado ? '¡Examen terminado!' : 'Examen general'} · Mundo {mundo.numero}</span>
@@ -272,7 +273,8 @@ export default function ExamenMundo({ retoId: leccionId }) {
           : <button className="sm-btn" onClick={() => siguientePregunta(examen)}>Ver mi resultado</button>
       ) : (
         <Pregunta key={examen.preguntas[indice].id} leccionId={leccionId} pregunta={examen.preguntas[indice]}
-          numero={indice + 1} total={examen.total} preguntas={examen.preguntas} onCerrada={siguientePregunta} />
+          numero={indice + 1} total={examen.total} preguntas={examen.preguntas} onCerrada={siguientePregunta}
+          Visual={temaDe(mundo)?.Visual || (() => null)} />
       )}
     </div>
   );

@@ -952,3 +952,138 @@ a.trajinera-nodo:focus-visible { outline: 3px solid var(--st-naranja-2); outline
 .estado-pregunta.ayuda { background: var(--pista-suave); color: var(--pista-texto); }
 .estado-pregunta.casi { background: var(--casi-suave); color: var(--casi-texto); }
 .estado-pregunta.pendiente { background: var(--st-cont); color: var(--st-suave); }
+
+/* =========================================================
+   Mundo 2: El Centro de los Números (CDMX)
+   Reusa la estructura del canal (canal-mapa, canal-portada…) y cambia los colores con variables.
+   ========================================================= */
+/* Fondo: pasto (como la Alameda o Chapultepec) con una avenida al centro: asfalto, banquetas y raya amarilla.
+   --canal-agua-* pinta el pie de los ejercicios: aquí también es pasto. */
+.tema-cdmx, .cdmx-mapa {
+  --canal-agua-1: #cdeab7; --canal-agua-2: #b0dc96; --canal-ola: rgba(255, 255, 255, .35);
+  --canal-orilla: #e2ddd2; --canal-borde: #f37021; --canal-tarjeta: rgba(255, 255, 255, .94);
+  --cdmx-pasto-1: #b4e09a; --cdmx-pasto-2: #92cc74; --cdmx-pasto-punto: rgba(52, 120, 44, .22);
+  --cdmx-asfalto: #6b6e7a; --cdmx-banqueta: #e4ded2; --cdmx-cordon: #4f525d; --cdmx-raya: #ffd166;
+}
+:root[data-tema="oscuro"] .tema-cdmx, :root[data-tema="oscuro"] .cdmx-mapa {
+  --canal-agua-1: #1f3a27; --canal-agua-2: #162b1d; --canal-ola: rgba(190, 240, 170, .06);
+  --canal-orilla: #45454f; --canal-borde: #f37021; --canal-tarjeta: rgba(31, 27, 56, .94);
+  --cdmx-pasto-1: #24452f; --cdmx-pasto-2: #1a3423; --cdmx-pasto-punto: rgba(150, 215, 120, .12);
+  --cdmx-asfalto: #2d3039; --cdmx-banqueta: #4d4c57; --cdmx-cordon: #1c1e25; --cdmx-raya: #e8b83c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .tema-cdmx, :root:not([data-tema="claro"]) .cdmx-mapa {
+    --canal-agua-1: #1f3a27; --canal-agua-2: #162b1d; --canal-ola: rgba(190, 240, 170, .06);
+    --canal-orilla: #45454f; --canal-borde: #f37021; --canal-tarjeta: rgba(31, 27, 56, .94);
+    --cdmx-pasto-1: #24452f; --cdmx-pasto-2: #1a3423; --cdmx-pasto-punto: rgba(150, 215, 120, .12);
+    --cdmx-asfalto: #2d3039; --cdmx-banqueta: #4d4c57; --cdmx-cordon: #1c1e25; --cdmx-raya: #e8b83c;
+  }
+}
+.cdmx-mapa {
+  background:
+    radial-gradient(circle at 30% 30%, var(--cdmx-pasto-punto) 0 2px, transparent 2.5px) 0 0 / 22px 22px,
+    radial-gradient(circle at 70% 60%, var(--cdmx-pasto-punto) 0 1.5px, transparent 2px) 0 0 / 31px 31px,
+    linear-gradient(180deg, var(--cdmx-pasto-1), var(--cdmx-pasto-2));
+}
+/* La avenida: banqueta | cordón | asfalto con raya amarilla discontinua | cordón | banqueta. */
+.cdmx-mapa::before { content: ''; position: absolute; z-index: 0; top: 0; bottom: 0; left: 50%; width: 112px; transform: translateX(-50%);
+  background:
+    linear-gradient(90deg, var(--cdmx-banqueta) 0 10%, var(--cdmx-cordon) 10% 12%, transparent 12% 88%, var(--cdmx-cordon) 88% 90%, var(--cdmx-banqueta) 90%),
+    linear-gradient(180deg, var(--cdmx-raya) 0 55%, transparent 55%) 50% 0 / 6px 40px repeat-y,
+    var(--cdmx-asfalto);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, .08); }
+@media (max-width: 639px) { .cdmx-mapa::before { width: 84px; } }
+.canal-deco.monumento, .canal-deco.arbol { width: clamp(84px, 24%, 140px); }
+.canal-deco.monumento.izq, .canal-deco.arbol.izq { left: 0; transform: translateX(-22%); }
+.canal-deco.monumento.der, .canal-deco.arbol.der { right: 0; transform: translateX(22%); }
+.canal-deco .monumento { filter: drop-shadow(0 3px 0 rgba(0, 0, 0, .12)); }
+/* Cosas de la calle (puestos, taxi, farol…): más chicas y un poco más adentro del pasto. */
+.canal-deco.cosa { width: clamp(64px, 17%, 92px); }
+/* Papel picado de orilla a orilla, colgando sobre la avenida. */
+.canal-deco.banderines { left: 0; right: 0; height: 34px; opacity: .95; }
+.canal-deco.banderines .papel-picado { width: 100%; height: 100%; }
+@media (max-width: 639px) {
+  .canal-deco.monumento, .canal-deco.arbol { width: 92px; }
+  .canal-deco.cosa { width: 58px; }
+  .canal-deco.monumento.izq, .canal-deco.arbol.izq { transform: translateX(-45%); }
+  .canal-deco.monumento.der, .canal-deco.arbol.der { transform: translateX(45%); }
+}
+
+/* Transporte de cada nivel: letrero de estación arriba con el número. */
+.transporte-placa { top: 14%; min-width: 34px; height: 30px; padding: 0 8px; border-radius: 8px; border: 3px solid #fff;
+  box-shadow: 0 0 0 2px #1e1b3a; font-size: 18px; }
+.transporte-gris { opacity: .9; }
+.cacomixtle-apagado { color: var(--st-suave); }
+.cacomixtles-nivel { gap: 0; }
+
+/* Portada del ejercicio: colores del Metro (naranja) y rosa mexicano. */
+.tema-cdmx .canal-portada { background: linear-gradient(135deg, #f37021, #e4007c 70%); }
+.tema-cdmx .canal-portada::after { background: repeating-linear-gradient(90deg, #f37021 0 18px, #c8102e 18px 36px, #0a7cc1 36px 54px, #2e9e44 54px 72px); }
+.tema-cdmx .examen-portada { background: linear-gradient(135deg, #5a3fb0, #e4007c 55%, #f37021); }
+
+/* Fase CPA del nivel */
+.chip-fase { font-weight: 800; }
+.chip-fase.fase-concreto { background: #ffe8d6; color: #9a4a00; }
+.chip-fase.fase-pictorico { background: #e1efff; color: #1a5fa8; }
+.chip-fase.fase-abstracto { background: #ece7ff; color: #4b32a8; }
+
+/* ---------- Dibujos de los ejercicios de 2.º ---------- */
+.visual-cdmx { background: linear-gradient(180deg, var(--st-cont-bajo) 0 70%, var(--canal-agua-1)); }
+.cdmx-picto, .cdmx-tabla { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.cdmx-picto table, .cdmx-tabla table { border-collapse: separate; border-spacing: 0; background: var(--canal-tarjeta); border-radius: 14px; overflow: hidden; }
+.cdmx-picto th { padding: 8px 12px; text-align: right; font: 800 14px/18px var(--font-body); color: var(--st-tinta); border-right: 2px solid var(--st-cont-max); }
+.cdmx-picto td { padding: 6px 10px; display: flex; flex-wrap: wrap; gap: 3px; }
+.cdmx-picto tr + tr th, .cdmx-picto tr + tr td { border-top: 1px solid var(--st-cont-max); }
+.cdmx-leyenda { margin: 0; display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; background: var(--canal-tarjeta);
+  font: 800 14px/18px var(--font-body); color: var(--st-tinta); }
+.cdmx-tabla th, .cdmx-tabla td { padding: 8px 18px; font: 700 16px/20px var(--font-body); color: var(--st-tinta); text-align: center; }
+.cdmx-tabla th { background: #f37021; color: #fff; }
+.cdmx-tabla tr + tr td { border-top: 1px solid var(--st-cont-max); }
+
+.cdmx-paquetes { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 14px; }
+.cdmx-grupo { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 5px; max-width: 100%; }
+.cdmx-caja { display: grid; place-items: center; width: 58px; height: 46px; border-radius: 6px; border: 2.5px solid #1e1b3a;
+  background: linear-gradient(180deg, #f8a35f 0 30%, #f37021 30%); box-shadow: 0 3px 0 rgba(0, 0, 0, .15); }
+.cdmx-caja b { padding: 1px 6px; border-radius: 6px; background: #fff; color: #1e1b3a; font: 900 13px/16px var(--font-body); }
+.cdmx-tira { display: flex; flex-direction: column; gap: 1px; padding: 2px; border-radius: 4px; border: 2px solid #1e1b3a; background: #fff; }
+.cdmx-tira i { display: block; width: 14px; height: 5px; border-radius: 1px; background: #f37021; }
+.cdmx-paquetes.chico .cdmx-caja { width: 44px; height: 34px; }
+.cdmx-paquetes.chico .cdmx-tira i { width: 10px; height: 3.5px; }
+.cdmx-comparar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+.cdmx-lado { flex: 1 1 160px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px; border-radius: 14px; background: var(--canal-tarjeta); }
+.cdmx-signo-hueco { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 12px; border: 3px dashed #f37021; background: var(--canal-tarjeta);
+  font: 900 26px/1 var(--font-display); color: #f37021; }
+
+.cdmx-tren { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.cdmx-vagon { position: relative; display: flex; flex-direction: column; align-items: center; padding: 10px 8px 14px; min-width: 70px; border-radius: 12px 12px 6px 6px;
+  border: 2.5px solid #1e1b3a; background: #f37021; }
+.cdmx-vagon-num { padding: 4px 8px; border-radius: 6px; background: #fff; color: #1e1b3a; font: 900 18px/1 var(--font-body); }
+.cdmx-vagon.falta { background: #ffd166; animation: latido-pez 1.4s ease-in-out infinite; }
+.cdmx-vagon-ruedas { position: absolute; bottom: -7px; display: flex; gap: 26px; }
+.cdmx-vagon-ruedas i { width: 12px; height: 12px; border-radius: 999px; background: #1e1b3a; border: 2px solid #c9c6d8; }
+
+.cdmx-algoritmo { display: grid; grid-template-columns: repeat(3, 52px); gap: 4px; padding: 12px 16px; border-radius: 16px; background: var(--canal-tarjeta);
+  font: 900 32px/48px var(--font-body); color: var(--st-tinta); text-align: center; }
+.cdmx-algoritmo .cab { font: 800 14px/20px var(--font-body); border-radius: 8px 8px 0 0; color: #fff; }
+.cdmx-algoritmo .cab.d { background: #0a7cc1; }
+.cdmx-algoritmo .cab.u { background: #2e9e44; }
+.cdmx-algoritmo .d { background: rgba(10, 124, 193, .12); }
+.cdmx-algoritmo .u { background: rgba(46, 158, 68, .12); }
+.cdmx-algoritmo .signo { color: #f37021; }
+.cdmx-algoritmo .raya { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--st-tinta); }
+.cdmx-algoritmo .falta { color: #f37021; }
+
+.cdmx-bloques { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 14px; }
+.bloque-placa { width: 60px; height: 60px; border: 2px solid #1e1b3a; border-radius: 3px;
+  background: repeating-linear-gradient(90deg, transparent 0 5px, rgba(30, 27, 58, .35) 5px 6px), repeating-linear-gradient(0deg, transparent 0 5px, rgba(30, 27, 58, .35) 5px 6px), #7cc4f2; }
+.bloque-barra { width: 8px; height: 60px; border: 2px solid #1e1b3a; border-radius: 2px;
+  background: repeating-linear-gradient(0deg, transparent 0 4.4px, rgba(30, 27, 58, .4) 4.4px 5.6px), #ffd166; }
+.cdmx-grupo.cubitos { max-width: 110px; }
+.bloque-cubo { width: 11px; height: 11px; border: 2px solid #1e1b3a; border-radius: 2px; background: #ff8fb8; }
+
+.cdmx-grupos { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.cdmx-bolsita { display: grid; grid-template-columns: repeat(3, 14px); gap: 5px; padding: 14px 10px 10px; border-radius: 10px 10px 18px 18px;
+  border: 2.5px solid #1e1b3a; background: #fff6e5; position: relative; }
+.cdmx-bolsita::before { content: ''; position: absolute; top: -7px; left: 50%; width: 22px; height: 10px; transform: translateX(-50%);
+  border: 2.5px solid #1e1b3a; border-bottom: 0; border-radius: 10px 10px 0 0; }
+.cdmx-bolsita i { width: 14px; height: 14px; border-radius: 999px; border: 2px solid #1e1b3a; }

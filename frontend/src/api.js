@@ -103,6 +103,7 @@ export function adaptarMundos(mundos) {
       nivel: r.nivel || null,
       nivelTema: r.nivel_tema || null,
       nivelTitulo: r.nivel_titulo || null,
+      faseCPA: r.fase_cpa || null, // concreto | pictórico | abstracto (método CPA)
       mundo,
     }));
     return mundo;

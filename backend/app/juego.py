@@ -44,19 +44,23 @@ def _suma_repetida(a: int, b: int) -> str:
 
 
 OPERACIONES = {"×": lambda a, b: a * b, "+": lambda a, b: a + b, "−": lambda a, b: a - b}
+# Los ejercicios de los mundos también tienen división (reparto exacto, 2.º de primaria).
+# El tutor de IA sigue con OPERACIONES (sin división) hasta que Victor la agregue allá.
+OPERACIONES_EJERCICIOS = {**OPERACIONES, "÷": lambda a, b: a // b}
 
 
 def normalizar_op(op: str) -> str:
-    return {"x": "×", "X": "×", "*": "×", "-": "−", "–": "−"}.get(op, op)
+    return {"x": "×", "X": "×", "*": "×", "-": "−", "–": "−", "/": "÷"}.get(op, op)
 
 
 def diagnosticar(a: int, op: str, b: int, c: int, moneda: bool = False) -> dict:
     """Dice en qué paso se torció el procedimiento, con una pregunta socrática. Nunca da la respuesta."""
     op = normalizar_op(op)
-    if op not in OPERACIONES:
+    if op not in OPERACIONES_EJERCICIOS:
         raise ValueError(f"Operación no soportada: {op}")
-    esperado = OPERACIONES[op](a, b)
-    datos = f"{a} montones de {_f(b, moneda)}" if op == "×" else f"{_f(a, moneda)} y {_f(b, moneda)}"
+    esperado = OPERACIONES_EJERCICIOS[op](a, b)
+    datos = (f"{a} montones de {_f(b, moneda)}" if op == "×"
+             else f"{a} repartidos entre {b}" if op == "÷" else f"{_f(a, moneda)} y {_f(b, moneda)}")
     pasos = [
         {"texto": f"Datos: {datos}", "estado": "ok"},
         {"texto": f"{a} {op} {_f(b, moneda)}", "estado": "ok"},
@@ -78,6 +82,8 @@ def diagnosticar(a: int, op: str, b: int, c: int, moneda: bool = False) -> dict:
         pregunta = f"¿{_suma_repetida(a, b)} da {c}?" if a <= 6 else f"¿{a} × {b} da {c}? Cuenta de {b} en {b}."
     elif op == "+":
         pregunta = f"¿{a} + {b} da {c}? Cuenta desde {a} y avanza {b}."
+    elif op == "÷":
+        pregunta = f"Comprueba al revés: si a cada uno le tocan {c}, ¿{c} × {b} da {a}?"
     else:
         pregunta = f"Comprueba al revés: ¿{c} + {b} da {a}?"
     pasos[2]["estado"] = "casi"
