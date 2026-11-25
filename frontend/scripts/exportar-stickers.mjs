@@ -38,7 +38,7 @@ const STICKERS = [
     'manif-xochimilco', 'manif-ajolote', 'ska-sombrero', 'ska-cuadros', 'rap-gorra', 'rap-chongo', 'rock-chopo', 'rock-mezclilla',
     'dark-capa', 'dark-encaje', 'lucha-azul', 'lucha-rosa',
     // Rumbo a la FES Aragón (premio del Mundo 2)
-    'fes-gorra', 'fes-cabello', 'nevado-gorro', 'nevado-orejeras'].map((t) => ({ archivo: `kiko-${t}`, traje: t })),
+    'fes-gorra', 'fes-cabello', 'nevado-gorro', 'nevado-orejeras', 'tolantongo-short', 'tolantongo-completo'].map((t) => ({ archivo: `kiko-${t}`, traje: t })),
 ];
 
 async function cargarAjolote() {
@@ -195,6 +195,35 @@ function stickersFes(F) {
   ];
 }
 
+// ---------- Mundo 4 "El Nevado de los Números": bolita de nieve, teporingo, título, paradas y decoración ----------
+
+const SALIDA_NEVADO = resolve(FRONTEND, '..', 'docs', 'imagenes', 'nevado');
+const SALIDA_NEVADO_SVG = join(SALIDA_NEVADO, 'svg');
+
+async function cargarNevado() {
+  mkdirSync(TEMP, { recursive: true });
+  const destino = join(TEMP, 'Nevado.mjs');
+  await build({
+    entryPoints: [join(FRONTEND, 'src', 'componentes', 'Nevado.jsx')],
+    bundle: true, format: 'esm', platform: 'node', jsx: 'automatic',
+    external: ['react', 'react/jsx-runtime'], outfile: destino, logLevel: 'silent',
+  });
+  return import(pathToFileURL(destino).href);
+}
+
+/** Los dibujos del Nevado que se exportan (los mismos componentes que usa la app). */
+function stickersNevado(N) {
+  const h = createElement;
+  return [
+    { archivo: 'bolita-de-nieve', el: h(N.EsferaNieve, {}) },
+    { archivo: 'teporingo', el: h(N.Teporingo, {}) },
+    { archivo: 'titulo-nevado-de-toluca', el: h(N.TituloNevado) },
+    ...Object.keys(N.PARADAS).map((tipo) => ({ archivo: `parada-${tipo}`, el: h(N.ParadaNivel, { tipo, estado: 'hecho' }) })),
+    ...['volcan', 'laguna', 'oyameles', 'cabana', 'roca', 'teporingo', 'excursionistas', 'puesto', 'munieco', 'letrero']
+      .map((tipo) => ({ archivo: `volcan-${tipo}`, el: h(N.NevadoDeco, { tipo }) })),
+  ];
+}
+
 /**
  * Deja el SVG listo para usarse solo: con margen y con el borde blanco de sticker dibujado por un filtro
  * (en la app ese borde lo pone la clase .sticker de app.css, que fuera de la app no existe).
@@ -222,7 +251,7 @@ function aSvgCanal(markup) {
   return { svg: `<?xml version="1.0" encoding="UTF-8"?>\n${salida}\n`, ancho, alto };
 }
 
-// Qué exportar: `npm run stickers` hace todo; `npm run stickers -- kiko`, `-- canal`, `-- cdmx` o `-- fes` solo esa parte.
+// Qué exportar: `npm run stickers` hace todo; `npm run stickers -- kiko`, `-- canal`, `-- cdmx`, `-- fes` o `-- nevado` solo esa parte.
 const solo = process.argv[2];
 mkdirSync(SALIDA_SVG, { recursive: true });
 const navegador = buscarNavegador();
@@ -281,5 +310,17 @@ if (!solo || solo === 'fes') {
     console.log(`✓ fes/${s.archivo} (${ancho}×${alto})`);
   }
   console.log(`Listo: ${SALIDA_FES}`);
+}
+if (!solo || solo === 'nevado') {
+  const Nevado = await cargarNevado();
+  mkdirSync(SALIDA_NEVADO_SVG, { recursive: true });
+  for (const s of stickersNevado(Nevado)) {
+    const { svg, ancho, alto } = aSvgCanal(renderToStaticMarkup(s.el));
+    const rutaSvg = join(SALIDA_NEVADO_SVG, `${s.archivo}.svg`);
+    writeFileSync(rutaSvg, svg);
+    if (navegador) aPng(navegador, rutaSvg, join(SALIDA_NEVADO, `${s.archivo}.png`), ancho, alto);
+    console.log(`✓ nevado/${s.archivo} (${ancho}×${alto})`);
+  }
+  console.log(`Listo: ${SALIDA_NEVADO}`);
 }
 rmSync(join(TEMP, 'perfil-navegador'), { recursive: true, force: true });
