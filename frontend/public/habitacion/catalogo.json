@@ -1,0 +1,372 @@
+{
+  "version": 3,
+  "paleta": [
+    "#CF4A4D",
+    "#DC7668",
+    "#FFA67A",
+    "#817965",
+    "#4E4C5E",
+    "#572F48",
+    "#FFF8F0",
+    "#F2E4D5"
+  ],
+  "escenario": {
+    "imagen": "fondos/acuario.svg",
+    "ancho": 960,
+    "alto": 760,
+    "suelo": [
+      [
+        100,
+        470
+      ],
+      [
+        480,
+        250
+      ],
+      [
+        860,
+        470
+      ],
+      [
+        480,
+        690
+      ]
+    ],
+    "paredIzquierda": [
+      [
+        100,
+        275
+      ],
+      [
+        480,
+        55
+      ],
+      [
+        480,
+        250
+      ],
+      [
+        100,
+        470
+      ]
+    ],
+    "paredDerecha": [
+      [
+        480,
+        55
+      ],
+      [
+        860,
+        275
+      ],
+      [
+        860,
+        470
+      ],
+      [
+        480,
+        250
+      ]
+    ]
+  },
+  "stickers": [
+    {
+      "id": "cama",
+      "nombre": "Cama coral",
+      "categoria": "muebles",
+      "imagen": "stickers/cama.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 0,
+      "anchoVisual": 220,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "sillon",
+      "nombre": "Sillón durazno",
+      "categoria": "muebles",
+      "imagen": "stickers/sillon.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 12,
+      "anchoVisual": 195,
+      "trajineraRequerida": 6
+    },
+    {
+      "id": "mesa",
+      "nombre": "Mesa de té",
+      "categoria": "muebles",
+      "imagen": "stickers/mesa.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 7,
+      "anchoVisual": 155,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "librero",
+      "nombre": "Librero de historias",
+      "categoria": "muebles",
+      "imagen": "stickers/librero.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 15,
+      "anchoVisual": 210,
+      "trajineraRequerida": 6
+    },
+    {
+      "id": "lampara",
+      "nombre": "Lámpara de burbujas",
+      "categoria": "muebles",
+      "imagen": "stickers/lampara.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 8,
+      "anchoVisual": 140,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "tapete",
+      "nombre": "Tapete de concha",
+      "categoria": "muebles",
+      "imagen": "stickers/tapete.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 0,
+      "anchoVisual": 250,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "alga",
+      "nombre": "Alga ondulada",
+      "categoria": "plantas",
+      "imagen": "stickers/alga.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 0,
+      "anchoVisual": 145,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "helecho",
+      "nombre": "Helecho acuático",
+      "categoria": "plantas",
+      "imagen": "stickers/helecho.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 5,
+      "anchoVisual": 135,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "coral",
+      "nombre": "Coral ramificado",
+      "categoria": "plantas",
+      "imagen": "stickers/coral.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 6,
+      "anchoVisual": 125,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "anemona",
+      "nombre": "Anémona",
+      "categoria": "plantas",
+      "imagen": "stickers/anemona.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 10,
+      "anchoVisual": 140,
+      "trajineraRequerida": 3
+    },
+    {
+      "id": "nenufar",
+      "nombre": "Nenúfar",
+      "categoria": "plantas",
+      "imagen": "stickers/nenufar.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 10,
+      "anchoVisual": 145,
+      "trajineraRequerida": 3
+    },
+    {
+      "id": "hierba",
+      "nombre": "Jardín de algas",
+      "categoria": "plantas",
+      "imagen": "stickers/hierba.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 5,
+      "anchoVisual": 130,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "piedras",
+      "nombre": "Piedras de río",
+      "categoria": "decoracion",
+      "imagen": "stickers/piedras.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 3,
+      "anchoVisual": 120,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "concha",
+      "nombre": "Concha rosada",
+      "categoria": "decoracion",
+      "imagen": "stickers/concha.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 4,
+      "anchoVisual": 105,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "tesoro",
+      "nombre": "Cofre de tesoro",
+      "categoria": "decoracion",
+      "imagen": "stickers/tesoro.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 25,
+      "anchoVisual": 165,
+      "trajineraRequerida": 12
+    },
+    {
+      "id": "burbujeador",
+      "nombre": "Burbujeador",
+      "categoria": "decoracion",
+      "imagen": "stickers/burbujeador.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        200
+      ],
+      "superficie": "suelo",
+      "precio": 18,
+      "anchoVisual": 140,
+      "trajineraRequerida": 9
+    },
+    {
+      "id": "cuadro",
+      "nombre": "Cuadro de estrella",
+      "categoria": "decoracion",
+      "imagen": "stickers/cuadro.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        117,
+        105
+      ],
+      "superficie": "paredIzquierda",
+      "precio": 6,
+      "anchoVisual": 145,
+      "trajineraRequerida": 0
+    },
+    {
+      "id": "ventana",
+      "nombre": "Ventana submarina",
+      "categoria": "decoracion",
+      "imagen": "stickers/ventana.svg",
+      "ancho": 240,
+      "alto": 240,
+      "anclaje": [
+        120,
+        116
+      ],
+      "superficie": "paredDerecha",
+      "precio": 12,
+      "anchoVisual": 185,
+      "trajineraRequerida": 6
+    }
+  ],
+  "iconos": {
+    "alimentar": "iconos/alimentar.svg",
+    "limpiar": "iconos/limpiar.svg",
+    "dormir": "iconos/dormir.svg",
+    "jugar": "iconos/jugar.svg"
+  },
+  "mapaTienda": {
+    "id": "x1",
+    "nombre": "El Canal de los Números"
+  }
+}

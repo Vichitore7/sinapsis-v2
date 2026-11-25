@@ -22,6 +22,8 @@ class Registro(BaseModel):
     apodo: str = Field(min_length=1, max_length=30)
     password: str = Field(min_length=6, max_length=64)
     rol: Literal["alumno", "profesor"] = "alumno"
+    # Grado escolar del alumno (elige su examen diagnóstico). Al profesor no se le guarda.
+    grado: Literal["P1", "P2", "P3", "P4", "P5", "P6", "S1", "S2", "S3"] | None = None
 
     _u = field_validator("usuario")(_validar_usuario)
 
@@ -63,19 +65,19 @@ class PerfilCambio(BaseModel):
 
 
 class IntentoEntrada(BaseModel):
-    respuesta: str = Field(min_length=1, max_length=20)
+    respuesta: str = Field(min_length=1, max_length=60)
     pistas_usadas: int = Field(default=0, ge=0, le=10)
     tiempo_ms: int | None = Field(default=None, ge=0, le=86_400_000)
 
 
 class RespuestaExamen(BaseModel):
-    respuesta: str | None = Field(default=None, max_length=20)  # None = "No sé todavía"
+    respuesta: str | None = Field(default=None, max_length=60)  # None = "No sé todavía"
     pistas_usadas: int = Field(default=0, ge=0, le=10)
     tiempo_ms: int | None = Field(default=None, ge=0, le=86_400_000)
 
 
 class CuidadoEntrada(BaseModel):
-    accion: Literal["alimentar", "jugar", "limpiar", "descansar"]
+    accion: Literal["alimentar", "limpiar", "descansar"]
 
 
 class MascotaCambio(BaseModel):

@@ -117,7 +117,7 @@ export default function Reto({ retoId }) {
     setErrorRed(null);
     try {
       const r = await api.intentar(reto.id, {
-        respuesta: respuesta.trim().slice(0, 20),
+        respuesta: respuesta.trim().slice(0, 60),
         pistas_usadas: pistasUsadas,
         tiempo_ms: Date.now() - inicio.current,
       });
@@ -160,6 +160,7 @@ export default function Reto({ retoId }) {
       texto = errores === 0 && pistasUsadas === 0
         ? `Lo descubriste tú solo, explorador. Ganaste ${resultado.ganadas} estrellas para ${estado.nombreAjolote}.`
         : `¡Lo lograste! Pedir ayuda también es de exploradores. Ganaste ${resultado.ganadas} estrellas para ${estado.nombreAjolote}.`;
+      if (resultado.estrella_cuidado) texto += ` ¡Una estrella extra por llenar la alegría de ${estado.nombreAjolote}!`;
       if (resultado.bono) texto += ` Y ★ ${resultado.bono} más por el reto del día.`;
     }
     if (canal) {

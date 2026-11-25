@@ -1133,3 +1133,116 @@ a.trajinera-nodo:focus-visible { outline: 3px solid var(--st-naranja-2); outline
 .examen-sticker > div { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 180px; }
 .examen-sticker-arte { display: grid; place-items: center; width: 116px; height: 92px; border-radius: 18px; background: var(--st-naranja-claro); }
 .sticker-arte .tarjeta-metro { display: block; }
+
+/* =========================================================
+   Mundo 3: La FES de los Números (FES Aragón)
+   Reusa la estructura del canal y del Centro; cambia colores con variables.
+   ========================================================= */
+/* Fondo: pasto del campus con un andador de adoquín al centro, con orillas azules y huellitas doradas. */
+.tema-fes, .fes-mapa {
+  --canal-agua-1: #d7ecc4; --canal-agua-2: #bfe0a6; --canal-ola: rgba(255, 255, 255, .35);
+  --canal-orilla: #e2ddd2; --canal-borde: #1d3f8f; --canal-tarjeta: rgba(255, 255, 255, .94);
+  --fes-pasto-1: #bfe5a3; --fes-pasto-2: #9fd380; --fes-pasto-punto: rgba(52, 120, 44, .2);
+  --fes-adoquin: #ddd6c8; --fes-junta: rgba(90, 80, 60, .22); --fes-orilla: #1d3f8f; --fes-huella: rgba(245, 183, 0, .55);
+}
+:root[data-tema="oscuro"] .tema-fes, :root[data-tema="oscuro"] .fes-mapa {
+  --canal-agua-1: #1f3a2a; --canal-agua-2: #172d20; --canal-ola: rgba(190, 240, 170, .06);
+  --canal-orilla: #45454f; --canal-borde: #4f7fe0; --canal-tarjeta: rgba(31, 27, 56, .94);
+  --fes-pasto-1: #244530; --fes-pasto-2: #1a3424; --fes-pasto-punto: rgba(150, 215, 120, .12);
+  --fes-adoquin: #4a4757; --fes-junta: rgba(0, 0, 0, .28); --fes-orilla: #2c55b3; --fes-huella: rgba(245, 183, 0, .4);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .tema-fes, :root:not([data-tema="claro"]) .fes-mapa {
+    --canal-agua-1: #1f3a2a; --canal-agua-2: #172d20; --canal-ola: rgba(190, 240, 170, .06);
+    --canal-orilla: #45454f; --canal-borde: #4f7fe0; --canal-tarjeta: rgba(31, 27, 56, .94);
+    --fes-pasto-1: #244530; --fes-pasto-2: #1a3424; --fes-pasto-punto: rgba(150, 215, 120, .12);
+    --fes-adoquin: #4a4757; --fes-junta: rgba(0, 0, 0, .28); --fes-orilla: #2c55b3; --fes-huella: rgba(245, 183, 0, .4);
+  }
+}
+.fes-mapa {
+  background:
+    radial-gradient(circle at 30% 30%, var(--fes-pasto-punto) 0 2px, transparent 2.5px) 0 0 / 22px 22px,
+    radial-gradient(circle at 70% 60%, var(--fes-pasto-punto) 0 1.5px, transparent 2px) 0 0 / 31px 31px,
+    linear-gradient(180deg, var(--fes-pasto-1), var(--fes-pasto-2));
+}
+/* El andador: adoquín con juntas, orillas azules y huellitas doradas por el centro. */
+.fes-mapa::before { content: ''; position: absolute; z-index: 0; top: 0; bottom: 0; left: 50%; width: 120px; transform: translateX(-50%);
+  border-left: 6px solid var(--fes-orilla); border-right: 6px solid var(--fes-orilla);
+  background:
+    radial-gradient(ellipse 7px 6px at 50% 60%, var(--fes-huella) 98%, transparent) 50% 0 / 100% 90px repeat-y,
+    linear-gradient(0deg, var(--fes-junta) 0 2px, transparent 2px) 0 0 / 100% 26px,
+    linear-gradient(90deg, var(--fes-junta) 0 2px, transparent 2px) 0 0 / 36px 100%,
+    var(--fes-adoquin);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, .08); }
+@media (max-width: 639px) { .fes-mapa::before { width: 88px; } }
+
+/* Título llamativo del mundo, arriba del andador. */
+.fes-titulo { position: relative; z-index: 2; width: min(92%, 420px); margin: 4px auto 8px; filter: drop-shadow(0 6px 0 rgba(0, 0, 0, .14));
+  animation: fes-titulo-entra .7s cubic-bezier(.2, 1.4, .4, 1) both; }
+.fes-titulo svg { display: block; width: 100%; height: auto; }
+@keyframes fes-titulo-entra { from { transform: translateY(-12px) scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .fes-titulo { animation: none; } }
+
+.tlacuache-apagado { color: var(--st-suave); }
+.lugar-nivel .transporte-placa { top: 6%; }
+
+/* Portada del ejercicio: azul y oro. */
+.tema-fes .canal-portada { background: linear-gradient(135deg, #1d3f8f, #2c55b3 60%, #3d6fd1); }
+.tema-fes .canal-portada::after { background: repeating-linear-gradient(90deg, #1d3f8f 0 18px, #f5b700 18px 36px); }
+.tema-fes .examen-portada { background: linear-gradient(135deg, #1d3f8f, #5a3fb0 55%, #f5b700); }
+.tema-fes .cdmx-tabla th { background: #1d3f8f; }
+
+/* ---------- Dibujos de los ejercicios de 3.º ---------- */
+.cdmx-algoritmo .cab.m { background: #7b3fb8; }
+.cdmx-algoritmo .cab.c { background: #f37021; }
+.cdmx-algoritmo .m { background: rgba(123, 63, 184, .12); }
+.cdmx-algoritmo .c { background: rgba(243, 112, 33, .12); }
+.visual-fes .cdmx-algoritmo { font-size: 28px; }
+
+.bloque-mil { width: 54px; height: 54px; border: 2px solid #1e1b3a; border-radius: 3px; position: relative;
+  background: repeating-linear-gradient(90deg, transparent 0 5px, rgba(30, 27, 58, .3) 5px 6px), repeating-linear-gradient(0deg, transparent 0 5px, rgba(30, 27, 58, .3) 5px 6px), #b48cff;
+  box-shadow: 6px -6px 0 -2px #9a6ff0, 6px -6px 0 0 #1e1b3a; margin: 6px 6px 0 0; }
+
+.fes-libros { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 6px; padding: 10px 14px 0; border-bottom: 8px solid #8b5a2b; }
+.fes-libro { display: grid; place-items: center; width: 64px; border: 2.5px solid #1e1b3a; border-bottom: 0; border-radius: 6px 6px 0 0; }
+.fes-libro b { writing-mode: vertical-rl; transform: rotate(180deg); padding: 6px 2px; border-radius: 5px; background: #fff; color: #1e1b3a; font: 900 17px/1 var(--font-body); }
+
+.fes-casilleros { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.fes-casillero { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 70px; padding: 8px 4px 10px; border: 2.5px solid #1e1b3a; border-radius: 6px; background: #3d6fd1; }
+.fes-casillero i { width: 46px; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, .55); }
+.fes-casillero b { margin-top: 4px; padding: 4px 6px; border-radius: 6px; background: #fff; color: #1e1b3a; font: 900 15px/1 var(--font-body); }
+.fes-casillero.falta { background: #f5b700; animation: latido-pez 1.4s ease-in-out infinite; }
+
+.fes-pizzas { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+.fes-pizza { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.fes-pizza .etq { padding: 2px 10px; border-radius: 999px; background: var(--canal-tarjeta); font: 900 16px/22px var(--font-body); color: var(--st-tinta); }
+
+.fes-secciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.fes-seccion { display: flex; flex-direction: column; align-items: center; padding: 10px 14px; border: 2.5px solid #1e1b3a; border-radius: 12px;
+  background: linear-gradient(180deg, #7b3fb8 0 26%, #f3e7ff 26%); }
+.fes-seccion b { margin-top: 12px; font: 900 24px/1 var(--font-body); color: #1e1b3a; }
+.fes-seccion small { font: 700 12px/16px var(--font-body); color: #4b4560; }
+
+/* Tablilla (protoboard) con focos LED en filas: arreglo rectangular del laboratorio de electrónica. */
+.fes-arreglo { display: grid; gap: 6px; padding: 12px; border: 2.5px solid #1e1b3a; border-radius: 10px;
+  background: radial-gradient(circle, #c9c6d8 0 1.5px, transparent 2px) 0 0 / 8px 8px, #f4f3ee; }
+.fes-arreglo i { position: relative; width: 18px; height: 26px; }
+.fes-arreglo i::before { content: ''; position: absolute; top: 0; left: 1px; width: 16px; height: 18px; border: 2px solid #1e1b3a; border-radius: 8px 8px 3px 3px;
+  background: radial-gradient(circle at 35% 30%, #fff 0 2px, transparent 2.5px), #ff4d4d; box-sizing: border-box; }
+.fes-arreglo i::after { content: ''; position: absolute; bottom: 0; left: 5px; width: 8px; height: 8px; border-left: 2px solid #6b6e7a; border-right: 2px solid #6b6e7a; box-sizing: border-box; }
+
+.fes-reparto { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.fes-montoncito { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 340px; }
+.fes-montoncito i { width: 18px; height: 14px; border: 2px solid #1e1b3a; border-radius: 8px 8px 4px 4px; background: linear-gradient(180deg, #e8b36b 0 45%, #7ee0a8 45% 60%, #e8b36b 60%); }
+.fes-montoncito.plumones i { width: 8px; height: 30px; border-radius: 3px; background: linear-gradient(180deg, #1e1b3a 0 18%, #3a86ff 18%); }
+.fes-montoncito.plumones i:nth-child(3n+2) { background: linear-gradient(180deg, #1e1b3a 0 18%, #d62839 18%); }
+.fes-montoncito.plumones i:nth-child(3n) { background: linear-gradient(180deg, #1e1b3a 0 18%, #2e9e44 18%); }
+.fes-platos { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.fes-plato { width: 60px; height: 22px; border: 2.5px solid #1e1b3a; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 6px #e6e2f0; }
+
+.fes-barras { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.fes-barras-area { display: flex; align-items: flex-end; gap: 18px; padding: 10px 18px 6px; border-left: 3px solid var(--st-tinta); border-bottom: 3px solid var(--st-tinta); background: var(--canal-tarjeta); border-radius: 0 12px 0 0; }
+.fes-barra { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fes-barra b { font: 900 16px/1 var(--font-body); color: var(--st-tinta); }
+.fes-barra span { width: 42px; border: 2.5px solid #1e1b3a; border-bottom: 0; border-radius: 6px 6px 0 0; }
+.fes-barra small { font: 800 13px/16px var(--font-body); color: var(--st-tinta); }

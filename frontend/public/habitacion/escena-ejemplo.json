@@ -1,0 +1,80 @@
+{
+  "objetos": [
+    {
+      "stickerId": "cuadro",
+      "x": 260,
+      "y": 208,
+      "anchoVisual": 145,
+      "capa": 1
+    },
+    {
+      "stickerId": "ventana",
+      "x": 678,
+      "y": 225,
+      "anchoVisual": 185,
+      "capa": 2
+    },
+    {
+      "stickerId": "tapete",
+      "x": 496,
+      "y": 570,
+      "anchoVisual": 250,
+      "capa": 3
+    },
+    {
+      "stickerId": "cama",
+      "x": 295,
+      "y": 454,
+      "anchoVisual": 240,
+      "capa": 4
+    },
+    {
+      "stickerId": "librero",
+      "x": 635,
+      "y": 420,
+      "anchoVisual": 210,
+      "capa": 5
+    },
+    {
+      "stickerId": "alga",
+      "x": 735,
+      "y": 492,
+      "anchoVisual": 145,
+      "capa": 6
+    },
+    {
+      "stickerId": "mesa",
+      "x": 560,
+      "y": 535,
+      "anchoVisual": 155,
+      "capa": 7
+    },
+    {
+      "stickerId": "coral",
+      "x": 240,
+      "y": 515,
+      "anchoVisual": 125,
+      "capa": 8
+    },
+    {
+      "stickerId": "concha",
+      "x": 650,
+      "y": 588,
+      "anchoVisual": 105,
+      "capa": 9
+    },
+    {
+      "stickerId": "piedras",
+      "x": 345,
+      "y": 605,
+      "anchoVisual": 120,
+      "capa": 10
+    }
+  ],
+  "mascota": {
+    "estado": "feliz",
+    "x": 470,
+    "y": 610,
+    "anchoVisual": 170
+  }
+}

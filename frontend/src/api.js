@@ -14,6 +14,7 @@ async function pedir(metodo, ruta, cuerpo) {
     res = await fetch(`/api${ruta}`, {
       method: metodo,
       credentials: 'same-origin',
+      cache: 'no-store',
       headers: cuerpo !== undefined ? { 'Content-Type': 'application/json' } : undefined,
       body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
     });
@@ -57,6 +58,11 @@ export const api = {
   leerFoto: (foto) => pedir('POST', '/escaner/leer', { foto }),
   // Guarda en la memoria de aprendizaje una operación confirmada en el escáner. Regresa { concepto, estado }.
   registrarEscaneo: (op) => pedir('POST', '/escaner/resultado', op),
+
+  // Habitación (misma sesión y saldo del juego)
+  habitacion: () => pedir('GET', '/habitacion'),
+  guardarHabitacion: (d) => pedir('PUT', '/habitacion', d),
+  comprarSticker: (stickerId) => pedir('POST', '/habitacion/compras', { stickerId }),
 
   // Aulas
   aulas: () => pedir('GET', '/aulas'),
@@ -136,6 +142,7 @@ export function adaptarEstado(r) {
     nombreAjolote: r.mascota.nombre,
     bienestar: { comida: r.mascota.comida, pecera: r.mascota.pecera, alegria: r.mascota.alegria },
     dormido: r.mascota.dormido,
+    cuidadosHasta: Object.fromEntries(Object.entries(r.mascota.cuidados_restantes || {}).map(([id, seg]) => [id, performance.now() + seg * 1000])), 
     trajes: r.mascota.trajes || [],
     traje: r.mascota.traje || null,
     logros: r.logros,

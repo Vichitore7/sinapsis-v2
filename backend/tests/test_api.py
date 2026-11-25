@@ -1,5 +1,6 @@
 from app import contenido_canal as canal
 from app import contenido_cdmx as cdmx
+from app import contenido_fes as fes
 from app import juego
 from app.contenido import TRAJES_SUBCULTURAS
 from tests.conftest import registrar
@@ -64,7 +65,7 @@ def test_contenido_no_trae_respuestas(cliente):
     texto = cliente.get("/api/contenido").text
     assert '"respuesta"' not in texto and "explicacion" not in texto
     mundos = cliente.get("/api/contenido").json()["mundos"]
-    assert [m["id"] for m in mundos[:3]] == ["x1", "c2", "m2"] and "m1" not in [m["id"] for m in mundos]
+    assert [m["id"] for m in mundos[:4]] == ["x1", "c2", "f3", "m2"] and "m1" not in [m["id"] for m in mundos]
     canal_ = mundos[0]
     assert canal_["nombre"] == "El Canal de los Números" and canal_["tema"] == "xochimilco"
     assert len(canal_["retos"]) == 36 and {r["nivel"] for r in canal_["retos"]} == set(range(1, 13))
@@ -73,7 +74,9 @@ def test_contenido_no_trae_respuestas(cliente):
     assert centro["nombre"] == "El Centro de los Números" and centro["tema"] == "cdmx" and len(centro["retos"]) == 36
     fases = {r["nivel"]: r["fase_cpa"] for r in centro["retos"]}
     assert [fases[n] for n in (1, 4, 5, 8, 9, 12)] == ["concreto", "concreto", "pictórico", "pictórico", "abstracto", "abstracto"]
-    assert mundos[2]["retos"][0]["id"] == "m2-r1" and len(mundos[2]["retos"][0]["pistas"]) == 3
+    fes_ = mundos[2]
+    assert fes_["nombre"] == "La FES de los Números" and fes_["tema"] == "fes" and len(fes_["retos"]) == 36
+    assert mundos[3]["retos"][0]["id"] == "m2-r1" and len(mundos[3]["retos"][0]["pistas"]) == 3
 
 
 def _niveles(c, mundo):
@@ -109,12 +112,35 @@ def _terminar_canal(c):
 
 
 def _hasta_el_mercado(c):
-    """Canal + Centro: deja abierto El mercado (Mundo 3, multiplicación)."""
+    """Canal + Centro + FES: deja abierto El mercado (Mundo 4, multiplicación)."""
     _terminar(c, canal, "c2")
-    _terminar(c, cdmx, "m2")
+    _terminar(c, cdmx, "f3")
+    _terminar(c, fes, "m2")
 
 
-def test_centro_division_y_examen_abren_el_mercado(cliente):
+def test_fes_tercero_y_premio_para_el_frio(cliente):
+    registrar(cliente)
+    _terminar(cliente, canal, "c2")
+    _terminar(cliente, cdmx, "f3")
+    est = cliente.get("/api/juego/estado").json()
+    assert est["mapa"]["f3"]["nodos"]["f3-n01-1"] == "actual" and est["mapa"]["m2"]["abierta"] is False
+    # Resta de 3 cifras con ceros (500 − 347): el diagnóstico no da la respuesta.
+    for e in fes.ejercicios()[:7]:
+        assert cliente.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]}).json()["correcto"], e["id"]
+    r = cliente.post("/api/ejercicios/f3-n03-2/intentos", json={"respuesta": "253"}).json()
+    assert r["correcto"] is False and "153" not in r["diagnostico"]["pregunta"]
+    assert cliente.post("/api/ejercicios/f3-n03-2/intentos", json={"respuesta": "153"}).json()["correcto"]
+    # Fracciones como opción
+    for e in fes.ejercicios()[8:]:
+        assert cliente.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]}).json()["correcto"], e["id"]
+    premio = _examen(cliente, fes)
+    est = cliente.get("/api/juego/estado").json()
+    assert "peluche" in est["stickers"] and premio == ["nevado-gorro", "nevado-orejeras"]
+    assert est["mapa"]["m2"]["abierta"] is False
+    assert cliente.put("/api/mascota/traje", json={"traje": premio[0]}).json()["mapa"]["m2"]["abierta"] is True
+
+
+def test_centro_division_y_examen_abren_la_fes(cliente):
     registrar(cliente)
     _terminar_canal(cliente)
     est = cliente.get("/api/juego/estado").json()
@@ -132,8 +158,8 @@ def test_centro_division_y_examen_abren_el_mercado(cliente):
     est = cliente.get("/api/juego/estado").json()
     assert est["examenes"]["c2"]["estado"] == "terminado" and "tarjeta" in est["stickers"]
     assert premio == ["fes-gorra", "fes-cabello"]  # premio fijo: los 2 atuendos de la FES Aragón (no subculturas al azar)
-    assert set(premio) <= set(est["mascota"]["trajes"]) and est["mapa"]["m2"]["abierta"] is False
-    assert cliente.put("/api/mascota/traje", json={"traje": premio[1]}).json()["mapa"]["m2"]["abierta"] is True
+    assert set(premio) <= set(est["mascota"]["trajes"]) and est["mapa"]["f3"]["abierta"] is False
+    assert cliente.put("/api/mascota/traje", json={"traje": premio[1]}).json()["mapa"]["f3"]["abierta"] is True
 
 
 def test_cargar_contenido_quita_mundos_retirados(tmp_path):
@@ -259,7 +285,7 @@ def test_canal_conteo_y_opcion(cliente):
     assert "respuesta" not in r and "6" not in str(r["diagnostico"])
     assert cliente.post("/api/ejercicios/x1-n01-1/intentos", json={"respuesta": "seis"}).status_code == 422
     r = cliente.post("/api/ejercicios/x1-n01-1/intentos", json={"respuesta": "6"}).json()
-    assert r["correcto"] is True and r["recompensa"] == {"ganadas": 2, "bono": 5, "repaso": False}
+    assert r["correcto"] is True and r["recompensa"] == {"ganadas": 2, "bono": 5, "repaso": False, "estrella_cuidado": 1}
     assert r["estado"]["mapa"]["x1"]["nodos"]["x1-n01-2"] == "actual"
     for e in canal.ejercicios()[1:6]:  # hasta la primera pregunta de opción (nivel 3)
         cliente.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]})
@@ -290,8 +316,8 @@ def test_reto_validado_en_servidor_con_senda(cliente):
     r = cliente.post("/api/ejercicios/m2-r1/intentos", json={"respuesta": "$36"}).json()
     assert r["correcto"] is True and r["respuesta"] == "36"
     # Se equivocó antes: 2 estrellas (el bono del día ya se ganó en el canal).
-    assert r["recompensa"] == {"ganadas": 2, "bono": 0, "repaso": False}
-    assert r["estado"]["estrellas"] == antes + 2
+    assert {k:r["recompensa"][k] for k in ("ganadas", "bono", "repaso")} == {"ganadas": 2, "bono": 0, "repaso": False}
+    assert r["estado"]["estrellas"] == antes + 2 + r["recompensa"]["estrella_cuidado"]
 
 
 def test_a_la_primera_da_3_y_repaso_no_da_nada(cliente):
@@ -300,10 +326,12 @@ def test_a_la_primera_da_3_y_repaso_no_da_nada(cliente):
     antes = _estrellas(cliente)
     r = cliente.post("/api/ejercicios/m2-r1/intentos", json={"respuesta": "36"}).json()
     assert r["recompensa"]["ganadas"] == 3
+    extra = r["recompensa"]["estrella_cuidado"]
     r = cliente.post("/api/ejercicios/m2-r2/intentos", json={"respuesta": "60", "pistas_usadas": 1}).json()
-    assert r["recompensa"] == {"ganadas": 2, "bono": 0, "repaso": False}
+    assert {k:r["recompensa"][k] for k in ("ganadas", "bono", "repaso")} == {"ganadas": 2, "bono": 0, "repaso": False}
+    extra += r["recompensa"]["estrella_cuidado"]
     r = cliente.post("/api/ejercicios/m2-r1/intentos", json={"respuesta": "36"}).json()
-    assert r["recompensa"]["repaso"] is True and r["estado"]["estrellas"] == antes + 3 + 2
+    assert r["recompensa"]["repaso"] is True and r["estado"]["estrellas"] == antes + 3 + 2 + extra
 
 
 def test_no_se_puede_saltar_retos(cliente):
@@ -341,7 +369,7 @@ def test_etapa_sube_y_medidores_bajan_al_jugar(cliente):
     est = cliente.get("/api/juego/estado").json()
     assert est["etapa_apoyo"] == 2  # 3 seguidos sin pistas
     assert est["mascota"]["comida"] == 3  # 4 retos -> bajó una marca (cada 3)
-    assert est["racha_dias"] == 1 and est["xp"] == est["estrellas"]
+    assert est["racha_dias"] == 1 and est["xp"] + 1 == est["estrellas"]
 
 
 def test_bienvenida_regala_trajes_y_se_puede_vestir(cliente):
@@ -364,11 +392,12 @@ def test_profesor_no_recibe_trajes(cliente):
 
 def test_cuidados_y_estrellas(cliente):
     registrar(cliente)
-    assert cliente.post("/api/mascota/cuidar", json={"accion": "jugar"}).status_code == 409  # sin estrellas
-    assert cliente.post("/api/mascota/cuidar", json={"accion": "limpiar"}).json()["mascota"]["pecera"] == 5
+    assert cliente.post("/api/mascota/cuidar", json={"accion": "jugar"}).status_code == 422
+    limpieza = cliente.post("/api/mascota/cuidar", json={"accion": "limpiar"}).json()
+    assert limpieza["mascota"]["pecera"] == 5 and limpieza["estrellas"] == 1 and limpieza["xp"] == 0
     cliente.post("/api/ejercicios/x1-n01-1/intentos", json={"respuesta": "6"})
     est = cliente.post("/api/mascota/cuidar", json={"accion": "alimentar"}).json()
-    assert est["estrellas"] == 3 + 5 - 1 and est["mascota"]["comida"] == 5
+    assert est["estrellas"] == 11 and est["xp"] == 8 and est["mascota"]["comida"] == 5
     assert cliente.post("/api/mascota/cuidar", json={"accion": "descansar"}).json()["mascota"]["dormido"] is True
     assert cliente.post("/api/mascota/cuidar", json={"accion": "volar"}).status_code == 422
 
@@ -555,33 +584,38 @@ def test_diagnostico_de_entrada(cliente, nuevo_cliente):
     assert cliente.post("/api/diagnostico", json={"respuestas": {}}).status_code == 403  # solo alumnos
 
 
-def test_dos_peticiones_a_la_vez_no_chocan_al_crear_el_estado(cliente, monkeypatch):
+def test_crear_el_estado_dos_veces_a_la_vez_no_choca(cliente, monkeypatch):
     """25 nov: con una cuenta nueva, dos GET /api/juego/estado simultáneos intentaban crear el mismo estado y uno
-    respondía 500 (UNIQUE constraint failed: estado_juego.alumno_id). Lo mismo podía pasar con la mascota."""
-    import threading
+    respondía 500 (UNIQUE constraint failed: estado_juego.alumno_id). En SQLite, el candado de la ruta
+    (bloquear_escritura) los forma en fila; en Postgres no hay candado y lo evita estado_de(). Aquí se fuerza la
+    carrera en estado_de(): la segunda sesión "vio" que faltaba la fila antes de que la primera la guardara."""
     from sqlalchemy import func, select
     from app import servicio
     from app.db import get_db
     from app.main import app
-    from app.modelos import EstadoJuego, Mascota
+    from app.modelos import EstadoJuego, Mascota, Usuario
 
     registrar(cliente, "gemelo")
-    db = next(app.dependency_overrides[get_db]())
-    assert db.get(EstadoJuego, 1) is None  # la cuenta todavía no tiene estado
-    # Fuerza la carrera: las dos peticiones ven que falta la fila ANTES de que cualquiera la cree.
-    barrera = threading.Barrier(2, timeout=10)
-    original = servicio._fila_existente
-    vistas = {"n": 0}
+    nueva = app.dependency_overrides[get_db]
+    s1, s2 = next(nueva()), next(nueva())
+    alumno = s1.scalar(select(Usuario).where(Usuario.usuario == "gemelo"))
+    assert s1.get(EstadoJuego, alumno.id) is None  # la cuenta todavía no tiene estado
 
-    def ver_y_esperar(db, modelo, alumno_id):
-        fila = original(db, modelo, alumno_id)
-        if vistas["n"] < 2:
-            vistas["n"] += 1
-            barrera.wait()
-        return fila
-    monkeypatch.setattr(servicio, "_fila_existente", ver_y_esperar)
+    servicio.estado_de(s1, alumno)
+    s1.commit()  # la primera petición ya la creó…
+    monkeypatch.setattr(servicio, "_fila_existente", lambda db, modelo, alumno_id: None)  # …la segunda no lo sabía
+    est, m = servicio.estado_de(s2, s2.get(Usuario, alumno.id))
+    s2.commit()
+    assert est is not None and m is not None and est.alumno_id == alumno.id
+    for modelo in (EstadoJuego, Mascota):
+        assert s1.scalar(select(func.count()).select_from(modelo)) == 1
 
+
+def test_dos_peticiones_a_la_vez_de_una_cuenta_nueva_responden_bien(cliente):
+    import threading
+    registrar(cliente, "gemela")
     respuestas = []
+
     def pedir():
         try:
             respuestas.append(cliente.get("/api/juego/estado").status_code)
@@ -593,6 +627,19 @@ def test_dos_peticiones_a_la_vez_no_chocan_al_crear_el_estado(cliente, monkeypat
     for h in hilos:
         h.join(timeout=30)
     assert respuestas == [200, 200]
-    db.expire_all()
-    for modelo in (EstadoJuego, Mascota):
-        assert db.scalar(select(func.count()).select_from(modelo)) == 1
+
+
+def test_opciones_caben_en_la_respuesta():
+    """Reto.jsx manda la respuesta recortada a 60 caracteres (y el servidor acepta 60): ninguna opción puede ser más larga."""
+    for mundo in (canal, cdmx, fes):
+        for e in mundo.ejercicios() + mundo.examen():
+            for o in e.get("opciones") or []:
+                assert len(o) <= 60, (e["id"], o)
+
+
+def test_fes_respeta_el_programa_de_tercero():
+    """3.º: sumas y restas hasta 3 cifras y productos de hasta 3 cifras (las de 4 cifras son de 4.º)."""
+    for e in fes.ejercicios() + fes.examen():
+        if e["tipo"] == "numerica":
+            assert len(str(e["a"])) <= 3 and len(str(e["b"])) <= 3 and len(e["respuesta"]) <= 3, e["id"]
+        assert (e.get("visual") or {}).get("tipo") not in ("barras", "rectangulo"), e["id"]  # gráficas de barras y perímetro: 4.º

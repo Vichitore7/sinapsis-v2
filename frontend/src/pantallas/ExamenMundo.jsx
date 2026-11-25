@@ -13,6 +13,7 @@ import SendaPasos from '../componentes/SendaPasos.jsx';
 import { DiceAjolote } from '../componentes/Comunes.jsx';
 import { ChipFase, temaDe } from '../componentes/Temas.jsx';
 import { TarjetaMetro } from '../componentes/CDMX.jsx';
+import { PelucheMascota } from '../componentes/FES.jsx';
 import { Flor } from '../componentes/Canal.jsx';
 import { TRAJES } from '../contenido/mundos.js';
 import { MAX_PISTAS } from '../logica/pistas.js';
@@ -149,6 +150,7 @@ function Pregunta({ leccionId, pregunta, numero, total, preguntas, onCerrada, Vi
 /** Dibujo del sticker que da el mundo (si no hay dibujo propio, una chispa). */
 function ArteSticker({ id }) {
   if (id === 'tarjeta') return <TarjetaMetro tamano={92} />;
+  if (id === 'peluche') return <PelucheMascota tamano={84} />;
   if (id === 'flor') return <Flor tamano={64} />;
   return <I n="chispa" tamano={48} />;
 }

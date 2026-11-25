@@ -41,7 +41,7 @@ export default function Inicio() {
 
   const misiones = [
     { id: 'reto', texto: 'Resuelve un reto hoy', premio: '+5 ★', hecha: estado.ultimoBonoDia === hoyStr, ruta: '/mapa' },
-    { id: 'cuidar', texto: `Cuida a ${kiko}`, premio: 'Alegría', hecha: !loQuePide(estado.bienestar) && !estado.dormido, ruta: '/mochila' },
+    { id: 'cuidar', texto: `Cuida a ${kiko}`, premio: 'Alegría', hecha: !loQuePide(estado.bienestar) && !estado.dormido, ruta: '/habitacion' },
     { id: 'escanear', texto: 'Escanea un ejercicio de tu cuaderno', premio: 'Pistas', hecha: (estado.escaner?.historial || []).some((h) => h.fecha === hoyStr), ruta: '/escaner' },
   ];
   const hechas = misiones.filter((m) => m.hecha).length;

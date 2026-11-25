@@ -13,8 +13,8 @@ VALORES = {
     "estrellas_con_ayuda": 2,    # VALOR INICIAL: acertar después de pistas o errores
     "bono_reto_del_dia": 5,      # VALOR INICIAL
     "estrellas_cofre": 10,       # VALOR INICIAL
-    "costo_alimentar": 1,        # VALOR INICIAL
-    "costo_jugar": 2,            # VALOR INICIAL
+    "espera_cuidado": 180,
+    "subida_cuidado": 2,
     "retos_por_bajada": 3,       # VALOR INICIAL: cada 3 retos baja una marca de un medidor
     "racha_para_subir_etapa": 3, # VALOR INICIAL: 3 retos seguidos sin pistas -> menos apoyo visual
     "xp_por_nivel": 30,          # VALOR INICIAL
@@ -26,9 +26,8 @@ VALORES = {
 MEDIDORES = ("comida", "pecera", "alegria")
 
 CUIDADOS = {
-    "alimentar": {"costo": VALORES["costo_alimentar"], "medidor": "comida", "sube": 2},
-    "jugar": {"costo": VALORES["costo_jugar"], "medidor": "alegria", "sube": 2},
-    "limpiar": {"costo": 0, "medidor": "pecera", "sube": VALORES["max_marcas"]},
+    "alimentar": {"costo": 0, "medidor": "comida", "sube": VALORES["subida_cuidado"]},
+    "limpiar": {"costo": 0, "medidor": "pecera", "sube": VALORES["subida_cuidado"]},
     "descansar": {"costo": 0, "medidor": None, "sube": 0},
 }
 
