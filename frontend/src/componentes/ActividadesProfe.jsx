@@ -9,10 +9,10 @@ const VACIA = { titulo: '', instrucciones: '', material: '', fecha_limite: '', p
 const ICONO = { bien: '✓', con_ayuda: '✓', mal: '✗', pendiente: '–' };
 // La tarea se organiza por módulo (los mismos del aula); dentro se eligen sus ejercicios.
 const MODULOS = [
-  { id: 'suma-resta', nombre: 'Suma y resta', ops: ['+', '−'], icono: '➕' },
-  { id: 'multiplicacion', nombre: 'Multiplicación', ops: ['×'], icono: '✖️' },
-  { id: 'division', nombre: 'División', ops: ['÷'], icono: '➗' },
-  { id: 'fracciones', nombre: 'Fracciones', ops: ['+', '−', '×', '÷'], icono: '🍕' },
+  { id: 'suma-resta', nombre: 'Suma y resta', ops: ['+', '−'], icono: '+' },
+  { id: 'multiplicacion', nombre: 'Multiplicación', ops: ['×'], icono: '×' },
+  { id: 'division', nombre: 'División', ops: ['÷'], icono: '÷' },
+  { id: 'fracciones', nombre: 'Fracciones', ops: ['+', '−', '×', '÷'], icono: '½' },
 ];
 const clave = (p) => `${p.a}${p.op}${p.b}`;
 

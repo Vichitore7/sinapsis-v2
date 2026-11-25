@@ -68,7 +68,7 @@ PREGUNTAS = [
 POR_GRADO = {
     # Entra a 1.º: lo de preescolar.
     "P1": [
-        _p("p1-1", "conteo", "Cuenta las estrellas: ⭐⭐⭐⭐⭐⭐. ¿Cuántas hay?", "6"),
+        _p("p1-1", "conteo", "Cuenta las estrellas: ★★★★★★. ¿Cuántas hay?", "6"),
         _p("p1-2", "antes-despues", "¿Qué número sigue después del 9?", "10"),
         _p("p1-3", "comparar", "¿Cuál es más grande: 7 o 4?", "7"),
         _p("p1-4", "juntar", "Tienes 3 globos y te regalan 2 más. ¿Cuántos globos tienes?", "5"),

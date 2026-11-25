@@ -8,7 +8,7 @@ import Ajolote from '../componentes/Ajolote.jsx';
 import I from '../componentes/IconosUI.jsx';
 import { estadoAjolote, hoy, loQuePide } from '../logica/juego.js';
 
-const ICONO_MODULO = { multiplicacion: '×', division: '÷', fracciones: '½', 'suma-resta': '±', decimales: '0.1', 'valor-posicional': '#', geometria: '△', medicion: '📏' };
+const ICONO_MODULO = { multiplicacion: '×', division: '÷', fracciones: '½', 'suma-resta': '±', decimales: '0.1', 'valor-posicional': '#', geometria: '△', medicion: 'cm' };
 
 function usePendientes() {
   const [pendientes, setPendientes] = useState(null);
@@ -86,7 +86,7 @@ export default function Inicio() {
             {pendientes === null && <p className="cuerpo-sm texto-suave">Revisando tus clases…</p>}
             {nada && (
               <div className="tarjeta-suave fila-entre">
-                <span className="cuerpo-md">{pendientes.hayAulas ? 'No tienes nada pendiente en tus clases. 🎉' : 'Únete a tu clase con el código de tu maestra o maestro.'}</span>
+                <span className="cuerpo-md">{pendientes.hayAulas ? 'No tienes nada pendiente en tus clases.' : 'Únete a tu clase con el código de tu maestra o maestro.'}</span>
                 <a className="btn btn-crema btn-chico" href="#/aula">{pendientes.hayAulas ? 'Ir a mi aula' : 'Unirme'}</a>
               </div>
             )}
@@ -131,7 +131,7 @@ export default function Inicio() {
             <span style={{ flex: 1, minWidth: 0 }}>
               <b className="t-md" style={{ display: 'block' }}>¿Te dejaron tarea en tu escuela?</b>
               <span className="cuerpo-md texto-suave">
-                Tómale foto y te acompaño a resolverla. Si tienes una duda, la pensamos juntos paso a paso. 🔍
+                Tómale foto y te acompaño a resolverla. Si tienes una duda, la pensamos juntos paso a paso.
               </span>
             </span>
             <span className="btn btn-crema btn-chico"><I n="camara" tamano={16} /> Resolverla con {kiko}</span>

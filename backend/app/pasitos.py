@@ -173,11 +173,17 @@ def _multiplicacion(a: int, b: int) -> list[Pasito]:
     if not k:
         return [Pasito(pregunta=f"{a} × {b} es juntar {a} grupos de {b}: {' + '.join([str(b)] * a)}. ¿Cuánto da?",
                        reexplicar=f"Cuenta de {b} en {b}, {a} veces, con tus dedos. ¿En qué número terminas?", final=True)]
+    primero = Pasito(pregunta=f"{a} × {b} son {a} grupos de {b}. Empecemos con {k}: ¿cuánto son {k} grupos de {b}?",
+                     reexplicar=f"Aquí hay {k} grupos de {b} flores. Cuéntalas de {b} en {b}: ¿cuántas son?",
+                     resuelto=f"{k} grupos de {b} son {k * b}.", entero=k * b, dibujo=grupos(k),
+                     porque=f"Porque {a} grupos son {k} grupos más {a - k} grupos. Por partes es más fácil que todos de golpe.")
+    if a - k == 1:
+        # Solo falta un grupo: preguntar "¿cuánto son 1 grupos de 7?" no ayuda; se le suma directo.
+        return [primero,
+                Pasito(pregunta=f"Te falta 1 grupo de {b}. Súmaselo: ¿cuánto es {k * b} + {b}?",
+                       reexplicar=f"Empieza en {k * b} y cuenta {b} más con tus dedos. ¿En qué número terminas?", final=True)]
     return [
-        Pasito(pregunta=f"{a} × {b} son {a} grupos de {b}. Empecemos con {k}: ¿cuánto son {k} grupos de {b}?",
-               reexplicar=f"Aquí hay {k} grupos de {b} flores. Cuéntalas de {b} en {b}: ¿cuántas son?",
-               resuelto=f"{k} grupos de {b} son {k * b}.", entero=k * b, dibujo=grupos(k),
-               porque=f"Porque {a} grupos son {k} grupos más {a - k} grupos. Por partes es más fácil que todos de golpe."),
+        primero,
         Pasito(pregunta=f"Te faltan {a - k} grupos de {b}. ¿Cuánto son {a - k} grupos de {b}?",
                reexplicar=f"Cuenta de {b} en {b}, {a - k} veces: ¿cuánto da?",
                resuelto=f"{a - k} grupos de {b} son {(a - k) * b}.", entero=(a - k) * b, dibujo=grupos(a - k)),

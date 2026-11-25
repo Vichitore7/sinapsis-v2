@@ -302,7 +302,7 @@ class TurnoTutor(Base):
 
 
 _ORDEN = re.compile(r"([\w-]{1,40}):(\d{1,9})")
-TURNO_VIEJO = {"respuesta": "Ese mensaje ya lo había contestado. 🌱", "origen": "reglas", "dibujo": None}
+TURNO_VIEJO = {"respuesta": "Ese mensaje ya lo había contestado.", "origen": "reglas", "dibujo": None}
 
 
 def _orden(turno: str | None) -> tuple[str, int] | None:

@@ -239,21 +239,29 @@ def _dibujo_revela(dibujo: dict, mensaje: str, secretos: list[dict]) -> bool:
 
 # ---------------- Pistas por reglas (las de siempre, sin IA) ----------------
 
-LIMITE_ALCANZADO = ("¡Hoy platicamos un montón! Voy a descansar un ratito para recargar energía. 🌱 "
+_EMOJIS = re.compile("[\U0001F300-\U0001FAFF\u2B50\u2705\u270F\u2795-\u2797\u2716\u2728\u274C]\uFE0F?")
+
+
+def _sin_emojis(texto: str) -> str:
+    """La app no usa emojis: se los quitamos a lo que escriba Claude."""
+    return re.sub(r" {2,}", " ", _EMOJIS.sub("", texto)).strip()
+
+
+LIMITE_ALCANZADO = ("¡Hoy platicamos un montón! Voy a descansar un ratito para recargar energía. "
                     "Mientras, puedes escanear una operación de tu cuaderno y te doy pistas, o vuelve en un rato.")
 
 # Respaldo sin IA cuando el ejercicio ya está resuelto (antes decía "Primero escanea tu operación").
-YA_RESUELTA = ("¡Ese ejercicio ya lo resolviste! 🌟 Cuéntame cómo lo pensaste, o escanea otro para seguir "
+YA_RESUELTA = ("¡Ese ejercicio ya lo resolviste! Cuéntame cómo lo pensaste, o escanea otro para seguir "
                "practicando.")
 
 # Al resolver, Mix no corta la plática: pregunta si quedó claro (el navegador pone los botones de abajo) y, si quedó
 # alguna duda, se la explica sobre lo que vieron. La pregunta la pone el código para que salga siempre igual.
-PREGUNTA_DUDAS = "¿Te quedó todo claro o tienes alguna duda de lo que vimos? 💬"
-RESUELTA_REGLAS = "¡Lo lograste! 🌟 Corrígelo en tu cuaderno para que tu sendero quede derecho."
+PREGUNTA_DUDAS = "¿Te quedó todo claro o tienes alguna duda de lo que vimos?"
+RESUELTA_REGLAS = "¡Lo lograste! Corrígelo en tu cuaderno para que tu sendero quede derecho."
 # Respuestas a los botones (y a lo que escriba igual): las da el código, sin gastar en Claude.
-TODO_CLARO = "¡Qué bien! 🌟 Me gustó mucho cómo lo trabajaste. Cuando quieras, escanea otro ejercicio y seguimos."
+TODO_CLARO = "¡Qué bien! Me gustó mucho cómo lo trabajaste. Cuando quieras, escanea otro ejercicio y seguimos."
 QUE_DUDA = ("¡Claro! ¿Qué parte quieres que veamos otra vez? Puede ser un paso, el porqué de algo o una palabra "
-            "que no te quedó clara. 🔍")
+            "que no te quedó clara.")
 _TODO_CLARO = re.compile(r"todo claro|(?:me )?qued[oó] (?:todo )?claro|ya entend[ií]|entend[ií] todo|"
                          r"ninguna duda|no tengo (?:ninguna )?duda|sin dudas|todo bien", re.I)
 _NO_CLARO = re.compile(r"\bno (?:me )?(?:entend|qued[oó] claro|le entiendo)", re.I)
@@ -271,10 +279,10 @@ def _respuesta_de_dudas(mensaje: str) -> str | None:
 
 
 # Respaldo sin IA cuando el alumno quiere descansar (no es un atasco: no se le da otra pista).
-PAUSA_REGLAS = "¡Claro! Descansa un rato. Tu ejercicio te espera aquí cuando regreses. 🌱"
+PAUSA_REGLAS = "¡Claro! Descansa un rato. Tu ejercicio te espera aquí cuando regreses."
 
 # Respaldo sin IA cuando dice el número correcto, pero preguntando o sin estar seguro: ni se confirma ni se niega.
-CON_DUDA = "¿Cómo llegaste a ese número? Cuéntame tus pasos y lo comprobamos juntos. 🔍"
+CON_DUDA = "¿Cómo llegaste a ese número? Cuéntame tus pasos y lo comprobamos juntos."
 
 
 def _con_duda(mensaje: str) -> bool:
@@ -294,16 +302,16 @@ def _ya_lo_dijo(op: dict, mensaje: str) -> bool:
 def por_reglas(operacion: dict | None, mensaje: str) -> str:
     """La misma lógica que tenía el chat del escáner en el navegador, ahora también con fracciones y divisiones."""
     if not operacion:
-        return "Primero escanea o escribe tu operación, así sé de qué estamos platicando. 📸"
+        return "Primero escanea o escribe tu operación, así sé de qué estamos platicando."
     d = operaciones.diagnosticar(operacion)
     if d["correcto"] is None:
-        return "Primero resuélvela en tu cuaderno y cuéntame qué resultado te salió. ¡Tú puedes! 💪"
+        return "Primero resuélvela en tu cuaderno y cuéntame qué resultado te salió. ¡Tú puedes!"
     if d["correcto"]:
         return "¡Tu operación ya estaba bien! Explícame cómo lo pensaste: eso también es aprender."
     if _ya_lo_dijo(operacion, mensaje) and _con_duda(mensaje):
         return CON_DUDA  # no se confirma un número que el alumno solo está adivinando
     if _ya_lo_dijo(operacion, mensaje):
-        return "¡Exacto, explorador! 🌟 Ahora corrígelo en tu cuaderno y escanéalo otra vez para ver tu sendero derecho."
+        return "¡Exacto, explorador! Ahora corrígelo en tu cuaderno y escanéalo otra vez para ver tu sendero derecho."
     return f"Vamos a revisarlo juntos: {d['pregunta']}"
 
 
@@ -451,8 +459,9 @@ def _preguntar_a_claude(operacion: dict | None, grado: str | None, mensaje: str,
     except ValueError:
         log.info("tutor: Claude no regresó JSON válido; uso reglas")
         return None
-    # 🦎 es una lagartija, no un ajolote: por si acaso se le escapa.
-    texto = str(datos.get("respuesta") or "").replace("🦎", "").strip()[:MAX_RESPUESTA]
+    # Sin emojis en el chat (la app no los usa): por si acaso se le escapa alguno.
+    texto = str(datos.get("respuesta") or "").strip()
+    texto = _sin_emojis(texto)[:MAX_RESPUESTA]
     return {"respuesta": texto, "dibujo": datos.get("dibujo")} if texto else None
 
 
@@ -604,8 +613,8 @@ TERMINADO = ("Su ejercicio ({op}) está TERMINADO: ya lo resolvió, así que ya 
              "ejercicios nuevos ni le preguntes cuentas para que las resuelva. Si te cuenta cómo lo pensó, reconócelo "
              "en una o dos frases. Si pregunta algo que no tiene que ver con lo que vieron, regrésalo con amabilidad al "
              "tema (o a escanear otro ejercicio).")
-CIERRE = "¡Lo lograste! 🌟 Tu ejercicio quedó resuelto. Cuando quieras, escanea otro y lo vemos juntos."
-SIGUE_DUDAS = "Si te queda otra duda de lo que vimos, pregúntame; si no, escanea otro cuando quieras. 🌟"
+CIERRE = "¡Lo lograste! Tu ejercicio quedó resuelto. Cuando quieras, escanea otro y lo vemos juntos."
+SIGUE_DUDAS = "Si te queda otra duda de lo que vimos, pregúntame; si no, escanea otro cuando quieras."
 # Una pregunta que le pide hacer una cuenta ("¿cuánto es 300 + 200?"): con el ejercicio terminado ya no va.
 _PIDE_CUENTA = re.compile(r"cu[aá]nt[oa]s?|qu[eé] n[uú]mero|resuelve|calcula|intenta|prueba", re.I)
 
@@ -778,7 +787,7 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
         if limpio != texto.strip():
             texto = f"{limpio} {SIGUE_DUDAS}".strip() if limpio else CIERRE
     if resolvio:
-        texto = f"{_sin_preguntas(texto) or '¡Lo lograste! 🌟'} {PREGUNTA_DUDAS}"
+        texto = f"{_sin_preguntas(texto) or '¡Lo lograste!'} {PREGUNTA_DUDAS}"
     if paso and paso.get("texto_fijo"):
         # Escalones 4 y 5: las cuentas (y la pregunta) las pone el código, verificadas. Del modelo solo una frase de ánimo.
         texto = f"{estrategia.frase_de_animo(texto, paso['escalon'], paso.get('modo'))} {paso['texto_fijo']}"
