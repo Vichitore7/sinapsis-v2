@@ -7,11 +7,12 @@ import { DiceAjolote } from '../componentes/Comunes.jsx';
 import SendaPasos from '../componentes/SendaPasos.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import { leerArchivo, recortarYComprimir } from '../logica/imagen.js';
-import { leerOperacion, pistasEscaner, responderFoto } from '../logica/lector.js';
-import { diagnosticar } from '../logica/diagnostico.js';
+import { leerFoto, pistasEscaner } from '../logica/lector.js';
+import { conDuda, diagnosticarOperacion, explicacionResuelta, quitarNegados, resolvioEnChat, esFraccion, pistasGenerales, tipoDe, validar, yaLoDijo } from '../logica/operaciones.js';
 import { ejemploParecido } from '../logica/pistas.js';
 import { hoy } from '../logica/juego.js';
 import { api } from '../api.js';
+import DibujoTutor from '../componentes/DibujoTutor.jsx';
 
 const MAX_PENDIENTES = 5;
 
@@ -191,11 +192,32 @@ function SinConexion({ cuantas, onListo }) {
 }
 
 // ---------- 3. Lectura confirmada ----------
+/** Un número del cuaderno: entero o fracción (3/4 se dibuja uno sobre otro). */
+function Num({ valor }) {
+  const t = String(valor ?? '');
+  if (!t.includes('/')) return <span>{t}</span>;
+  const [n, d] = t.split('/');
+  return <span className="frac" role="img" aria-label={`${n} sobre ${d}`}><span>{n}</span><span>{d}</span></span>;
+}
+
+/** "17 ÷ 5 = 3 residuo 2", "3/4 + 1/2 = 4/6" (para el chat y el historial). */
+export function textoOperacion(op) {
+  return `${op.a} ${op.op} ${op.b} = ${op.c}${op.residuo ? ` residuo ${op.residuo}` : ''}`;
+}
+
 function Lectura({ lectura, onConfirmar }) {
   const sinLectura = lectura === null;
-  const [editando, setEditando] = useState(sinLectura);
-  const [op, setOp] = useState(lectura || { a: '', op: '×', b: '', c: '' });
-  const completo = ['a', 'b', 'c'].every((k) => /^\d+$/.test(String(op[k]).trim()));
+  const sinResultado = !sinLectura && lectura.c === '';
+  const [editando, setEditando] = useState(sinLectura || sinResultado);
+  const [op, setOp] = useState(lectura ? { residuo: '', ...lectura } : { a: '', op: '×', b: '', c: '', residuo: '' });
+  const valida = validar(op);
+  const completo = !!valida && valida.c !== '';
+  const lleno = [op.a, op.b, op.c].every((v) => String(v).trim() !== '');
+  const conResiduo = op.op === '÷' && ![op.a, op.b, op.c].some(esFraccion);
+  const campo = (k, etiqueta) => (
+    <input className="campo" inputMode="text" autoComplete="off" value={op[k]} placeholder={k === 'residuo' ? '0' : ''}
+      onChange={(e) => setOp({ ...op, [k]: e.target.value })} aria-label={etiqueta} />
+  );
 
   return (
     <section className="sm-card">
@@ -204,34 +226,47 @@ function Lectura({ lectura, onConfirmar }) {
       </span>
       <DiceAjolote estado={sinLectura && editando ? 'curioso' : 'feliz'} tamano={90}>
         {sinLectura && editando
-          ? 'Todavía estoy aprendiendo a leer letra a mano. Escríbelo como está en tu cuaderno.'
-          : editando
-            ? 'Cámbialo como está en tu cuaderno.'
-            : 'Leí esto en tu cuaderno. ¿Está bien?'}
+          ? 'No pude leer una operación en la foto. Escríbela como está en tu cuaderno.'
+          : sinResultado && editando
+            ? 'Leí tu operación, pero no veo tu resultado. Escribe el que pusiste en tu cuaderno.'
+            : editando
+              ? 'Cámbialo como está en tu cuaderno.'
+              : lectura?.dudoso
+                ? 'Leí esto, pero algunos números no se veían bien. ¿Está igual que en tu cuaderno?'
+                : 'Leí esto en tu cuaderno. ¿Está bien?'}
       </DiceAjolote>
 
       <div className="hoja">
         {editando ? (
           <div className="num">
-            <input className="campo" inputMode="numeric" value={op.a} onChange={(e) => setOp({ ...op, a: e.target.value })} aria-label="Primer número" />
+            {campo('a', 'Primer número')}
             <select className="campo campo-op" value={op.op} onChange={(e) => setOp({ ...op, op: e.target.value })} aria-label="Operación">
-              <option value="×">×</option><option value="+">+</option><option value="−">−</option>
+              <option value="×">×</option><option value="+">+</option><option value="−">−</option><option value="÷">÷</option>
             </select>
-            <input className="campo" inputMode="numeric" value={op.b} onChange={(e) => setOp({ ...op, b: e.target.value })} aria-label="Segundo número" />
+            {campo('b', 'Segundo número')}
             <span>=</span>
-            <input className="campo" inputMode="numeric" value={op.c} onChange={(e) => setOp({ ...op, c: e.target.value })} aria-label="Tu resultado" />
+            {campo('c', 'Tu resultado')}
+            {conResiduo && <><span className="residuo-etq">residuo</span>{campo('residuo', 'Residuo (lo que sobra)')}</>}
           </div>
         ) : (
-          <div className="num"><span>{op.a}</span><span>{op.op}</span><span>{op.b}</span><span>=</span><span>{op.c}</span></div>
+          <div className="num">
+            <Num valor={op.a} /><span>{op.op}</span><Num valor={op.b} /><span>=</span><Num valor={op.c} />
+            {op.residuo && <span className="residuo-etq">residuo {op.residuo}</span>}
+          </div>
         )}
       </div>
+      {editando && (
+        <p className="nota" style={{ marginTop: 0 }}>
+          {lleno && !valida ? 'Revisa los números: usa números como 17 o fracciones como 3/4.' : 'Para una fracción escribe 3/4.'}
+        </p>
+      )}
 
       <div className="acciones">
         {editando ? (
           <button className="sm-btn" disabled={!completo} onClick={() => setEditando(false)}>Listo</button>
         ) : (
           <>
-            <button className="sm-btn" onClick={() => onConfirmar({ a: +op.a, op: op.op, b: +op.b, c: +op.c })}>¡Así es!</button>
+            <button className="sm-btn" onClick={() => onConfirmar(validar(op))}>¡Así es!</button>
             <button className="sm-btn sm-btn-suave" onClick={() => setEditando(true)}>Corregir</button>
           </>
         )}
@@ -241,9 +276,15 @@ function Lectura({ lectura, onConfirmar }) {
   );
 }
 
+/** Pistas del escáner: la del diagnóstico y dos generales según el tipo de operación. */
+function pistasDe(op, d) {
+  if (tipoDe(op) === 'enteros') return pistasEscaner({ a: Number(op.a), op: op.op, b: Number(op.b) }, d);
+  return [d.pregunta, ...pistasGenerales(op)].slice(0, 3);
+}
+
 // ---------- 4. Diagnóstico ----------
 function Diagnostico({ operacion, pista, onOtra }) {
-  const diag = diagnosticar(operacion);
+  const diag = diagnosticarOperacion(operacion);
   if (diag.correcto) {
     return (
       <div className="pila">
@@ -251,13 +292,13 @@ function Diagnostico({ operacion, pista, onOtra }) {
         <SendaPasos pasos={diag.pasos} numeroPista={0} />
         <div className="sm-acierto">
           <h2 className="titulo" style={{ margin: '0 0 var(--espacio-2)' }}>✓ ¡Tu sendero va derecho!</h2>
-          <p className="cuerpo" style={{ margin: '0 0 var(--espacio-3)' }}>Cada paso está bien, explorador.</p>
+          <p className="cuerpo" style={{ margin: '0 0 var(--espacio-3)' }}>{diag.pregunta || 'Cada paso está bien, explorador.'}</p>
           <button className="sm-btn" onClick={onOtra}>Escanear otro ejercicio</button>
         </div>
       </div>
     );
   }
-  const pistas = pistasEscaner(operacion, diag);
+  const pistas = pistasDe(operacion, diag);
   return (
     <div className="pila">
       <SendaPasos pasos={diag.pasos} pregunta={pistas[Math.min(pista, 3) - 1]} numeroPista={Math.min(pista, 3)} />
@@ -273,13 +314,17 @@ const SALUDO = {
   texto: '¡Hola explorador! 🔍 Toma una foto de UNA operación de tu cuaderno y la revisamos juntos. No te voy a dar la respuesta directa: tú eres el genio aquí.',
 };
 
-function resultadoDe({ a, op, b }) {
-  if (op === '×') return a * b;
-  if (op === '+') return a + b;
-  return a - b;
+/** El grado que eligió el alumno al crear su cuenta (Cuenta.jsx lo guarda en este dispositivo). */
+function gradoDe(usuario) {
+  try { return (usuario && localStorage.getItem(`selva:grado:${usuario.id}`)) || undefined; } catch { return undefined; }
 }
 
-function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacion, onReiniciar }) {
+// Turnos del tutor: "visita:n". El número sube con cada mensaje; así el servidor sabe cuál es más nuevo y una copia
+// vieja que llegue tarde no altera los turnos posteriores (backend/app/estrategia.py, TurnoTutor).
+const VISITA = (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random().toString(36).slice(2)}`).replace(/[^\w-]/g, '').slice(0, 36);
+let contadorTurnos = 0;
+
+function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacion, pistasActivas = hayOperacion, onReiniciar, onConfirmarOtro }) {
   const [texto, setTexto] = useState('');
   const fin = useRef(null);
   const camara = useRef(null);
@@ -289,10 +334,18 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
     e.target.value = '';
     if (f) onFoto(f);
   };
-  useEffect(() => { fin.current?.scrollIntoView({ block: 'nearest' }); }, [mensajes.length]);
+  // El chat tiene altura fija: al llegar un mensaje, se baja dentro del chat (sin mover la página).
+  // Depende de `mensajes` y no de su largo: "Kiko está pensando" se reemplaza por la respuesta sin cambiar el largo.
+  useEffect(() => {
+    const lista = fin.current?.parentElement;
+    if (lista) lista.scrollTo({ top: lista.scrollHeight, behavior: 'smooth' });
+  }, [mensajes]);
+  // Un mensaje a la vez: mientras Kiko piensa (o lee una foto) no se manda otro. Así las respuestas no llegan
+  // desordenadas y la escalera de pistas del servidor no avanza dos veces.
+  const ocupado = mensajes.some((m) => m.pensando);
   const enviar = (e) => {
     e.preventDefault();
-    if (!texto.trim()) return;
+    if (ocupado || !texto.trim()) return;
     onEnviar(texto.trim());
     setTexto('');
   };
@@ -304,7 +357,7 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
           <b className="t-md">Kiko el Ajolote <span className="chip chip-verde-fuerte">Tutor</span></b>
           <small>¡Te ayudo a pensar por ti mismo!</small>
         </div>
-        <button className="boton-redondo translucido" onClick={onReiniciar} aria-label="Reiniciar conversación"><I n="recargar" /></button>
+        <button className="boton-redondo translucido" onClick={onReiniciar} disabled={ocupado} aria-label="Reiniciar conversación"><I n="recargar" /></button>
       </header>
       <div className="chat-mensajes" aria-live="polite">
         {mensajes.map((m, i) => (
@@ -316,6 +369,13 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
                 <div className="msg-globo">
                   {m.op && <div className="msg-op">{m.op}</div>}
                   {m.texto}
+                  {m.dibujo && <div className="msg-dibujo"><DibujoTutor dibujo={m.dibujo} /></div>}
+                  {m.confirmar && !m.respondido && (
+                    <div className="msg-botones">
+                      <button type="button" className="chip-sug" onClick={() => onConfirmarOtro(i, true)}>✅ Sí, eso dice</button>
+                      <button type="button" className="chip-sug" onClick={() => onConfirmarOtro(i, false)}>✏️ No</button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -331,31 +391,55 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
         <span ref={fin} />
       </div>
       <div className="chat-sugerencias">
-        <button className="chip-sug" onClick={onPista} disabled={!hayOperacion}>💡 Dame otra pista</button>
+        <button className="chip-sug" onClick={onPista} disabled={!pistasActivas || ocupado}>💡 Dame otra pista</button>
         <button className="chip-sug" onClick={onEjemplo} disabled={!hayOperacion}>🧩 Dibújalo con bloques</button>
       </div>
       <form className="chat-entrada" onSubmit={enviar}>
-        <button type="button" className="boton-redondo" onClick={() => camara.current.click()} aria-label="Tomar foto para Kiko"><I n="camara" /></button>
-        <button type="button" className="boton-redondo" onClick={() => galeria.current.click()} aria-label="Subir imagen para Kiko"><I n="galeria" /></button>
+        <button type="button" className="boton-redondo" onClick={() => camara.current.click()} disabled={ocupado} aria-label="Tomar foto para Kiko"><I n="camara" /></button>
+        <button type="button" className="boton-redondo" onClick={() => galeria.current.click()} disabled={ocupado} aria-label="Subir imagen para Kiko"><I n="galeria" /></button>
         <input ref={camara} type="file" accept="image/*" capture="environment" hidden onChange={elegirFoto} />
         <input ref={galeria} type="file" accept="image/*" hidden onChange={elegirFoto} />
         <input className="entrada" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe tu deducción a Kiko…" aria-label="Mensaje para Kiko" maxLength={200} />
-        <button className="btn btn-naranja btn-cuadrado" aria-label="Enviar"><I n="enviar" /></button>
+        <button className="btn btn-naranja btn-cuadrado" aria-label="Enviar" disabled={ocupado}><I n="enviar" /></button>
       </form>
     </section>
   );
 }
 
 export default function Escaner() {
-  const { estado, actualizar } = useJuego();
+  const { estado, actualizar, usuario } = useJuego();
   const enLinea = useEnLinea();
   const [paso, setPaso] = useState('captura');
   const [foto, setFoto] = useState(null);
   const [lectura, setLectura] = useState(undefined);
   const [operacion, setOperacion] = useState(null);
+  // Ya resolvió en el chat la operación escaneada: no se le ofrecen más pistas de ella (con o sin conexión).
+  const [resuelta, setResuelta] = useState(false);
+  // Turnos del tutor: el último turno cuya respuesta SÍ se mostró. El servidor solo cuenta un avance de la escalera
+  // cuando el siguiente mensaje lo confirma; si una respuesta se descarta, ese pasito se repite en vez de perderse.
+  const ultimoRecibido = useRef(null);
   const [pista, setPista] = useState(1);
   const [mensajes, setMensajes] = useState([SALUDO]);
+  // Cambia al reiniciar la plática y al confirmar otro ejercicio: una respuesta que llegue tarde de lo anterior
+  // se descarta (no aparece bajo la cuenta nueva).
+  const conversacion = useRef(0);
+  // El registro del escaneo en el servidor (prepara la escalera de pistas): { op, ok: Promise<boolean> }.
+  // El tutor lo espera antes de contestar, para que las dos peticiones no lleguen en desorden.
+  const registro = useRef(null);
+  // Cada petición marca su propio "pensando" con un número: al terminar quita SOLO el suyo, no el de otra.
+  const peticion = useRef(0);
+  // Ejercicio nuevo (otra cuenta confirmada): lo pendiente del anterior se descarta y su "pensando" se quita ya,
+  // para que el chat de la cuenta nueva no se quede bloqueado esperando una respuesta vieja.
+  const nuevoEjercicio = () => {
+    conversacion.current += 1;
+    setMensajes((xs) => xs.filter((m) => !m.pensando));
+  };
+  const registrar = (op) => api.registrarEscaneo(op).then(() => true, () => false);
+  // Ejercicio que el escáner no sabe revisar (problema de texto…) y que el alumno confirmó en el chat.
+  const [ejercicio, setEjercicio] = useState(null);
   const pendientes = estado.escaner.pendientes;
+  const columnaEscaner = useRef(null);
+  const columnaChat = useRef(null);
   const decir = (...ms) => setMensajes((xs) => [...xs, ...ms]);
 
   const reiniciar = () => {
@@ -363,13 +447,41 @@ export default function Escaner() {
     setLectura(undefined);
     setOperacion(null);
     setPista(1);
+    setResuelta(false);
     setPaso('captura');
   };
 
   const leer = async (fotoComprimida) => {
     setFoto(fotoComprimida);
-    setLectura(await leerOperacion(fotoComprimida));
+    setPaso('leyendo');
+    const { lectura: leida, otro } = await leerFoto(fotoComprimida);
+    if (!leida && otro) {
+      // No es una operación que el escáner revise: se confirma y se platica en el chat.
+      setFoto(null);
+      setPaso('captura');
+      pedirConfirmacionOtro(otro);
+      return;
+    }
+    setLectura(leida);
     setPaso('lectura');
+  };
+
+  const pedirConfirmacionOtro = (otro) => {
+    decir({ de: 'kiko', texto: `Esto no lo reviso en el escáner, pero lo vemos aquí. Leí en tu foto:\n«${otro}»\n¿Es lo que dice tu cuaderno?`, confirmar: otro });
+    columnaChat.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const confirmarOtro = (indice, si) => {
+    const texto = mensajes[indice]?.confirmar;
+    setMensajes((xs) => xs.map((m, i) => (i === indice ? { ...m, respondido: true } : m)));
+    if (!si) {
+      decir({ de: 'yo', texto: 'No' }, { de: 'kiko', texto: 'Va. Escríbeme tu ejercicio aquí, tal como está en tu cuaderno, y lo vemos juntos. ✏️' });
+      return;
+    }
+    setEjercicio(texto);
+    setOperacion(null);
+    nuevoEjercicio();
+    alEscribir('Sí, eso dice. ¿Me ayudas?', { operacion: null, ejercicio: texto });
   };
 
   const enviar = async (fotoComprimida) => {
@@ -396,9 +508,14 @@ export default function Escaner() {
 
   const confirmar = (op) => {
     setFoto(null); // La foto se borra apenas se confirma la lectura.
+    setEjercicio(null);
     setOperacion(op);
+    nuevoEjercicio(); // una respuesta pendiente de la cuenta anterior se descarta
+    // Memoria de aprendizaje en el servidor (así Kiko recuerda entre sesiones). Si falla, la app sigue igual.
+    registro.current = enLinea ? { op, ok: registrar(op) } : null;
     setPista(1);
-    const d = diagnosticar(op);
+    setResuelta(false); // intento nuevo, aunque sea la misma cuenta
+    const d = diagnosticarOperacion(op);
     actualizar((s) => ({
       ...s,
       escaner: {
@@ -406,20 +523,31 @@ export default function Escaner() {
         historial: [...s.escaner.historial, { fecha: hoy(), ...op, correcto: d.correcto, pasoTorcido: d.pasoTorcido }].slice(-50),
       },
     }));
-    const opTexto = `${op.a} ${op.op} ${op.b} = ${op.c}`;
+    const opTexto = textoOperacion(op);
     if (d.correcto) {
       decir({ de: 'kiko', op: opTexto, texto: '¡Tu sendero va derecho! Revisé cada paso y todos están bien. ¿Escaneamos otro?', premio: '¡Bien pensado!' });
     } else {
-      decir({ de: 'kiko', op: opTexto, texto: `He mirado con mi lupa la operación que escaneaste. El sendero se torció en el paso ${d.pasoTorcido}. No te voy a dar la respuesta: ${pistasEscaner(op, d)[0]}` });
+      decir({ de: 'kiko', op: opTexto, texto: `He mirado con mi lupa la operación que escaneaste. El sendero se torció en el paso ${d.pasoTorcido}. No te voy a dar la respuesta: ${pistasDe(op, d)[0]}` });
     }
     setPaso('diagnostico');
   };
 
+  const YA_RESUELTA = '¡Ese ejercicio ya lo resolviste! 🌟 Cuéntame cómo lo pensaste, o escanea otro para seguir practicando.';
+
   const otraPista = () => {
     if (!operacion) return;
-    const d = diagnosticar(operacion);
+    if (resuelta) { decir({ de: 'kiko', texto: YA_RESUELTA }); return; }
+    // Con internet, la pide al tutor: el backend sube un escalón en su escalera de ayuda (fase 2).
+    if (enLinea) { alEscribir('Dame otra pista'); return; }
+    pistaLocal();
+  };
+
+  // Las 3 pistas por reglas del navegador (sin internet, o si el servidor no supo del escaneo).
+  const pistaLocal = () => {
+    if (resuelta) { decir({ de: 'kiko', texto: YA_RESUELTA }); return; }
+    const d = diagnosticarOperacion(operacion);
     if (d.correcto) { decir({ de: 'kiko', texto: '¡Ya lo tienes bien! Si quieres, escanea otro ejercicio.' }); return; }
-    const pistas = pistasEscaner(operacion, d);
+    const pistas = pistasDe(operacion, d);
     if (pista >= pistas.length) {
       decir({ de: 'kiko', texto: 'Ya te di mis 3 pistas. Prueba “Dibújalo con bloques” para ver un ejemplo parecido.' });
       return;
@@ -430,11 +558,20 @@ export default function Escaner() {
 
   const ejemplo = () => {
     if (!operacion) return;
+    const t = tipoDe(operacion);
+    if (t === 'fracciones') {
+      decir({ de: 'kiko', texto: `Dibuja dos pizzas del mismo tamaño: parte una para ${operacion.a} y otra para ${operacion.b}. ¿Los pedazos son del mismo tamaño? Si no, pártelos más chiquitos hasta que lo sean.` });
+      return;
+    }
+    if (t === 'division') {
+      decir({ de: 'kiko', texto: `Dibuja ${operacion.a} bolitas y enciérralas en grupos de ${operacion.b}. Cuenta cuántos grupos completos te salen y cuántas bolitas sobran.` });
+      return;
+    }
     if (operacion.op !== '×') {
       decir({ de: 'kiko', texto: `Dibuja ${operacion.a} bloques y luego ${operacion.op === '+' ? 'agrega' : 'quita'} ${operacion.b}. Cuenta los que quedan, uno por uno.` });
       return;
     }
-    const e = ejemploParecido({ a: operacion.a, b: operacion.b, moneda: false });
+    const e = ejemploParecido({ a: Number(operacion.a), b: Number(operacion.b), moneda: false });
     decir({ de: 'kiko', op: `${e.suma} = ${e.total}`, texto: `Mira este ejemplo parecido: ${e.a} bloques de ${e.b} son ${e.total}. Usa la misma idea con tu operación en el cuaderno.` });
   };
 
@@ -449,36 +586,101 @@ export default function Escaner() {
       return;
     }
     decir({ de: 'yo', foto: comprimida });
-    decir({ de: 'kiko', texto: await responderFoto(comprimida) });
+    if (!enLinea) {
+      decir({ de: 'kiko', texto: 'Sin internet no puedo leer fotos. Escríbeme tu operación y la revisamos juntos.' });
+      return;
+    }
+    const id = ++peticion.current;
+    decir({ de: 'kiko', texto: 'Estoy leyendo tu foto con mi lupa… 🔍', pensando: id });
+    const mia = conversacion.current;
+    const { lectura: leida, otro } = await leerFoto(comprimida);
+    setMensajes((xs) => xs.filter((m) => m.pensando !== id));
+    if (mia !== conversacion.current) return; // reiniciaron la plática o cambió el ejercicio mientras leía
+    if (!leida && otro) {
+      pedirConfirmacionOtro(otro);
+      return;
+    }
+    if (!leida) {
+      decir({ de: 'kiko', texto: 'No encontré un ejercicio en esa foto. Prueba con UNO solo y buena luz, o escríbemelo aquí. 📸' });
+      return;
+    }
+    // Nunca se diagnostica sin que el alumno confirme: la lectura va a la pantalla de confirmación del escáner.
+    setFoto(comprimida);
+    setLectura(leida);
+    setPaso('lectura');
+    decir({ de: 'kiko', texto: 'Ya leí tu foto. Revisa en el escáner que esté igual que en tu cuaderno y confírmalo. 🌟' });
+    columnaEscaner.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   // Kiko contesta con el tutor de IA del backend (Claude). Si no hay internet o el servidor falla,
   // contesta aquí mismo con las pistas por reglas de siempre.
-  const alEscribir = async (texto) => {
-    const historial = mensajes.filter((m) => m.texto && !m.pensando).map((m) => ({ de: m.de, texto: m.texto }));
+  // `contexto` sirve cuando el estado todavía no se actualiza (p. ej. justo al confirmar un ejercicio en el chat).
+  const alEscribir = async (texto, contexto = { operacion, ejercicio }) => {
+    // Solo los últimos mensajes: Kiko no necesita toda la plática y la petición queda chica.
+    const historial = mensajes.filter((m) => m.texto && !m.pensando).slice(-12).map((m) => ({ de: m.de, texto: m.texto }));
     decir({ de: 'yo', texto });
-    if (!operacion) {
-      decir({ de: 'kiko', texto: 'Primero escanea o escribe tu operación, así sé de qué estamos platicando. 📸' });
-      return;
-    }
+    if (contexto.operacion && contexto.operacion === operacion && resolvioEnChat(operacion, texto)) setResuelta(true);
+    // Kiko también contesta dudas sin operación escaneada ("¿qué es una fracción?").
     if (enLinea) {
-      decir({ de: 'kiko', texto: 'Kiko está pensando… 🤔', pensando: true });
-      const sinPensando = (xs) => xs.filter((m) => !m.pensando);
+      const id = ++peticion.current;
+      const turno = `${VISITA}:${++contadorTurnos}`;
+      decir({ de: 'kiko', texto: 'Kiko está pensando… 🤔', pensando: id });
+      const sinPensando = (xs) => xs.filter((m) => m.pensando !== id);
+      const mia = conversacion.current;
+      // Reiniciaron la plática o confirmaron otro ejercicio mientras Kiko pensaba: esta respuesta ya no va.
+      const vieja = () => {
+        if (mia === conversacion.current) return false;
+        setMensajes(sinPensando);
+        return true;
+      };
       try {
-        const r = await api.tutor({ operacion, mensaje: texto, historial });
-        setMensajes((xs) => [...sinPensando(xs), { de: 'kiko', texto: r.respuesta }]);
+        const reg = registro.current;
+        if (reg && contexto.operacion === reg.op) {
+          // El servidor tiene que saber del escaneo (y de la pista que ya mostró la pantalla) antes de seguir.
+          // Si el registro falló, se reintenta una vez; si vuelve a fallar, sigue con las pistas del navegador.
+          if (!(await reg.ok)) reg.ok = registrar(reg.op);
+          if (!(await reg.ok)) {
+            if (vieja()) return;
+            setMensajes(sinPensando);
+            if (texto === 'Dame otra pista') pistaLocal(); else respuestaLocal(texto);
+            return;
+          }
+        }
+        const r = await api.tutor({
+          operacion: contexto.operacion, ejercicio: contexto.ejercicio || undefined,
+          mensaje: texto, historial, grado: gradoDe(usuario), turno, recibido: ultimoRecibido.current || undefined,
+        });
+        if (vieja()) return;
+        ultimoRecibido.current = turno; // esta respuesta sí se muestra: el próximo mensaje lo confirma al servidor
+        setMensajes((xs) => [...sinPensando(xs), { de: 'kiko', texto: r.respuesta, dibujo: r.dibujo }]);
         return;
       } catch {
+        if (vieja()) return;
         setMensajes(sinPensando);
+        if (!contexto.operacion) {
+          decir({ de: 'kiko', texto: 'Uy, no pude escucharte bien. ¿Me lo vuelves a escribir en un momento? 🌱' });
+          return;
+        }
       }
     }
     respuestaLocal(texto);
   };
 
   const respuestaLocal = (texto) => {
-    const d = diagnosticar(operacion);
-    const numeros = (texto.match(/\d+/g) || []).map(Number);
-    if (numeros.includes(resultadoDe(operacion)) && !d.correcto) {
+    if (!operacion) {
+      decir({ de: 'kiko', texto: 'Primero escanea o escribe tu operación, así sé de qué estamos platicando. 📸' });
+      return;
+    }
+    if (resuelta) {
+      // Ya la resolvió: no más pistas, pero si pide que le expliquen, se le explica (aunque no haya conexión).
+      const pideExplicacion = /por ?qu[eé]|c[oó]mo|expl[ií]ca|no entiend|no le entiend/i.test(texto);
+      decir({ de: 'kiko', texto: pideExplicacion ? `Claro, te explico: ${explicacionResuelta(operacion)} ¿Qué parte quieres que veamos otra vez?` : YA_RESUELTA });
+      return;
+    }
+    const d = diagnosticarOperacion(operacion);
+    if (!d.correcto && yaLoDijo(operacion, quitarNegados(texto)) && conDuda(texto)) {
+      decir({ de: 'kiko', texto: '¿Cómo llegaste a ese número? Cuéntame tus pasos y lo comprobamos juntos. 🔍' });
+    } else if (resolvioEnChat(operacion, texto)) {
       decir({ de: 'kiko', texto: '¡Exacto, explorador! 🌟 Ahora corrígelo en tu cuaderno y escanéalo otra vez para ver tu sendero derecho.', premio: '+ Puntos de lógica' });
     } else if (d.correcto) {
       decir({ de: 'kiko', texto: '¡Tu operación ya estaba bien! Explícame cómo lo pensaste: eso también es aprender.' });
@@ -497,7 +699,7 @@ export default function Escaner() {
       {!enLinea && <div className="aviso-red etiqueta">Sin internet: la app sigue funcionando.</div>}
 
       <div className="escaner-layout">
-        <div className="escaner-col">
+        <div className="escaner-col" ref={columnaEscaner}>
           {paso === 'captura' && (
             <Captura
               onFoto={(f) => { setFoto(f); setPaso('recorte'); }}
@@ -509,10 +711,16 @@ export default function Escaner() {
           )}
           {paso === 'recorte' && foto && <Recorte foto={foto} onEnviar={enviar} onOtra={reiniciar} />}
           {paso === 'sinConexion' && <SinConexion cuantas={pendientes.length} onListo={reiniciar} />}
+          {paso === 'leyendo' && (
+            <section className="sm-card centro-col" style={{ textAlign: 'center' }} aria-live="polite">
+              <DiceAjolote estado="curioso" tamano={90}>Estoy leyendo tu cuaderno con mi lupa… 🔍</DiceAjolote>
+              {foto && <img className="foto-leyendo" src={foto} alt="La foto que estoy leyendo" />}
+            </section>
+          )}
           {paso === 'lectura' && <Lectura lectura={lectura} onConfirmar={confirmar} />}
           {paso === 'diagnostico' && operacion && <Diagnostico operacion={operacion} pista={pista} onOtra={reiniciar} />}
         </div>
-        <div className="escaner-col">
+        <div className="escaner-col" ref={columnaChat}>
           <ChatTutor
             mensajes={mensajes}
             onEnviar={alEscribir}
@@ -520,7 +728,9 @@ export default function Escaner() {
             onPista={otraPista}
             onEjemplo={ejemplo}
             hayOperacion={!!operacion}
-            onReiniciar={() => { setMensajes([SALUDO]); reiniciar(); }}
+            pistasActivas={!!operacion && !resuelta}
+            onReiniciar={() => { conversacion.current += 1; setMensajes([SALUDO]); setEjercicio(null); reiniciar(); }}
+            onConfirmarOtro={confirmarOtro}
           />
         </div>
       </div>

@@ -1,25 +1,23 @@
 // Lector de la foto del cuaderno.
 //
-// PENDIENTE (backend): aquí se conectará el servicio que lee la operación de la foto
-// (por ejemplo un endpoint del backend que llama a un modelo con visión).
-// Debe devolver { a, op, b, c, dudoso? } o null si no pudo leer.
-// La API key NUNCA va en el frontend: solo en el backend.
-//
-// Mientras no exista, devuelve null y el alumno escribe la operación tal como está en su cuaderno.
+// El backend lee la foto con Claude (POST /api/escaner/leer) y regresa la operación tal como está escrita,
+// sin corregirla. La foto no se guarda en el servidor. La API key NUNCA va en el frontend.
+// Si no se pudo leer, el alumno escribe la operación tal como está en su cuaderno.
 // La regla del sistema de diseño se mantiene: nunca se diagnostica antes de que el alumno confirme.
+import { api } from '../api.js';
 
-export async function leerOperacion(_fotoDataUrl) {
-  return null;
-}
-
-// Respuesta de Kiko a una foto enviada en el chat.
-//
-// PENDIENTE (backend): aquí se conectará la IA del tutor. Recibirá la foto comprimida
-// (dataURL JPEG, menos de 300 KB) y devolverá el texto de Kiko. La API key va solo en el backend.
-//
-// Mientras tanto, es una respuesta fija de prueba.
-export async function responderFoto(_fotoDataUrl) {
-  return '¡Vas bien!';
+/**
+ * Lee la foto con el backend. Regresa { lectura, otro }:
+ * - lectura: { a, op, b, c, residuo, dudoso } con números como texto ('17', '3/4'), o null;
+ * - otro: texto de un ejercicio que el escáner no revisa (va al chat para que el alumno lo confirme), o null.
+ */
+export async function leerFoto(fotoDataUrl) {
+  try {
+    const { lectura, otro } = await api.leerFoto(fotoDataUrl);
+    return { lectura: lectura || null, otro: otro || null };
+  } catch {
+    return { lectura: null, otro: null };
+  }
 }
 
 /** Pistas del escáner: la primera es la del diagnóstico; las otras son preguntas generales del paso. */

@@ -41,7 +41,10 @@ SESION_DIAS = int(os.environ.get("SESION_DIAS", "30"))
 # La clave la lee el SDK de anthropic directo del entorno; nunca se escribe en el código ni se manda al navegador.
 TUTOR_ACTIVO = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
 TUTOR_MODELO = os.environ.get("TUTOR_MODELO", "claude-haiku-5-5")
-TUTOR_ESFUERZO = os.environ.get("TUTOR_ESFUERZO", "low")  # low | medium | high
+TUTOR_ESFUERZO = os.environ.get("TUTOR_ESFUERZO", "medium")  # low | medium | high (24 nov: low "reciclaba"; probando medium)
+LECTOR_MODELO = os.environ.get("LECTOR_MODELO", TUTOR_MODELO)  # lee la foto; si Haiku falla, probar claude-sonnet-5-5
 TUTOR_LIMITE_HORA = int(os.environ.get("TUTOR_LIMITE_HORA", "40"))  # mensajes a Claude por alumno; después, reglas
 TUTOR_LIMITE_DIA = int(os.environ.get("TUTOR_LIMITE_DIA", "150"))
+# Material de estudio que lee el tutor junto con su manual (app/agente.md). Por defecto, el de docs/ del repo.
+MATERIAL_DIR = Path(os.environ.get("MATERIAL_DIR", Path(__file__).resolve().parents[2] / "docs" / "material-de-estudio"))
 COOKIE_SEGURA = ENTORNO == "produccion"  # cookie solo por HTTPS en producción

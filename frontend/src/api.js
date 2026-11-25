@@ -54,6 +54,10 @@ export const api = {
 
   // Tutor de IA (Kiko en el chat del escáner). Regresa { respuesta, origen: 'claude' | 'reglas' }.
   tutor: (d) => pedir('POST', '/tutor', d),
+  // Lee la operación de la foto del cuaderno. Regresa { lectura: { a, op, b, c, dudoso } | null, origen }.
+  leerFoto: (foto) => pedir('POST', '/escaner/leer', { foto }),
+  // Guarda en la memoria de aprendizaje una operación confirmada en el escáner. Regresa { concepto, estado }.
+  registrarEscaneo: (op) => pedir('POST', '/escaner/resultado', op),
 
   // Habitación (misma sesión y saldo del juego)
   habitacion: () => pedir('GET', '/habitacion'),

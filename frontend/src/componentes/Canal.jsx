@@ -383,7 +383,8 @@ export function VisualCanal({ visual }) {
       break;
     case 'grupos':
       dibujo = (
-        <div className="canal-grupos">
+        <div className="canal-grupos" style={{ '--total': visual.grupos.reduce((x, y) => x + y, 0), '--ngrupos': visual.grupos.length,
+          '--huecos': visual.grupos.filter((n) => n > 5).length }}>
           {visual.grupos.map((n, i) => (
             <span key={i} className="canal-grupo-caja">
               {i > 0 && <b className="canal-signo" aria-hidden="true">+</b>}

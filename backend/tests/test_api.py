@@ -584,6 +584,51 @@ def test_diagnostico_de_entrada(cliente, nuevo_cliente):
     assert cliente.post("/api/diagnostico", json={"respuestas": {}}).status_code == 403  # solo alumnos
 
 
+def test_crear_el_estado_dos_veces_a_la_vez_no_choca(cliente, monkeypatch):
+    """25 nov: con una cuenta nueva, dos GET /api/juego/estado simultáneos intentaban crear el mismo estado y uno
+    respondía 500 (UNIQUE constraint failed: estado_juego.alumno_id). En SQLite, el candado de la ruta
+    (bloquear_escritura) los forma en fila; en Postgres no hay candado y lo evita estado_de(). Aquí se fuerza la
+    carrera en estado_de(): la segunda sesión "vio" que faltaba la fila antes de que la primera la guardara."""
+    from sqlalchemy import func, select
+    from app import servicio
+    from app.db import get_db
+    from app.main import app
+    from app.modelos import EstadoJuego, Mascota, Usuario
+
+    registrar(cliente, "gemelo")
+    nueva = app.dependency_overrides[get_db]
+    s1, s2 = next(nueva()), next(nueva())
+    alumno = s1.scalar(select(Usuario).where(Usuario.usuario == "gemelo"))
+    assert s1.get(EstadoJuego, alumno.id) is None  # la cuenta todavía no tiene estado
+
+    servicio.estado_de(s1, alumno)
+    s1.commit()  # la primera petición ya la creó…
+    monkeypatch.setattr(servicio, "_fila_existente", lambda db, modelo, alumno_id: None)  # …la segunda no lo sabía
+    est, m = servicio.estado_de(s2, s2.get(Usuario, alumno.id))
+    s2.commit()
+    assert est is not None and m is not None and est.alumno_id == alumno.id
+    for modelo in (EstadoJuego, Mascota):
+        assert s1.scalar(select(func.count()).select_from(modelo)) == 1
+
+
+def test_dos_peticiones_a_la_vez_de_una_cuenta_nueva_responden_bien(cliente):
+    import threading
+    registrar(cliente, "gemela")
+    respuestas = []
+
+    def pedir():
+        try:
+            respuestas.append(cliente.get("/api/juego/estado").status_code)
+        except Exception as e:  # noqa: BLE001  (TestClient propaga el error del servidor)
+            respuestas.append(repr(e)[:120])
+    hilos = [threading.Thread(target=pedir) for _ in range(2)]
+    for h in hilos:
+        h.start()
+    for h in hilos:
+        h.join(timeout=30)
+    assert respuestas == [200, 200]
+
+
 def test_opciones_caben_en_la_respuesta():
     """Reto.jsx manda la respuesta recortada a 60 caracteres (y el servidor acepta 60): ninguna opción puede ser más larga."""
     for mundo in (canal, cdmx, fes):

@@ -45,6 +45,8 @@ COLUMNAS_NUEVAS = {
     # Diagnóstico según el grado: el grado que elige el alumno al crear su cuenta.
     "usuarios": {"grado": "VARCHAR(3)"},
     "diagnosticos": {"grado": "VARCHAR(3)"},
+    # Escalera de pistas: avance que el navegador todavía no confirma (turnos del tutor).
+    "escaleras": {"pendiente": "JSON"},
 }
 
 

@@ -1,6 +1,6 @@
 # CLAUDE.md: Selva Matemática (ThinkLoop), sinapsis-v2
 
-Contexto para Claude Code. Léelo al retomar el trabajo. Última actualización: **24 nov 2026**.
+Contexto para Claude Code. Léelo al retomar el trabajo. Última actualización: **25 nov 2026**.
 
 ## Qué es
 
@@ -23,11 +23,11 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
 - **Frontend:** React 18 + Vite, en `frontend/`.
   - Router por hash (`ruta.js`) y estado en un context (`estado/store.jsx`, `useJuego`).
   - Estilos: `styles/app.css` + `styles/stitch.css` (rediseño Stitch, naranja pastel, tokens `--st-*`).
-  - `npm run dev` arranca en :5173 y manda `/api` al backend por el proxy de Vite. Pruebas: `npm test` (12).
+  - `npm run dev` arranca en :5173 y manda `/api` al backend por el proxy de Vite. Pruebas: `npm test` (40).
 - **Backend:** FastAPI + SQLAlchemy + SQLite, con `uv`, en `backend/`.
   - `uv run uvicorn app.main:app --port 8000 --reload`
   - Datos de prueba: `uv run python -m app.semilla --demo`
-  - Pruebas: `uv run pytest` (45). Si falla todo, revisa que no esté exportada una `DATABASE_URL` vieja.
+  - Pruebas: `uv run pytest` (216). Si falla todo, revisa que no esté exportada una `DATABASE_URL` vieja.
 - **Seguridad:**
   - Contraseñas con argon2, sesión con JWT en cookie httpOnly y freno a intentos repetidos.
   - Código de recuperación guardado con HMAC.
@@ -42,7 +42,8 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
   - **Inicio:** Kiko pregunta "¿Queda algo pendiente?" y muestra cursos pendientes, Ir al Mapa y misiones.
   - **Mi Aula:** clases tipo Classroom, con mi avance y el promedio del grupo.
   - **Perfil:** logros, medallas, stickers, diplomas y personalizar.
-  - **Examen diagnóstico:** arranca solo la primera vez que entra el alumno.
+  - **Examen diagnóstico:** arranca solo la primera vez que entra el alumno. **Según el grado** (de Samuel, 25 nov): el grado que elige al crear su cuenta se guarda en el servidor (`usuarios.grado`) y hay un examen de 8 preguntas por grado (P1 a S3) en `diagnostico.py`; las cuentas sin grado siguen con el examen general.
+  - **Mascota → Habitación** (de Adrian, 25 nov): acuario con stickers (día y noche), tienda y escenario (`frontend/src/habitacion/`, `pantallas/Habitacion.jsx`, `rutas/habitacion.py`). Los cuidados no cuestan estrellas; hay un tiempo de espera entre cuidados (`mascotas.cuidados_hasta`) y para dormir hay que poner la cama.
 - **Profesor:** Modo Aula, Diagnóstico y Perfil.
   - **Modo Aula:** grupos con varios módulos. Los alumnos entran solo con el código o con aprobación del profe.
   - **Diagnóstico:** resultados por habilidad y por alumno, con exportación a CSV.
@@ -65,6 +66,7 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
 - **Ramas:** `main`, `dev`, `victor`, `gera`, `katia`, `samuel` y `zulu`.
   - Hasta `f2d0fc6` todas estaban iguales.
   - **Desde ahora solo se sube a `victor` y a `dev`, de preferencia con Pull Request.** Si se empuja a la rama de otra persona se le puede pisar el trabajo.
+  - **Ojo al subir:** el PR #8 de Adrian traía una copia completa del proyecto dentro de una carpeta `sinapsis-v2/` (por eso la app no la usaba); se integró en las carpetas correctas en el #9. Sube siempre desde la carpeta del repo, nunca una copia dentro de ella. `zulu` todavía tiene esa copia vieja.
   - Antes de subir: `git pull origin dev`.
 - Hacer commit o push solo cuando quien está trabajando lo pida.
 
@@ -80,22 +82,70 @@ Al hacer commit de otra cosa, agrega solo las rutas de ese cambio. Si hay que to
 ## Tutor de IA (Victor)
 
 **Ya hecho (24 nov):** el chat del escáner usa Claude.
-- `app/tutor.py` (prompt socrático, filtro que bloquea respuestas con el resultado, límite por alumno), `app/rutas/tutor.py` (`POST /api/tutor`) y `tests/test_tutor.py` (Claude simulado, no gasta saldo).
-- **Contrato:** recibe `{ operacion: {a, op, b, c}, mensaje, historial }` y regresa `{ respuesta, origen: "claude" | "reglas" }`.
+- **Manual del tutor: `backend/app/agente.md`.** Personalidad, regla de oro (ayuda, no respuesta), formato, escalera de ayuda, cómo adaptarse al grado y a la forma de aprender (visual, auditiva, kinestésica, lógica, narrativa), fuentes confiables, emociones y seguridad. Se manda en cada mensaje junto con `docs/material-de-estudio/` (la progresión de todos los grados y el archivo del grado del alumno, sin las "Ideas de mundo"). **Para cambiar cómo se comporta Kiko, edita ese archivo.**
+- `app/tutor.py` (carga el manual, filtro que bloquea respuestas con el resultado, límite por alumno), `app/rutas/tutor.py` (`POST /api/tutor`) y `tests/test_tutor.py` (Claude simulado, no gasta saldo).
+- **Dibujos:** Claude no genera imágenes. Contesta con un JSON fijo (`output_config.format`, esquema en `app/dibujos.py`) con el texto y, si ayuda, un `dibujo` (objetos, grupos, quitar, recta, decenas, monedas, gráfica o figura) que el chat pinta con los stickers del Mundo 1 (`VisualCanal` de `Canal.jsx`). Un dibujo fuera de límites se descarta; uno que al contarlo da el resultado hace que se use la respuesta por reglas.
+- Kiko también contesta dudas de temas sin operación escaneada. Si el alumno escribe una cuenta en el chat ("cuánto es 345 x 12"), el filtro también bloquea su resultado.
+- **Contrato:** recibe `{ operacion?: {a, op, b, c}, mensaje, historial, grado?, ejercicio?, turno?, recibido? }` (el grado es el que eligió al registrarse, p. ej. `"Primaria • 4°"`; `turno` y `recibido`, ver "Sincronía" abajo) y regresa `{ respuesta, origen: "claude" | "reglas", dibujo }`.
 - **Clave:** `ANTHROPIC_API_KEY` en `backend/.env`; nunca se sube. **Sin clave, sin internet, si Claude rechaza o si el alumno pasa su límite (40/hora, 150/día), usa las pistas por reglas.** Así a nadie se le rompe la app. Cada quien puede trabajar sin clave.
-- **Modelo:** `TUTOR_MODELO` (por defecto `claude-haiku-5-5`) y `TUTOR_ESFUERZO` (`low`). Haiku 5.5 no tiene respaldo del servidor cuando rechaza: se maneja `stop_reason == "refusal"` con reglas.
+- **Modelo:** `TUTOR_MODELO` (por defecto `claude-haiku-5-5`) y `TUTOR_ESFUERZO` (`medium` desde el 24 nov; con `low` "reciclaba" preguntas). Haiku 5.5 no tiene respaldo del servidor cuando rechaza: se maneja `stop_reason == "refusal"` con reglas.
 - A Claude solo le llegan la operación y el chat: ni apodo ni id.
 - Frontend: `api.tutor()` en `api.js`; `Escaner.jsx` contesta con reglas si no hay conexión.
 
+**Lectura de la foto (24 nov):** `app/lector.py` + `POST /api/escaner/leer` (`rutas/escaner.py`, pruebas en `tests/test_lector.py`).
+- Recibe `{ foto: dataURL }` y regresa `{ lectura: { a, op, b, c | null, dudoso } | null, origen }`. Claude **transcribe sin corregir** (aunque el resultado esté mal); `c` es null si el alumno no escribió resultado.
+- La foto solo vive en memoria durante la petición: no se guarda ni se registra. Cuenta para el límite del alumno.
+- Modelo: `LECTOR_MODELO` (por defecto el mismo que `TUTOR_MODELO`, Haiku). Si en fotos reales lee mal, probar `claude-sonnet-5-5` solo aquí.
+- Frontend: `leerOperacion` en `lector.js` llama al backend; el escáner muestra "Kiko está leyendo…" y luego la confirmación. Una foto mandada al chat se lee y va a la misma confirmación. **Nunca se diagnostica sin que el alumno confirme.** Sin clave o si no se lee, el alumno la escribe a mano.
+
+**Fracciones, divisiones y otros ejercicios (24 nov):**
+- `app/operaciones.py` (espejo en `frontend/src/logica/operaciones.js`; si cambias una regla, cambia las dos): números como texto (`"17"`, `"3/4"`), operaciones × + − ÷, división con `residuo`. Diagnostica errores típicos (sumar numeradores y denominadores, multiplicar en vez de dividir, residuo mayor que el divisor) y acepta fracciones equivalentes. Las restas que dan negativo no se revisan (son de secundaria).
+- El lector regresa `{ lectura, otro, origen }`: `otro` es un ejercicio que el escáner no revisa (problema de texto, ecuación…). El chat lo muestra con botones **Sí / No**; si el alumno confirma, se manda al tutor como `ejercicio` y Kiko lo guía sin resolverlo.
+- El filtro del tutor también bloquea resultados en fracción (aunque sean equivalentes, p. ej. 10/8 por 5/4).
+
+**Memoria de aprendizaje (fase 1 de 4, 24 nov):** `app/aprendizaje.py` (tabla `aprendizaje`, una fila por alumno y concepto; pruebas en `tests/test_aprendizaje.py`).
+- La llena el **código**: retos del mapa (`servicio.registrar_intento`), operaciones confirmadas en el escáner (`POST /api/escaner/resultado`) y el chat (qué dibujo usó Kiko y si después el alumno lo resolvió). Solo conteos y etiquetas, nunca el texto del chat.
+- Estado por concepto: nuevo, practicando, necesita_refuerzo o dominado. **Dominado = 3 ejercicios distintos sin ayuda** y pocos errores recientes (nunca por un acierto).
+- Kiko recibe en cada mensaje un resumen corto (`resumen_para_tutor`) con indicaciones que decide el código ("ya domina…: no le expliques lo básico"). `GET /api/aprendizaje` muestra la memoria del alumno.
+- El manual ya no etiqueta "alumno visual/auditivo": prueba representaciones y recuerda cuál le ayudó.
+- **Decisión:** no se da la solución completa ni como último recurso (regla no negociable); en su lugar, ejemplo parecido resuelto o resolver juntos hasta el penúltimo paso.
+
+**Escalera de pistas (fase 2, versión 2 del 24 nov):** `app/estrategia.py` (tabla `escaleras`) + `app/pasitos.py`; pruebas en `tests/test_estrategia.py`.
+- La v1 cambiaba de estrategia en cada escalón (pregunta → dibujo → ejemplo con otros números → penúltimo paso) y para un niño cada salto era otro tema; además repetía el texto fijo aunque el alumno preguntara "¿por qué?". **La v2 trabaja siempre sobre SU ejercicio, partido en pasitos** de una idea (p. ej. 5/6 + 2/3: "¿2/3 son cuántos sextos?" → "5/6 + 4/6: ¿cuántos sextos?").
+- Primer mensaje: pista sobre su error (la escribe Kiko). Luego, según lo que contesta: acierta el pasito → avanza; "¿por qué?" → explicación del porqué de ESE pasito (con dibujo), sin avanzar; "no entiendo" → lo explica más concreto y, si se vuelve a atorar, le dice cuánto da ese pasito y avanza. El último pasito (el resultado) lo hace él; si se atora ahí, ejemplo parecido con otros números y luego ofrecer descanso. 1.º, 2.º y "le está costando" van directo a los pasitos.
+- **Las cuentas las escribe el código** (verificadas); del modelo solo una frase corta sin números. Hay una red de seguridad: si algún texto de un pasito mencionara el resultado por coincidencia, se usa un pasito sencillo. Las pruebas revisan más de 800 operaciones.
+- Con una operación del escáner, **los dibujos los pone solo el código**.
+- **Cuentas escritas en el chat** ("quiero resolver 47 + 36") se toman como su ejercicio: misma escalera de pasitos, y Kiko no la olvida. "70 + 13 = 83" cuenta como respuesta, no como cuenta nueva. Si ya la resolvió, su escalera se cierra; si la vuelve a escribir, empieza de cero.
+- **El código revisa las respuestas del alumno en la plática libre**: si Kiko preguntó una cuenta ("¿cuánto suman 70 y 7?"), el backend le dice si el alumno contestó bien (Haiku llegó a decir que 70 + 7 no era 77). Y si el alumno menciona números como 877, Kiko recibe su valor posicional ya calculado.
+- Lenguaje sin género: solo conocemos el apodo; el manual lo pide y el código corrige lo más común ("solito" → "por tu cuenta").
+- Diagnósticos de errores típicos en `operaciones.py` (espejo en `operaciones.js`): sumó en vez de multiplicar, no llevó la decena, no pidió prestado, un grupo de más/menos, sumó numeradores y denominadores, multiplicó en vez de dividir, residuo grande.
+- **Pendiente de decidir:** el juez sugiere, en 1.º y 2.º, dibujar las dos cantidades para que el niño las cuente (hoy se bloquea porque contando sale el resultado).
+
+**Sincronía y estabilidad (25 nov, revisado con Codex en varias rondas):**
+- **Turnos.** Cada mensaje del chat lleva `turno` (`"visita:n"`, sube con cada mensaje) y `recibido` (el último turno cuya respuesta SÍ se mostró). El avance de la escalera (`escaleras.pendiente`) y la ayuda en la memoria (`turnos_tutor.ayuda`) quedan pendientes hasta que el siguiente mensaje los confirma; si la respuesta se descartó (cambió de ejercicio, error de red), el pasito se repite en vez de perderse. Un reintento del mismo turno recibe la misma respuesta; uno más viejo que el último no altera nada. Sin `turno` (la evaluación, clientes viejos) todo se guarda al momento, como antes. Código en `estrategia.sincronizar`, `dejar_pendiente` y `anotar_entrega`.
+- **Intención antes de avanzar** (`estrategia.intencion`): "voy a descansar, seguimos mañana" es pausa y "quiero entender qué es una fracción" es cambio de tema; ninguna cuenta como atasco ni avanza la escalera. Si el mensaje trae números, "esto", "este paso" o "por qué", se toma como pregunta de su ejercicio.
+- **Dudas y negaciones no son acierto:** "¿será 42?", "creo que 42", "42 o 43", "no es 42" no cierran el ejercicio ni un pasito; "no es 41, es 42" sí. Con duda, Kiko pide que explique cómo llegó (sin confirmar ni negar). La misma regla en `estrategia.py` y `operaciones.js`.
+- **Chat del escáner** (`Escaner.jsx`): un mensaje a la vez (enviar, pistas, reiniciar y fotos se bloquean mientras Kiko piensa); cada "pensando" es de su petición; al reiniciar o confirmar otro ejercicio, las respuestas tardías se descartan; antes de pedir pistas espera a que el servidor registre el escaneo (si falla dos veces, usa las pistas del navegador). Al confirmar un escaneo incorrecto empieza un intento nuevo y la pista que ya mostró la pantalla cuenta como el primer escalón.
+- **Ejercicio resuelto:** se apagan las pistas de ese ejercicio (con o sin conexión), pero si pide "¿por qué?" o "explícame" se le explica (sin conexión, con `explicacionResuelta`).
+- **Estado del juego sin choques:** dos peticiones simultáneas de una cuenta nueva ya no dan 500 (`servicio.estado_de`, `INSERT … ON CONFLICT DO NOTHING`, sirve en SQLite y Postgres; en SQLite además está el candado `bloquear_escritura` de Adrian).
+- **Prueba de navegador** (Playwright, con el tutor y el escáner simulados: no gasta saldo) que cubre estas secuencias. Por ahora NO está en el repo (falta acordar con el equipo agregar `playwright-core` al `package.json`).
+
+**Dibujos nuevos (fase 3):** `fracciones` (pizza o chocolate), `balanza`, `porcentaje` (cuadrícula de 100) y `tabla`, en `dibujos.py` y `frontend/src/componentes/DibujoTutor.jsx` (con descripción en texto). **El esquema JSON de la respuesta debe ser simple** (`tipo` + `datos` como texto JSON): con un esquema grande Claude tardaba más de 20 s o respondía "Schema is too complex"; hay una prueba que lo vigila.
+
+**Evaluación pedagógica (fase 4):** `backend/evaluacion/` (30 escenarios de 1.º de primaria a 3.º de secundaria en `escenarios.py`).
+- `uv run python -m evaluacion.evaluar` (≈ $0.05 con Haiku) · `--juez` agrega calificación de 1 a 5 con Claude Opus 5.5 (≈ $0.80 más) · `--esfuerzo low` para comparar · `--solo <id>`.
+- Usa una base temporal (no toca `selva.db`); el reporte queda en `evaluacion/resultados/` (ignorado por git).
+- Resultado 24 nov (Haiku `medium`, escalera v2): 30/30 sin problemas de código; juez: guía sin dar **4.8** (v1: 4.4), adapta nivel 4.3, no complica 4.1, claridad 4.0, calidez 4.5.
+
 **Falta:**
-- **Leer la foto:** `leerOperacion` y `responderFoto` en `lector.js` siguen fijos. La lectura la hace el backend con Claude (probar Haiku; si falla, `claude-sonnet-5-5` solo para leer). Lo leído es la `operacion` del tutor. La foto se borra en cuanto se lee.
+- Probar la lectura con fotos reales de cuaderno (hasta ahora solo con imágenes de prueba con letra imitada).
 - **Comparar Haiku contra Sonnet** con unas 30 preguntas de `docs/material-de-estudio/` (1.º de primaria a 3.º de secundaria, más casos de "ya dime la respuesta").
 
 ## Pendientes e ideas (de la revisión del 23 nov, calificación 6.5/10)
 
 Prioridades para la entrega:
-1. **IA real:** falta la lectura de la foto (el tutor de texto ya usa Claude).
-2. **Contenido:** cerrar un grado completo (3.º de primaria: multiplicación + división + fracciones, unos 12 retos por mundo). Además, hacer el **diagnóstico según el grado**: hoy son las mismas 8 preguntas de nivel 3.º–4.º para todos, y el grado solo se guarda en `localStorage` (`selva:grado:<id>`). Hay que guardarlo en el servidor.
+1. **IA real:** el tutor y la lectura de la foto ya usan Claude; falta probar con fotos reales y comparar Haiku contra Sonnet.
+2. **Contenido:** cerrar un grado completo (3.º de primaria: multiplicación + división + fracciones, unos 12 retos por mundo). El Mundo 3 (FES, 3.º) ya está; el **diagnóstico según el grado** ya está (Samuel, 25 nov).
 3. **Publicarla:**
    - Frontend en Vercel o Netlify, y backend en Render o Railway, con Postgres (ahí sirven los cambios guardados de arriba).
    - GitHub Actions que corra las pruebas en cada push.

@@ -59,12 +59,14 @@ function ListaClases() {
         <a className="btn btn-crema btn-chico" href="#/mapa"><I n="mapa" tamano={16} /> Ir al Mapa a jugar</a>
       </div>
 
+      <Unirme onUnido={cargar} />
+
       {aulas === null && <p className="cuerpo-md texto-suave">Cargando tus clases…</p>}
       {aulas?.length === 0 && (
         <section className="tarjeta-suave centro-col" style={{ textAlign: 'center', padding: 32 }}>
           <span className="icono-caja ic-crema grande"><I n="aula" tamano={28} /></span>
           <p className="t-md" style={{ margin: 0 }}>Todavía no estás en ninguna clase</p>
-          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Pídele el código a tu maestra o maestro y escríbelo abajo.</p>
+          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Pídele el código a tu maestra o maestro y escríbelo arriba.</p>
         </section>
       )}
 
@@ -97,8 +99,6 @@ function ListaClases() {
             : <a key={a.id} className="clase" href={`#/aula/${a.id}`}>{contenido}</a>;
         })}
       </div>
-
-      <Unirme onUnido={cargar} />
     </div>
   );
 }
