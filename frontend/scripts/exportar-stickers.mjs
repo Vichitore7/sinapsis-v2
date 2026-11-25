@@ -133,6 +133,39 @@ function stickersCanal(C) {
   ];
 }
 
+// ---------- Mundo 2 "El Centro de los Números": cacomixtle, tarjeta, transportes, monumentos y cosas del Centro ----------
+
+const SALIDA_CDMX = resolve(FRONTEND, '..', 'docs', 'imagenes', 'cdmx');
+const SALIDA_CDMX_SVG = join(SALIDA_CDMX, 'svg');
+
+async function cargarCdmx() {
+  mkdirSync(TEMP, { recursive: true });
+  const destino = join(TEMP, 'CDMX.mjs');
+  await build({
+    entryPoints: [join(FRONTEND, 'src', 'componentes', 'CDMX.jsx')],
+    bundle: true, format: 'esm', platform: 'node', jsx: 'automatic',
+    external: ['react', 'react/jsx-runtime'], outfile: destino, logLevel: 'silent',
+  });
+  return import(pathToFileURL(destino).href);
+}
+
+/** Los dibujos del Centro que se exportan (los mismos componentes que usa la app). */
+function stickersCdmx(M) {
+  const h = createElement;
+  return [
+    { archivo: 'cacomixtle', el: h(M.Cacomixtle, {}) },
+    { archivo: 'tarjeta-metro', el: h(M.TarjetaMetro, {}) },
+    ...M.TRANSPORTES.map((t) => ({ archivo: `transporte-${t.id}`, el: h(M.TransporteNivel, { tipo: t.id, estado: 'hecho' }) })),
+    ...['angel', 'palacio', 'castillo', 'bellas', 'revolucion', 'kiosco', 'torre', 'jacaranda']
+      .map((tipo) => ({ archivo: `monumento-${tipo}`, el: h(M.Monumento, { tipo }) })),
+    ...['tacos', 'elotes', 'globero', 'organillero', 'taxi', 'farol', 'banca', 'metro', 'xolo', 'alebrije']
+      .map((tipo) => ({ archivo: `centro-${tipo}`, el: h(M.Monumento, { tipo }) })),
+    { archivo: 'persona', el: h(M.Persona, {}) },
+    { archivo: 'boleto', el: h(M.Boleto, {}) },
+    { archivo: 'libro', el: h(M.Libro, {}) },
+  ];
+}
+
 // ---------- Mundo 3 "La FES de los Números": peluche de la mascota, tlacuache, título, lugares y campus ----------
 
 const SALIDA_FES = resolve(FRONTEND, '..', 'docs', 'imagenes', 'fes');
@@ -189,7 +222,7 @@ function aSvgCanal(markup) {
   return { svg: `<?xml version="1.0" encoding="UTF-8"?>\n${salida}\n`, ancho, alto };
 }
 
-// Qué exportar: `npm run stickers` hace todo; `npm run stickers -- kiko`, `-- canal` o `-- fes` solo esa parte.
+// Qué exportar: `npm run stickers` hace todo; `npm run stickers -- kiko`, `-- canal`, `-- cdmx` o `-- fes` solo esa parte.
 const solo = process.argv[2];
 mkdirSync(SALIDA_SVG, { recursive: true });
 const navegador = buscarNavegador();
@@ -222,6 +255,19 @@ if (!solo || solo === 'canal') {
     console.log(`✓ canal/${s.archivo} (${ancho}×${alto})`);
   }
   console.log(`Listo: ${SALIDA_CANAL}`);
+}
+
+if (!solo || solo === 'cdmx') {
+  const Cdmx = await cargarCdmx();
+  mkdirSync(SALIDA_CDMX_SVG, { recursive: true });
+  for (const s of stickersCdmx(Cdmx)) {
+    const { svg, ancho, alto } = aSvgCanal(renderToStaticMarkup(s.el));
+    const rutaSvg = join(SALIDA_CDMX_SVG, `${s.archivo}.svg`);
+    writeFileSync(rutaSvg, svg);
+    if (navegador) aPng(navegador, rutaSvg, join(SALIDA_CDMX, `${s.archivo}.png`), ancho, alto);
+    console.log(`✓ cdmx/${s.archivo} (${ancho}×${alto})`);
+  }
+  console.log(`Listo: ${SALIDA_CDMX}`);
 }
 
 if (!solo || solo === 'fes') {

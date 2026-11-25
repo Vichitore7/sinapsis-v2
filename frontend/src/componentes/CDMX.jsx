@@ -15,7 +15,7 @@ export function Cacomixtle({ tamano = 34, encendido = true }) {
   const t = { stroke: trazo, strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round', strokeDasharray: encendido ? undefined : '3 3' };
   const cuerpo = encendido ? '#c9b393' : 'none';
   return (
-    <svg width={tamano} height={tamano * 0.72} viewBox="0 0 60 43" aria-hidden="true" className={encendido ? 'cacomixtle' : 'cacomixtle cacomixtle-apagado'}>
+    <svg width={tamano} height={tamano * 0.72} viewBox="0 0 60 43" aria-hidden="true" className={encendido ? 'cacomixtle sticker' : 'cacomixtle cacomixtle-apagado'}>
       {/* cola con anillos */}
       {[[8, 10], [6, 16], [7, 22], [10, 27], [15, 30]].map(([x, y], i) => (
         <ellipse key={i} cx={x} cy={y} rx="5" ry="4" fill={encendido ? (i % 2 ? '#f3ede2' : '#3a3550') : 'none'} {...t} />
@@ -150,7 +150,7 @@ export function TransporteNivel({ tipo = 'metro', estado = 'bloq', tamano = 124,
   const bloq = estado === 'bloq';
   return (
     <span className={`trajinera-nivel transporte-nivel trajinera-${estado}`} style={{ width: tamano, height: tamano * 0.74 }}>
-      <svg width={tamano} height={tamano * 0.74} viewBox="0 0 140 104" aria-hidden="true" className={bloq ? 'transporte-gris' : undefined}>
+      <svg width={tamano} height={tamano * 0.74} viewBox="0 0 140 104" aria-hidden="true" className={bloq ? 'transporte-gris sticker' : 'sticker'}>
         <ellipse cx="70" cy="98" rx="62" ry="5" fill="#000" opacity=".15" />
         <Vehiculo tipo={tipo} c={bloq ? GRIS : info.color} />
       </svg>
@@ -352,13 +352,13 @@ const COSAS = {
 
 /** Un lugar representativo de la CDMX (o una cosa de la vida en la calle) como decoración del mapa. */
 export function Monumento({ tipo }) {
-  return <svg viewBox="0 0 120 120" aria-hidden="true" className="monumento">{MONUMENTOS[tipo] || COSAS[tipo]}</svg>;
+  return <svg viewBox="0 0 120 120" aria-hidden="true" className="monumento sticker">{MONUMENTOS[tipo] || COSAS[tipo]}</svg>;
 }
 
 /** Sticker de la Tarjeta del Metro (tarjeta de movilidad integrada): premio al terminar el Mundo 2. */
 export function TarjetaMetro({ tamano = 64 }) {
   return (
-    <svg width={tamano} height={tamano * 0.66} viewBox="0 0 100 66" aria-hidden="true" className="tarjeta-metro">
+    <svg width={tamano} height={tamano * 0.66} viewBox="0 0 100 66" aria-hidden="true" className="tarjeta-metro sticker">
       <rect x="3" y="3" width="94" height="60" rx="9" fill="#f37021" {...L} strokeWidth="3" />
       <path d="M3 44 Q50 30 97 44 V54 Q97 63 88 63 H12 Q3 63 3 54 Z" fill="#e4007c" />
       <rect x="12" y="12" width="16" height="12" rx="2" fill="#f5c542" {...L} strokeWidth="1.5" />
@@ -391,27 +391,27 @@ export function PapelPicado() {
 
 // ---------- Dibujos de los ejercicios de 2.º ----------
 
-function Persona({ t = 26 }) {
+export function Persona({ t = 26 }) {
   return (
-    <svg width={t} height={t} viewBox="0 0 30 30" aria-hidden="true">
+    <svg width={t} height={t} viewBox="0 0 30 30" aria-hidden="true" className="sticker">
       <path d="M5 29 Q5 17 15 17 Q25 17 25 29 Z" fill="#7b5cd6" {...L} strokeWidth="1.5" />
       <circle cx="15" cy="10" r="6.5" fill="#f6c9a0" {...L} strokeWidth="1.5" />
     </svg>
   );
 }
 
-function Boleto({ t = 28 }) {
+export function Boleto({ t = 28 }) {
   return (
-    <svg width={t} height={t * 0.62} viewBox="0 0 40 25" aria-hidden="true">
+    <svg width={t} height={t * 0.62} viewBox="0 0 40 25" aria-hidden="true" className="sticker">
       <path d="M2 3 H38 V9 Q34 12.5 38 16 V22 H2 V16 Q6 12.5 2 9 Z" fill="#f37021" {...L} strokeWidth="1.5" />
       <text x="20" y="16.5" textAnchor="middle" fontFamily="'Nunito', sans-serif" fontWeight="900" fontSize="9" fill="#fff">M</text>
     </svg>
   );
 }
 
-function Libro({ t = 24 }) {
+export function Libro({ t = 24 }) {
   return (
-    <svg width={t} height={t} viewBox="0 0 30 30" aria-hidden="true">
+    <svg width={t} height={t} viewBox="0 0 30 30" aria-hidden="true" className="sticker">
       <path d="M4 6 Q10 3 15 7 Q20 3 26 6 V25 Q20 22 15 26 Q10 22 4 25 Z" fill="#1d3f8f" {...L} strokeWidth="1.5" />
       <path d="M15 7 V26" stroke="#f5b700" strokeWidth="2" />
     </svg>
@@ -557,7 +557,7 @@ function Poligono({ lados }) {
     return [100 + 62 * Math.cos(a), 78 + 62 * Math.sin(a)];
   });
   return (
-    <svg className="canal-figura" viewBox="0 0 200 150" role="img" aria-label="Figura geométrica">
+    <svg className="canal-figura sticker" viewBox="0 0 200 150" role="img" aria-label="Figura geométrica">
       <polygon points={pts.map((p) => p.join(',')).join(' ')} fill="#cfe8ff" stroke={TINTA} strokeWidth="3" strokeLinejoin="round" />
       {pts.map(([px, py], i) => <circle key={i} cx={px} cy={py} r="4" fill={TINTA} />)}
     </svg>
@@ -584,7 +584,7 @@ function Reloj({ hora, minutos }) {
   const [hx, hy] = punta(aHora, 34);
   const [mx, my] = punta(aMin, 52);
   return (
-    <svg className="canal-figura" viewBox="0 0 200 160" role="img" aria-label="Reloj de manecillas">
+    <svg className="canal-figura sticker" viewBox="0 0 200 160" role="img" aria-label="Reloj de manecillas">
       <defs><radialGradient id={id}><stop offset="0" stopColor="#fff" /><stop offset="1" stopColor="#f1eee7" /></radialGradient></defs>
       <circle cx="100" cy="80" r="70" fill={`url(#${id})`} stroke={TINTA} strokeWidth="4" />
       {Array.from({ length: 12 }, (_, i) => {

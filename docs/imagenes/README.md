@@ -33,6 +33,17 @@ docs/imagenes/
     ├── chinampa-cempasuchil.png
     ├── lirio.png, pez.png, flor.png, persona.png, sombrerito.png, jarrito.png, ramo.png
     └── svg/                          Los mismos dibujos en SVG (el borde blanco va incluido)
+└── cdmx/                     Mundo 2 "El Centro de los Números" como stickers (borde blanco, 512 px)
+    ├── cacomixtle.png                Los 3 premios de cada nivel
+    ├── tarjeta-metro.png             Sticker de premio: tarjeta de movilidad integrada
+    ├── transporte-<tipo>.png         Transportes de los niveles: metro, metrobus, trolebus, tren-ligero, cablebus,
+    │                                 rtp y ecobici (sin número)
+    ├── monumento-<lugar>.png         Monumentos del mapa: angel, palacio, castillo, bellas, revolucion, kiosco,
+    │                                 torre y jacaranda
+    ├── centro-<cosa>.png             Decoración del mapa: tacos, elotes, globero, organillero, taxi, farol, banca,
+    │                                 metro, xolo y alebrije
+    ├── persona.png, boleto.png, libro.png   Objetos para contar de los ejercicios (pictogramas)
+    └── svg/
 └── fes/                      Mundo 3 "La FES de los Números" como stickers (borde blanco, 512 px)
     ├── peluche-mascota.png           Sticker de premio: peluche de la mascota de la FES
     ├── tlacuache.png                 Los 3 premios de cada nivel
@@ -53,14 +64,15 @@ docs/imagenes/
 
 ## Volver a generar los stickers
 
-Los stickers salen del mismo dibujo de la app: Kiko de `frontend/src/componentes/Ajolote.jsx`, el canal de `frontend/src/componentes/Canal.jsx` y la FES de `frontend/src/componentes/FES.jsx`. Por eso un elemento que se repite (una trajinera, un pez, una flor) siempre es el mismo dibujo, en la app y aquí. Si cambia un dibujo o se agrega uno nuevo:
+Los stickers salen del mismo dibujo de la app: Kiko de `frontend/src/componentes/Ajolote.jsx`, el canal de `frontend/src/componentes/Canal.jsx`, el Centro de `frontend/src/componentes/CDMX.jsx` y la FES de `frontend/src/componentes/FES.jsx`. Por eso un elemento que se repite (una trajinera, un pez, una flor) siempre es el mismo dibujo, en la app y aquí. Si cambia un dibujo o se agrega uno nuevo:
 
 ```powershell
 cd frontend
 npm run stickers            # todo
 npm run stickers -- kiko    # solo Kiko
 npm run stickers -- canal   # solo el canal
+npm run stickers -- cdmx    # solo el Centro
 npm run stickers -- fes     # solo la FES
 ```
 
-El script (`frontend/scripts/exportar-stickers.mjs`) sobrescribe los archivos de `stickers/`, `canal/` y `fes/` (y sus `svg/`). En la app, el borde blanco lo pone la clase `.sticker` de `app.css`; en los SVG exportados va dibujado dentro del archivo para que se vea igual fuera de la app. Para el PNG usa Edge o Chrome sin abrir ventanas; no hay que instalar nada.
+El script (`frontend/scripts/exportar-stickers.mjs`) sobrescribe los archivos de `stickers/`, `canal/`, `cdmx/` y `fes/` (y sus `svg/`). En la app, el borde blanco lo pone la clase `.sticker` de `app.css`; en los SVG exportados va dibujado dentro del archivo para que se vea igual fuera de la app. Para el PNG usa Edge o Chrome sin abrir ventanas; no hay que instalar nada.
