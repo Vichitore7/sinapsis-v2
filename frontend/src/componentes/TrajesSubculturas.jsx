@@ -300,7 +300,27 @@ function BotasNieve({ color }) {
   );
 }
 
-// ---------- Los 20 trajes de subculturas + los 2 atuendos de la FES + los 2 del Nevado ----------
+// ---------- Piezas del traje de baño (premio del Mundo 4, rumbo a las Grutas de Tolantongo) ----------
+
+function Chanclas({ color }) {
+  return (
+    <g {...C} strokeWidth="2">
+      <ellipse cx="72" cy="180" rx="16" ry="6" fill={color} /><ellipse cx="128" cy="180" rx="16" ry="6" fill={color} />
+      <path d="M66 178 L72 172 L78 178 M122 178 L128 172 L134 178" fill="none" stroke={R.blanco} strokeWidth="3" />
+    </g>
+  );
+}
+
+function Flor({ x, y, color }) {
+  return (
+    <g>
+      {[0, 72, 144, 216, 288].map((a) => <circle key={a} cx={x + 4 * Math.cos((a * Math.PI) / 180)} cy={y + 4 * Math.sin((a * Math.PI) / 180)} r="3" fill={color} />)}
+      <circle cx={x} cy={y} r="1.8" fill={R.amarillo} />
+    </g>
+  );
+}
+
+// ---------- Los 20 trajes de subculturas + los 2 atuendos de la FES + los 2 del Nevado + los 2 de Tolantongo ----------
 
 export const SUBCULTURAS = {
   'emo-rayas': {
@@ -725,5 +745,53 @@ export const SUBCULTURAS = {
       </g>
     ),
     detalles: () => <g><Bufanda color={R.morado} raya={R.rosaClaro} /><Guantes color="#f3e7ff" /><BotasNieve color="#7b5cd6" /></g>,
+  },
+  // ---------- Rumbo a las Grutas de Tolantongo (premio del Mundo 4): trajes de baño para el balneario ----------
+  'tolantongo-short': {
+    tocado: () => (
+      <g {...C}>
+        <path d="M46 62 Q100 44 154 62 L152 72 Q100 56 48 72 Z" fill="#1fb5a8" />
+        <path d="M60 66 Q100 58 140 66 Q150 80 132 84 Q100 76 68 84 Q50 80 60 66 Z" fill="#1fb5a8" />
+        <path d="M70 78 Q100 72 130 78" fill="none" stroke={R.blanco} strokeWidth="2" />
+      </g>
+    ),
+    silueta: () => <path d="M42 60 Q100 38 158 60 L156 88 Q100 78 44 88 Z" />,
+    ropa: () => (
+      <g>
+        <rect x="60" y="150" width="80" height="32" fill="#1fb5a8" />
+        <path d="M100 160 V182" stroke="#13877d" strokeWidth="2.5" />
+        <rect x="60" y="150" width="80" height="6" fill="#13877d" />
+        <Flor x={80} y={166} color={R.rosa} /><Flor x={120} y={170} color={R.amarillo} />
+      </g>
+    ),
+    detalles: () => <Chanclas color="#ff8a3d" />,
+  },
+  'tolantongo-completo': {
+    tocado: () => (
+      <g {...C}>
+        <path d="M40 64 Q100 50 160 64" fill="none" stroke={R.morado} strokeWidth="5" />
+        <ellipse cx="80" cy="60" rx="15" ry="11" fill="#9fe3ff" />
+        <ellipse cx="120" cy="60" rx="15" ry="11" fill="#9fe3ff" />
+        <path d="M95 60 H105" strokeWidth="4" />
+        <path d="M72 56 L78 52 M112 56 L118 52" stroke={R.blanco} strokeWidth="2.5" />
+      </g>
+    ),
+    silueta: () => <><ellipse cx="80" cy="60" rx="19" ry="15" /><ellipse cx="120" cy="60" rx="19" ry="15" /></>,
+    ropa: () => (
+      <g>
+        <rect x="60" y="124" width="80" height="58" fill="#24427a" />
+        {[150, 160, 170].map((y) => <rect key={y} x="60" y={y} width="80" height="4" fill="#ff7a6b" />)}
+      </g>
+    ),
+    detalles: () => (
+      <g>
+        <g {...C}>
+          <ellipse cx="100" cy="164" rx="50" ry="12" fill={R.amarillo} />
+          <ellipse cx="100" cy="162" rx="34" ry="6" fill="#24427a" />
+        </g>
+        {[62, 86, 114, 138].map((x) => <path key={x} d={`M${x} 155 Q${x + 4} 164 ${x} 174`} stroke="#ff5fa2" strokeWidth="5" fill="none" />)}
+        <Chanclas color="#7b5cd6" />
+      </g>
+    ),
   },
 };

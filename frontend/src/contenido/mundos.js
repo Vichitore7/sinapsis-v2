@@ -6,6 +6,7 @@ export const STICKERS = {
   flor: { nombre: 'Flor de la chinampa' },
   tarjeta: { nombre: 'Tarjeta del Metro' },
   peluche: { nombre: 'Peluche de la mascota de la FES' },
+  esfera: { nombre: 'Bolita de nieve del Nevado' },
   mochila: { nombre: 'Mochila de la selva' },
   bufanda: { nombre: 'Bufanda del mercado' },
   sombrero: { nombre: 'Sombrero del río' },
@@ -22,6 +23,9 @@ export const TRAJES = {
   // Rumbo al Nevado de Toluca: premio fijo del examen del Mundo 3 (ropa para el frío).
   'nevado-gorro': { nombre: 'Nevado: chamarra y gorro', origen: 'Constancia Mundo 3', detalle: 'Gorro tejido con pompón, chamarra acolchonada, bufanda, guantes y botas para la nieve.' },
   'nevado-orejeras': { nombre: 'Nevado: abrigo y orejeras', origen: 'Constancia Mundo 3', detalle: 'Orejeras peludas, abrigo largo con botones, bufanda, guantes y botas para la nieve.' },
+  // Rumbo a las Grutas de Tolantongo: premio fijo del examen del Mundo 4 (trajes de baño).
+  'tolantongo-short': { nombre: 'Tolantongo: short de baño y visera', origen: 'Constancia Mundo 4', detalle: 'Visera, short de baño con flores y chanclas para el balneario.' },
+  'tolantongo-completo': { nombre: 'Tolantongo: traje de baño completo y goggles', origen: 'Constancia Mundo 4', detalle: 'Goggles, traje de baño a rayas, flotador y chanclas para el balneario.' },
   // Subculturas de la CDMX: premio del examen general del Mundo 1 (2 al azar, de estilos distintos).
   // Los nombres dicen cómo se ve el traje; cualquiera puede usar cualquiera.
   ...Object.fromEntries([

@@ -4,6 +4,7 @@
 import { COLORES_NIVEL, ChinampaIsla, Lirio, PecesNivel, TrajineraNivel, VisualCanal } from './Canal.jsx';
 import { CacomixtlesNivel, Monumento, PapelPicado, TRANSPORTES, TransporteNivel, VisualCDMX } from './CDMX.jsx';
 import { BanderinesFES, CampusDeco, LUGARES, LugarNivel, TituloFES, TlacuachesNivel, VisualFES, lugarDe } from './FES.jsx';
+import { CoposNieve, NevadoDeco, PARADAS, ParadaNivel, TeporingosNivel, TituloNevado, VisualNevado, paradaDe } from './Nevado.jsx';
 
 // Decoración del canal: chinampas y lirios esparcidos por las orillas (top en % del alto del mapa).
 const DECO_CANAL = [
@@ -68,6 +69,28 @@ const DECO_FES = [
   { tipo: 'cosa', lado: 'izq', top: '86.5%', x: '4%', cual: 'arbol' }, { tipo: 'cosa', lado: 'der', top: '92%', x: '4%', cual: 'alumnos' },
   { tipo: 'cosa', lado: 'izq', top: '97.5%', x: '5%', cual: 'banca' }, { tipo: 'cosa', lado: 'der', top: '97.5%', x: '3%', cual: 'puesto' },
   // Banderines azul y oro de lado a lado
+  { tipo: 'banderines', top: '17.5%' }, { tipo: 'banderines', top: '57%' }, { tipo: 'banderines', top: '95%' },
+];
+
+// Decoración del Nevado de Toluca: picos nevados, lagunas, oyameles, cabañas y rocas en las orillas; teporingos,
+// excursionistas, puestos de quesadillas, muñecos de nieve y letreros en los huecos; copos de nieve de lado a lado.
+const DECO_NEVADO = [
+  { tipo: 'monumento', lado: 'izq', top: '4%', cual: 'volcan' }, { tipo: 'monumento', lado: 'der', top: '8%', cual: 'oyameles' },
+  { tipo: 'monumento', lado: 'izq', top: '15%', cual: 'cabana' }, { tipo: 'monumento', lado: 'der', top: '21%', cual: 'laguna' },
+  { tipo: 'monumento', lado: 'izq', top: '28%', cual: 'oyameles' }, { tipo: 'monumento', lado: 'der', top: '34%', cual: 'roca' },
+  { tipo: 'monumento', lado: 'izq', top: '41%', cual: 'laguna' }, { tipo: 'monumento', lado: 'der', top: '47%', cual: 'volcan' },
+  { tipo: 'monumento', lado: 'izq', top: '54%', cual: 'roca' }, { tipo: 'monumento', lado: 'der', top: '60%', cual: 'cabana' },
+  { tipo: 'monumento', lado: 'izq', top: '67%', cual: 'oyameles' }, { tipo: 'monumento', lado: 'der', top: '73%', cual: 'laguna' },
+  { tipo: 'monumento', lado: 'izq', top: '80%', cual: 'volcan' }, { tipo: 'monumento', lado: 'der', top: '86%', cual: 'oyameles' },
+  { tipo: 'monumento', lado: 'izq', top: '92%', cual: 'laguna' },
+  { tipo: 'cosa', lado: 'der', top: '14%', x: '4%', cual: 'teporingo' }, { tipo: 'cosa', lado: 'izq', top: '10.5%', x: '4%', cual: 'letrero' },
+  { tipo: 'cosa', lado: 'izq', top: '22%', x: '3%', cual: 'excursionistas' }, { tipo: 'cosa', lado: 'der', top: '28%', x: '3%', cual: 'munieco' },
+  { tipo: 'cosa', lado: 'izq', top: '35%', x: '4%', cual: 'teporingo' }, { tipo: 'cosa', lado: 'der', top: '41%', x: '4%', cual: 'puesto' },
+  { tipo: 'cosa', lado: 'izq', top: '48%', x: '3%', cual: 'munieco' }, { tipo: 'cosa', lado: 'der', top: '54%', x: '3%', cual: 'excursionistas' },
+  { tipo: 'cosa', lado: 'izq', top: '61%', x: '4%', cual: 'puesto' }, { tipo: 'cosa', lado: 'der', top: '67%', x: '4%', cual: 'teporingo' },
+  { tipo: 'cosa', lado: 'izq', top: '74%', x: '3%', cual: 'teporingo' }, { tipo: 'cosa', lado: 'der', top: '80%', x: '3%', cual: 'letrero' },
+  { tipo: 'cosa', lado: 'izq', top: '86.5%', x: '4%', cual: 'excursionistas' }, { tipo: 'cosa', lado: 'der', top: '92%', x: '4%', cual: 'munieco' },
+  { tipo: 'cosa', lado: 'izq', top: '97.5%', x: '5%', cual: 'teporingo' }, { tipo: 'cosa', lado: 'der', top: '97.5%', x: '3%', cual: 'puesto' },
   { tipo: 'banderines', top: '17.5%' }, { tipo: 'banderines', top: '57%' }, { tipo: 'banderines', top: '95%' },
 ];
 
@@ -156,6 +179,34 @@ export const TEMAS = {
       'Una fracción con MÁS pedazos tiene pedazos más chicos: 1/8 es menos que 1/4.',
       'Dividir es repartir en partes iguales. Compruébalo multiplicando.',
       'Cada lugar del campus esconde 3 tlacuaches: resuelve sus 3 ejercicios para encontrarlos.',
+    ],
+  },
+  nevado: {
+    clase: 'tema-nevado',
+    claseMapa: 'canal-mapa nevado-mapa',
+    Titulo: TituloNevado,
+    Visual: VisualNevado,
+    Medallas: TeporingosNivel,
+    Nodo: ({ nivel, estado, children }) => <ParadaNivel tipo={paradaDe(nivel)} estado={estado}>{children}</ParadaNivel>,
+    nombreNodo: (nivel) => PARADAS[paradaDe(nivel)].nombre,
+    deco: DECO_NEVADO,
+    Deco: ({ d }) => (d.tipo === 'banderines' ? <CoposNieve /> : <NevadoDeco tipo={d.cual} />),
+    palabras: {
+      premios: 'teporingos',
+      encontrar: '¡Encontraste un teporingo!',
+      llenar: (n) => `¡Llegaste a la parada ${n} de la subida!`,
+      enEste: 'en esta parada del volcán',
+      siguiente: 'Con los 3 teporingos sigues subiendo a la siguiente parada.',
+      irSiguiente: 'Seguir subiendo',
+      examenListo: 'Ya puedes presentar el examen general del Nevado.',
+      diploma: 'Constancia de alpinista',
+      premioTitulo: '¡Al agua! Nos vamos a las Grutas de Tolantongo',
+    },
+    consejos: [
+      'Para leer 28,450, lee primero los miles: veintiocho mil…',
+      'Con dinero, lo que va después del punto son centavos.',
+      'Para sumar fracciones, primero haz que tengan el mismo denominador.',
+      'Cada parada del volcán esconde 3 teporingos: resuelve sus 3 ejercicios para encontrarlos.',
     ],
   },
 };

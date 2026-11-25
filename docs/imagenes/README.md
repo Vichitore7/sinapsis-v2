@@ -23,6 +23,8 @@ docs/imagenes/
 │   │                                 con patita dorada, tenis y audífonos), también en versión -cabeza
 │   ├── kiko-nevado-gorro.png / kiko-nevado-orejeras.png   Premio del Mundo 3: ropa para el frío, rumbo al
 │   │                                 Nevado de Toluca, también en versión -cabeza
+│   ├── kiko-tolantongo-short.png / kiko-tolantongo-completo.png   Premio del Mundo 4: trajes de baño, rumbo a las
+│   │                                 Grutas de Tolantongo, también en versión -cabeza
 │   └── svg/                          Los mismos dibujos en SVG (se agrandan sin perder calidad;
 │                                     se editan en Figma o Illustrator)
 └── canal/                    Mundo 1 "El Canal de los Números" como stickers (borde blanco, 512 px)
@@ -53,6 +55,15 @@ docs/imagenes/
     ├── campus-<cosa>.png             Decoración del mapa: torres, auditorio, mascota, hombre de morado, edificio,
     │                                 laboratorio, cancha, cafetería, puesto, alumnos, árbol, bici y banca
     └── svg/
+└── nevado/                   Mundo 4 "El Nevado de los Números" como stickers (borde blanco, 512 px)
+    ├── bolita-de-nieve.png           Sticker de premio: esfera de nieve con el Nevado y un teporingo
+    ├── teporingo.png                 Los 3 premios de cada nivel
+    ├── titulo-nevado-de-toluca.png   Letrero "¡Bienvenido al Nevado de Toluca!" del mapa
+    ├── parada-<parada>.png           Paradas de la subida (los niveles, sin número): entrada, albergue, cabaña, puesto,
+    │                                 campamento, bosque, pradera, lagunas del Sol y de la Luna, cráter, mirador y cumbre
+    ├── volcan-<cosa>.png             Decoración del mapa: volcán, laguna, oyameles, cabaña, roca, teporingo,
+    │                                 excursionistas, puesto, muñeco de nieve y letrero
+    └── svg/
 ```
 
 ## Reglas
@@ -73,6 +84,7 @@ npm run stickers -- kiko    # solo Kiko
 npm run stickers -- canal   # solo el canal
 npm run stickers -- cdmx    # solo el Centro
 npm run stickers -- fes     # solo la FES
+npm run stickers -- nevado  # solo el Nevado
 ```
 
 El script (`frontend/scripts/exportar-stickers.mjs`) sobrescribe los archivos de `stickers/`, `canal/`, `cdmx/` y `fes/` (y sus `svg/`). En la app, el borde blanco lo pone la clase `.sticker` de `app.css`; en los SVG exportados va dibujado dentro del archivo para que se vea igual fuera de la app. Para el PNG usa Edge o Chrome sin abrir ventanas; no hay que instalar nada.

@@ -621,7 +621,7 @@ function Barras({ titulo, barras }) {
         {barras.map((b, i) => (
           <div key={b.etiqueta} className="fes-barra">
             <b>{b.valor}</b>
-            <span style={{ height: `${(b.valor / max) * 120}px`, background: colores[i % colores.length] }} />
+            <span style={{ height: `${(b.valor / max) * 120}px`, background: b.color || colores[i % colores.length] }} />
             <small>{b.etiqueta}</small>
           </div>
         ))}

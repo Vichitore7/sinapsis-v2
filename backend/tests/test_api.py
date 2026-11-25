@@ -1,6 +1,7 @@
 from app import contenido_canal as canal
 from app import contenido_cdmx as cdmx
 from app import contenido_fes as fes
+from app import contenido_nevado as nevado
 from app import juego
 from app.contenido import TRAJES_SUBCULTURAS
 from tests.conftest import registrar
@@ -65,7 +66,7 @@ def test_contenido_no_trae_respuestas(cliente):
     texto = cliente.get("/api/contenido").text
     assert '"respuesta"' not in texto and "explicacion" not in texto
     mundos = cliente.get("/api/contenido").json()["mundos"]
-    assert [m["id"] for m in mundos[:4]] == ["x1", "c2", "f3", "m2"] and "m1" not in [m["id"] for m in mundos]
+    assert [m["id"] for m in mundos[:5]] == ["x1", "c2", "f3", "n4", "m2"] and "m1" not in [m["id"] for m in mundos]
     canal_ = mundos[0]
     assert canal_["nombre"] == "El Canal de los Números" and canal_["tema"] == "xochimilco"
     assert len(canal_["retos"]) == 36 and {r["nivel"] for r in canal_["retos"]} == set(range(1, 13))
@@ -76,7 +77,9 @@ def test_contenido_no_trae_respuestas(cliente):
     assert [fases[n] for n in (1, 4, 5, 8, 9, 12)] == ["concreto", "concreto", "pictórico", "pictórico", "abstracto", "abstracto"]
     fes_ = mundos[2]
     assert fes_["nombre"] == "La FES de los Números" and fes_["tema"] == "fes" and len(fes_["retos"]) == 36
-    assert mundos[3]["retos"][0]["id"] == "m2-r1" and len(mundos[3]["retos"][0]["pistas"]) == 3
+    nev = mundos[3]
+    assert nev["nombre"] == "El Nevado de los Números" and nev["tema"] == "nevado" and len(nev["retos"]) == 36
+    assert mundos[4]["retos"][0]["id"] == "m2-r1" and len(mundos[4]["retos"][0]["pistas"]) == 3
 
 
 def _niveles(c, mundo):
@@ -112,10 +115,11 @@ def _terminar_canal(c):
 
 
 def _hasta_el_mercado(c):
-    """Canal + Centro + FES: deja abierto El mercado (Mundo 4, multiplicación)."""
+    """Canal + Centro + FES + Nevado: deja abierto El mercado (Mundo 5, multiplicación)."""
     _terminar(c, canal, "c2")
     _terminar(c, cdmx, "f3")
-    _terminar(c, fes, "m2")
+    _terminar(c, fes, "n4")
+    _terminar(c, nevado, "m2")
 
 
 def test_fes_tercero_y_premio_para_el_frio(cliente):
@@ -123,7 +127,7 @@ def test_fes_tercero_y_premio_para_el_frio(cliente):
     _terminar(cliente, canal, "c2")
     _terminar(cliente, cdmx, "f3")
     est = cliente.get("/api/juego/estado").json()
-    assert est["mapa"]["f3"]["nodos"]["f3-n01-1"] == "actual" and est["mapa"]["m2"]["abierta"] is False
+    assert est["mapa"]["f3"]["nodos"]["f3-n01-1"] == "actual" and est["mapa"]["n4"]["abierta"] is False
     # Resta de 3 cifras con ceros (500 − 347): el diagnóstico no da la respuesta.
     for e in fes.ejercicios()[:7]:
         assert cliente.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]}).json()["correcto"], e["id"]
@@ -136,8 +140,8 @@ def test_fes_tercero_y_premio_para_el_frio(cliente):
     premio = _examen(cliente, fes)
     est = cliente.get("/api/juego/estado").json()
     assert "peluche" in est["stickers"] and premio == ["nevado-gorro", "nevado-orejeras"]
-    assert est["mapa"]["m2"]["abierta"] is False
-    assert cliente.put("/api/mascota/traje", json={"traje": premio[0]}).json()["mapa"]["m2"]["abierta"] is True
+    assert est["mapa"]["n4"]["abierta"] is False
+    assert cliente.put("/api/mascota/traje", json={"traje": premio[0]}).json()["mapa"]["n4"]["abierta"] is True
 
 
 def test_centro_division_y_examen_abren_la_fes(cliente):
@@ -631,7 +635,7 @@ def test_dos_peticiones_a_la_vez_de_una_cuenta_nueva_responden_bien(cliente):
 
 def test_opciones_caben_en_la_respuesta():
     """Reto.jsx manda la respuesta recortada a 60 caracteres (y el servidor acepta 60): ninguna opción puede ser más larga."""
-    for mundo in (canal, cdmx, fes):
+    for mundo in (canal, cdmx, fes, nevado):
         for e in mundo.ejercicios() + mundo.examen():
             for o in e.get("opciones") or []:
                 assert len(o) <= 60, (e["id"], o)
@@ -643,3 +647,32 @@ def test_fes_respeta_el_programa_de_tercero():
         if e["tipo"] == "numerica":
             assert len(str(e["a"])) <= 3 and len(str(e["b"])) <= 3 and len(e["respuesta"]) <= 3, e["id"]
         assert (e.get("visual") or {}).get("tipo") not in ("barras", "rectangulo"), e["id"]  # gráficas de barras y perímetro: 4.º
+
+
+def test_nevado_cuarto_y_premio_para_tolantongo(cliente):
+    registrar(cliente)
+    _terminar(cliente, canal, "c2")
+    _terminar(cliente, cdmx, "f3")
+    _terminar(cliente, fes, "n4")
+    est = cliente.get("/api/juego/estado").json()
+    assert est["mapa"]["n4"]["nodos"]["n4-n01-1"] == "actual" and est["mapa"]["m2"]["abierta"] is False
+    for e in nevado.ejercicios()[:15]:
+        assert cliente.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]}).json()["correcto"], e["id"]
+    # 234 × 12 por productos parciales: si solo hizo 234 × 10 no se le da el resultado.
+    r = cliente.post("/api/ejercicios/n4-n06-1/intentos", json={"respuesta": "2340"}).json()
+    assert r["correcto"] is False and "2808" not in r["diagnostico"]["pregunta"]
+    for e in nevado.ejercicios()[15:]:
+        assert cliente.post(f"/api/ejercicios/{e['id']}/intentos", json={"respuesta": e["respuesta"]}).json()["correcto"], e["id"]
+    premio = _examen(cliente, nevado)
+    est = cliente.get("/api/juego/estado").json()
+    assert "esfera" in est["stickers"] and premio == ["tolantongo-short", "tolantongo-completo"]
+    assert cliente.put("/api/mascota/traje", json={"traje": premio[1]}).json()["mapa"]["m2"]["abierta"] is True
+
+
+def test_nevado_respeta_el_programa_de_cuarto():
+    """4.º: hasta 5 cifras, multiplicación de 3 × 2 cifras y divisiones exactas en las cuentas."""
+    for e in nevado.ejercicios() + nevado.examen():
+        if e["tipo"] == "numerica":
+            assert len(str(e["a"])) <= 3 and len(str(e["b"])) <= 2 and len(e["respuesta"]) <= 5, e["id"]
+        if e["tipo"] == "conteo":
+            assert len(e["respuesta"]) <= 5, e["id"]
