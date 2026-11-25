@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from .. import diagnostico, esquemas, servicio
 from ..db import get_db
-from ..modelos import Asignacion, Aula, AulaAlumno, AulaModulo, Diagnostico, Ejercicio, Intento, Leccion, Progreso, Unidad, Usuario
+from ..modelos import Asignacion, Aula, AulaAlumno, AulaModulo, Diagnostico, Ejercicio, ExamenMundo, Intento, Leccion, Progreso, Unidad, Usuario
 from ..seguridad import codigo_aula, solo_alumno, solo_profesor, usuario_actual
 
 router = APIRouter(prefix="/aulas", tags=["Aulas"])
@@ -26,6 +26,9 @@ ERRORES = {
              "refuerzo": "Repasa con monedas por qué {a} × {b} es juntar {a} montones de {b}. Usa bolsitas con el grupo antes del siguiente reto."},
     "calculo": {"texto": "Error de cálculo",
                 "refuerzo": "Practiquen contar de {b} en {b} en voz alta, con las monedas en el pizarrón."},
+    # Mundo 1 (El Canal de los Números)
+    "conteo": {"texto": "Se equivocó al contar o leer un número"},
+    "opcion": {"texto": "Eligió otra opción (comparar, lugares o figuras)"},
 }
 
 
@@ -236,7 +239,12 @@ def panel(aula_id: int, profe: Usuario = Depends(solo_profesor), db: Session = D
     ]
     refuerzo = None
     if errores_comunes:
-        ej = db.scalars(select(Ejercicio).order_by(Ejercicio.leccion_id, Ejercicio.orden)).first()
+        # Los consejos de refuerzo hablan de montones (multiplicación): se toma un reto con a × b,
+        # de preferencia del mundo donde el grupo se equivoca más.
+        mult = [e for e in db.scalars(select(Ejercicio).order_by(Ejercicio.leccion_id, Ejercicio.orden))
+                if e.datos.get("op") == "×" and "a" in e.datos and "b" in e.datos]
+        orden_mundos = [l for l, _ in por_mundo.most_common()]
+        ej = next((e for l in orden_mundos for e in mult if e.leccion_id == l), mult[0] if mult else None)
         plantilla = ERRORES.get(errores_comunes[0]["id"], {}).get("refuerzo")
         if plantilla and ej:
             refuerzo = plantilla.format(a=ej.datos["a"], b=ej.datos["b"])
@@ -266,8 +274,11 @@ def detalle_alumno(aula_id: int, alumno_id: int, profe: Usuario = Depends(solo_p
     alumno = db.get(Usuario, alumno_id)
     total = db.scalar(select(func.count()).select_from(Ejercicio)) or 0
     intentos = db.scalars(select(Intento).where(Intento.alumno_id == alumno_id).order_by(Intento.creado.desc()).limit(30)).all()
+    examenes = db.scalars(select(ExamenMundo).where(ExamenMundo.alumno_id == alumno_id).order_by(ExamenMundo.inicio)).all()
     return {
         "progreso": servicio.progreso_alumno(db, alumno, total),
+        # Reporte completo de cada examen general (solo lo ve el profesor de un aula donde está el alumno).
+        "examenes": [servicio.reporte_examen(db, ex) for ex in examenes],
         "intentos_recientes": [
             {"ejercicio_id": i.ejercicio_id, "respuesta": i.respuesta, "correcto": i.correcto, "tipo_error": i.tipo_error,
              "pistas_usadas": i.pistas_usadas, "tiempo_ms": i.tiempo_ms, "fecha": i.creado.isoformat()}
@@ -302,21 +313,27 @@ def rechazar(aula_id: int, alumno_id: int, profe: Usuario = Depends(solo_profeso
 
 @router.get("/{aula_id}/diagnostico")
 def diagnostico_grupo(aula_id: int, profe: Usuario = Depends(solo_profesor), db: Session = Depends(get_db)) -> dict:
-    """Resultados del examen diagnóstico: por habilidad (cuántos la dominan) y por alumno."""
+    """Resultados del examen diagnóstico: por habilidad (cuántos la dominan) y por alumno.
+
+    Cada alumno hace el examen de su grado, así que "de" cuenta solo a quienes tuvieron esa habilidad en su examen."""
     aula = _aula_de_profesor(db, aula_id, profe)
     alumnos = activos(aula)
-    por_alumno, conteo = [], Counter()
+    por_alumno, conteo, evaluados = [], Counter(), Counter()
     hechos = 0
     for a in alumnos:
         d = db.get(Diagnostico, a.id)
         if d:
             hechos += 1
             conteo.update(h for h, ok in d.resultados.items() if ok)
+            evaluados.update(d.resultados.keys())
+        grado = d.grado if d else a.grado
         por_alumno.append({"id": a.id, "apodo": a.apodo, "usuario": a.usuario, "hecho": d is not None,
+                           "grado": grado, "grado_nombre": diagnostico.nombre_grado(grado),
                            "aciertos": d.aciertos if d else None, "total": d.total if d else None,
                            "habilidades": diagnostico.resumen(d.resultados) if d else []})
-    habilidades = [{"habilidad": p["habilidad"], "nombre": p["nombre"], "logrado": conteo[p["habilidad"]], "de": hechos}
-                   for p in diagnostico.PREGUNTAS]
+    orden = list(diagnostico.HABILIDADES)
+    habilidades = [{"habilidad": h, "nombre": diagnostico.HABILIDADES.get(h, h), "logrado": conteo[h], "de": evaluados[h]}
+                   for h in sorted(evaluados, key=lambda h: orden.index(h) if h in orden else len(orden))]
     return {"aula": {"id": aula.id, "nombre": aula.nombre}, "hechos": hechos, "alumnos_total": len(alumnos),
             "habilidades": habilidades, "alumnos": por_alumno}
 

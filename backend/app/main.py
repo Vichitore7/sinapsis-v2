@@ -1,20 +1,32 @@
-"""API de Selva Matemática.
+"""API de Mix.
 
     uv run uvicorn app.main:app --reload       # http://localhost:8000/docs (Swagger)
 """
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import update
 
 from . import config
 from .db import Base, SesionLocal, engine, migrar_columnas
-from .rutas import ajustes, auth, aulas, diagnostico, juego
+from .modelos import Mascota
+from .rutas import actividades, ajustes, auth, aulas, diagnostico, juego, tutor, habitacion, escaner
 from .semilla import cargar_contenido
+
+
+# Los avisos de la app (logger "selva", p. ej. por qué el tutor usó reglas) salen en la terminal junto a los de uvicorn.
+_log_app = logging.getLogger("selva")
+if not _log_app.handlers:
+    _manejador = logging.StreamHandler()
+    _manejador.setFormatter(logging.Formatter("%(levelname)s:  %(name)s: %(message)s"))
+    _log_app.addHandler(_manejador)
+    _log_app.setLevel(logging.INFO)
 
 
 @asynccontextmanager
@@ -23,13 +35,16 @@ async def ciclo(_: FastAPI):
     migrar_columnas(engine)
     with SesionLocal() as db:
         cargar_contenido(db)  # idempotente: así aparecen los módulos nuevos sin volver a sembrar
+        # 25 nov: el ajolote se llamaba Kiko por defecto (y un rato Mih); ahora es Mix. El que le puso otro nombre lo conserva.
+        db.execute(update(Mascota).where(Mascota.nombre.in_(["Kiko", "Mih"])).values(nombre="Mix"))
+        db.commit()
     yield
 
 
 app = FastAPI(
-    title="Selva Matemática API",
+    title="Mix API",
     version="0.1.0",
-    description="Backend de Selva Matemática: cuentas sin correo, retos validados en el servidor, progreso, ajolote y aulas.",
+    description="Backend de Mix: cuentas sin correo, retos validados en el servidor, progreso, ajolote y aulas.",
     lifespan=ciclo,
 )
 
@@ -55,10 +70,18 @@ async def _validacion(_: Request, exc: RequestValidationError):
     return JSONResponse({"error": mensaje, "detalles": detalles}, status_code=422)
 
 
+@app.middleware("http")
+async def no_cache_api(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.get("/salud", tags=["Sistema"])
 def salud() -> dict:
     return {"ok": True}
 
 
-for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router):
+for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router, tutor.router, habitacion.router, escaner.router, actividades.router):
     app.include_router(r, prefix="/api")

@@ -33,7 +33,7 @@ Ideas de mundo:
 | Cálculo mental con números de una cifra | Cálculo mental de sumas y restas de dos cifras |
 
 Ideas de mundo:
-- **1.º** "La canasta de frutas": Kiko agrega o se come frutas.
+- **1.º** "La canasta de frutas": Mix agrega o se come frutas.
 - **2.º** "El río de la recta numérica": saltar hacia adelante o hacia atrás, y "La tiendita" para llevar.
 
 ## Multiplicación y división — **Construcción de la noción de multiplicación y división, y su relación como operaciones inversas** (solo 2.º)

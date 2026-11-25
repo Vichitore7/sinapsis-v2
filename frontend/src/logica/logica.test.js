@@ -28,7 +28,7 @@ const RESUMEN = {
   completados: { 'm1-r1': { estrellas: 3, con_ayuda: false, fecha: '2026-11-23' } },
   lecciones_terminadas: [], stickers: [], ejemplos_vistos: ['m1'],
   stats: { cuidados: 0, pistas_pedidas: 0, retos_sin_ayuda: 1 },
-  mascota: { nombre: 'Kiko', comida: 4, pecera: 2, alegria: 4, dormido: false, pide: 'pecera' },
+  mascota: { nombre: 'Mix', comida: 4, pecera: 2, alegria: 4, dormido: false, pide: 'pecera' },
   logros: [],
   mapa: {
     m1: { abierta: true, nodos: { 'm1-r1': 'completado', 'm1-r2': 'actual' }, cofre: 'bloqueado' },

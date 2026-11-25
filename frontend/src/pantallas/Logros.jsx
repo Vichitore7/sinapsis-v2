@@ -5,9 +5,15 @@ import { useJuego } from '../estado/store.jsx';
 import I from '../componentes/IconosUI.jsx';
 import Ajolote from '../componentes/Ajolote.jsx';
 import { STICKERS, TRAJES } from '../contenido/mundos.js';
+import { TarjetaMetro } from '../componentes/CDMX.jsx';
+import { PelucheMascota } from '../componentes/FES.jsx';
+import { EsferaNieve } from '../componentes/Nevado.jsx';
 
 const ARTE = {
   flor: { icono: 'chispa', fondo: 'sticker-rosa' },
+  tarjeta: { icono: 'chispa', fondo: 'sticker-ambar' },
+  peluche: { icono: 'chispa', fondo: 'sticker-cielo' },
+  esfera: { icono: 'chispa', fondo: 'sticker-cielo' },
   mochila: { icono: 'mochila', fondo: 'sticker-ambar' },
   bufanda: { icono: 'chispa', fondo: 'sticker-cielo' },
   sombrero: { icono: 'sombrero', fondo: 'sticker-oro' },
@@ -85,7 +91,7 @@ export function SeccionMedallas({ estado, mundos }) {
 }
 
 /**
- * Stickers especiales (temáticos): se ven y se le ponen a Kiko aquí, en el Perfil.
+ * Stickers especiales (temáticos): se ven y se le ponen a Mix aquí, en el Perfil.
  * Los stickers normales de los mundos se equipan en la Mochila.
  */
 function StickersEspeciales() {
@@ -94,7 +100,6 @@ function StickersEspeciales() {
   const [error, setError] = useState(null);
   const kiko = estado.nombreAjolote;
   const especiales = estado.trajes.filter((id) => TRAJES[id]).map((id) => ({ id, ...TRAJES[id] }));
-  if (!especiales.length) return null;
   const puesto = estado.traje ? TRAJES[estado.traje] : null;
 
   const ponerse = async (traje) => {
@@ -123,13 +128,18 @@ function StickersEspeciales() {
           <span className="sobre">Así se ve {kiko}</span>
           <Ajolote estado="feliz" tamano={170} traje={estado.traje} etiqueta={`${kiko}${puesto ? ` con ${puesto.nombre.toLowerCase()}` : ''}`} />
           <b className="t-sm">{puesto ? puesto.nombre : 'Sin traje especial'}</b>
-          {puesto && (
-            <button className="btn btn-crema btn-chico" disabled={guardando !== null} onClick={() => ponerse(null)}>
-              {guardando === 'quitar' ? 'Quitando…' : 'Quitar traje'}
-            </button>
-          )}
         </div>
         <div className="trajes">
+          <div className={`traje-carta${!puesto ? ' activo' : ''}`}>
+            <span className="chip chip-oro">Predeterminado</span>
+            <span className="traje-arte"><Ajolote estado="feliz" tamano={92} traje={null} etiqueta="Sin traje especial" /></span>
+            <b className="t-sm">Sin traje especial</b>
+            <small className="cuerpo-sm texto-suave">El aspecto original de {kiko}.</small>
+            <button type="button" className={`btn btn-chico ${!puesto ? 'btn-verde' : 'btn-naranja'}`} aria-pressed={!puesto}
+              disabled={guardando !== null || !puesto} onClick={() => ponerse(null)}>
+              {guardando === 'quitar' ? 'Quitando…' : !puesto ? <><I n="check" tamano={14} grosor={3} /> Puesto</> : 'Usar aspecto original'}
+            </button>
+          </div>
           {especiales.map((t) => {
             const activo = estado.traje === t.id;
             return (
@@ -154,7 +164,8 @@ function StickersEspeciales() {
 
 export function SeccionStickers({ estado, mundos }) {
   const jugables = mundos.filter((m) => !m.proximamente && m.retos.length);
-  const stickers = Object.entries(STICKERS).map(([id, s], i) => ({ id, ...s, mundo: jugables[i] || null }));
+  // Cada sticker va con el mundo que lo regala (no por orden): la Tarjeta del Metro es del Mundo 2, etc.
+  const stickers = Object.entries(STICKERS).map(([id, s]) => ({ id, ...s, mundo: jugables.find((m) => m.sticker === id) || null }));
   return (
     <section className="tarjeta pila-lg">
       <StickersEspeciales />
@@ -162,7 +173,7 @@ export function SeccionStickers({ estado, mundos }) {
       <div className="fila-entre" style={{ marginBottom: 12 }}>
         <div>
           <h2 className="t-md" style={{ margin: 0 }}><I n="libro" tamano={20} className="texto-naranja" /> Álbum de Stickers</h2>
-          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Abre el cofre al final de cada mundo para ganar uno.</p>
+          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Termina cada mundo (examen o cofre) para ganar su sticker.</p>
         </div>
         <span className="pastilla">{estado.stickers.length} de {stickers.length}</span>
       </div>
@@ -172,7 +183,9 @@ export function SeccionStickers({ estado, mundos }) {
           const arte = ARTE[s.id] || { icono: 'estrella', fondo: 'sticker-rosa' };
           return (
             <div key={s.id} className={`sticker-carta${tiene ? '' : ' falta'}`}>
-              <span className={`sticker-arte ${tiene ? arte.fondo : ''}`}><I n={tiene ? arte.icono : 'candado'} tamano={34} /></span>
+              <span className={`sticker-arte ${tiene ? arte.fondo : ''}`}>
+                {tiene && s.id === 'tarjeta' ? <TarjetaMetro tamano={62} /> : tiene && s.id === 'peluche' ? <PelucheMascota tamano={62} /> : tiene && s.id === 'esfera' ? <EsferaNieve tamano={62} /> : <I n={tiene ? arte.icono : 'candado'} tamano={34} />}
+              </span>
               <b>{tiene ? s.nombre : '¿Secreto?'}</b>
               <small className={tiene ? 'texto-selva' : ''}>{s.mundo ? `Mundo ${s.mundo.numero}` : 'Pronto'}</small>
             </div>
@@ -185,7 +198,9 @@ export function SeccionStickers({ estado, mundos }) {
 }
 
 export function SeccionDiplomas({ estado, mundos }) {
-  const terminados = estado.mundosTerminados || [];
+  // Un mundo con examen general da su certificado al terminar el examen (aunque Mix aún no se ponga el traje nuevo).
+  const conExamen = Object.entries(estado.examenes || {}).filter(([, e]) => e.estado === 'terminado').map(([id]) => id);
+  const terminados = [...new Set([...conExamen, ...(estado.mundosTerminados || [])])];
   const ultimo = mundos.find((m) => m.id === terminados[terminados.length - 1]);
   return (
     <section className="tarjeta tarjeta-grande">
@@ -200,7 +215,7 @@ export function SeccionDiplomas({ estado, mundos }) {
         <div className={`diploma${ultimo ? '' : ' borrador'}`} id="diploma-imprimible">
           <span className="diploma-deco" aria-hidden="true" />
           <div className="fila-entre">
-            <span className="diploma-marca"><span className="diploma-sm">SM</span> Selva Matemática</span>
+            <span className="diploma-marca"><span className="diploma-sm">M</span> Mix</span>
             <span className="chip chip-oro">{ultimo ? `Mundo ${ultimo.numero} superado` : 'En camino'}</span>
           </div>
           <p className="diploma-titulo">Certificado de explorador de honor</p>

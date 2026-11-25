@@ -3,8 +3,8 @@ import Ajolote from './Ajolote.jsx';
 import { useJuego } from '../estado/store.jsx';
 
 /**
- * Cabecita de Kiko con el traje que eligió el alumno (Perfil > Stickers).
- * Va donde antes había una huella: logo, menú, "¡Kiko está aquí!", consejos. Es decorativa (el texto de al lado dice quién es).
+ * Cabecita de Mix con el traje que eligió el alumno (Perfil > Stickers).
+ * Va donde antes había una huella: logo, menú, "¡Mix está aquí!", consejos. Es decorativa (el texto de al lado dice quién es).
  */
 export function CabezaKiko({ tamano = 28 }) {
   const { usuario, estado } = useJuego();

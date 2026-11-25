@@ -1,4 +1,4 @@
-// Exporta los stickers de Kiko (sin traje y con cada traje típico) como SVG y PNG con fondo transparente.
+// Exporta los stickers de Mix (sin traje y con cada traje típico) como SVG y PNG con fondo transparente.
 // Usa el mismo componente Ajolote.jsx de la app, así que si cambia el dibujo basta con volver a correrlo.
 //
 //   cd frontend
@@ -20,7 +20,7 @@ const SALIDA_SVG = join(SALIDA, 'svg');
 const TEMP = join(FRONTEND, 'node_modules', '.cache', 'stickers');
 const LADO = 512; // px del lado más largo del PNG
 
-// Colores con los que se ve Kiko en la app (tema Día del rediseño Stitch). En los stickers no cambian con el tema.
+// Colores con los que se ve Mix en la app (tema Día del rediseño Stitch). En los stickers no cambian con el tema.
 const COLORES = {
   '--tinta': '#1e1b3a', '--contorno': '#1e1b3a', '--superficie': '#ffffff', '--borde-sticker': '#ffffff',
   '--tinta-suave': '#47454f', '--sol': '#fbbf24', '--sol-profundo': '#f59e0b', '--selva': '#10b981',
@@ -33,6 +33,12 @@ const STICKERS = [
   { archivo: 'kiko', traje: null },
   { archivo: 'kiko-trajinero', traje: 'trajinero' },
   { archivo: 'kiko-trajinera', traje: 'trajinera' },
+  // Subculturas de la CDMX (premio del examen general del Mundo 1): todos los trajes de TrajesSubculturas.jsx.
+  ...['emo-rayas', 'emo-mono', 'hippie-guitarra', 'hippie-flores', 'punk-verde', 'punk-rosa', 'skate-gorra', 'skate-gorro',
+    'manif-xochimilco', 'manif-ajolote', 'ska-sombrero', 'ska-cuadros', 'rap-gorra', 'rap-chongo', 'rock-chopo', 'rock-mezclilla',
+    'dark-capa', 'dark-encaje', 'lucha-azul', 'lucha-rosa',
+    // Rumbo a la FES Aragón (premio del Mundo 2)
+    'fes-gorra', 'fes-cabello', 'nevado-gorro', 'nevado-orejeras', 'tolantongo-short', 'tolantongo-completo'].map((t) => ({ archivo: `kiko-${t}`, traje: t })),
 ];
 
 async function cargarAjolote() {
@@ -86,21 +92,235 @@ function aPng(navegador, rutaSvg, rutaPng, ancho, alto) {
   ], { stdio: 'ignore', timeout: 60000 });
 }
 
-const Ajolote = await cargarAjolote();
+// ---------- Mundo 1 "El Canal de los Números": trajineras, chinampas y objetos para contar ----------
+
+const SALIDA_CANAL = resolve(FRONTEND, '..', 'docs', 'imagenes', 'canal');
+const SALIDA_CANAL_SVG = join(SALIDA_CANAL, 'svg');
+
+async function cargarCanal() {
+  mkdirSync(TEMP, { recursive: true });
+  const destino = join(TEMP, 'Canal.mjs');
+  await build({
+    entryPoints: [join(FRONTEND, 'src', 'componentes', 'Canal.jsx')],
+    bundle: true, format: 'esm', platform: 'node', jsx: 'automatic',
+    external: ['react', 'react/jsx-runtime'], outfile: destino, logLevel: 'silent',
+  });
+  return import(pathToFileURL(destino).href);
+}
+
+/** Los dibujos del canal que se exportan. Cada uno sale del mismo componente que usa la app. */
+function stickersCanal(C) {
+  const h = createElement;
+  return [
+    ...['rojo', 'azul', 'verde', 'amarillo', 'rosa'].map((color) => ({
+      archivo: `trajinera-${{ rojo: 'roja', azul: 'azul', verde: 'verde', amarillo: 'amarilla', rosa: 'rosa' }[color]}`,
+      el: h(C.Trajinera, { color }),
+    })),
+    ...['rojo', 'azul', 'verde', 'amarillo', 'rosa'].map((color) => ({
+      archivo: `trajinera-nivel-${{ rojo: 'roja', azul: 'azul', verde: 'verde', amarillo: 'amarilla', rosa: 'rosa' }[color]}`,
+      el: h(C.TrajineraNivel, { estado: 'hecho', color }),
+    })),
+    { archivo: 'chinampa-ahuejotes', el: h(C.ChinampaIsla, { variante: 0 }) },
+    { archivo: 'chinampa-casita', el: h(C.ChinampaIsla, { variante: 1 }) },
+    { archivo: 'chinampa-cempasuchil', el: h(C.ChinampaIsla, { variante: 2 }) },
+    { archivo: 'lirio', el: h(C.Lirio) },
+    { archivo: 'pez', el: h(C.Pez, {}) },
+    { archivo: 'flor', el: h(C.Flor, {}) },
+    { archivo: 'persona', el: h(C.Persona, {}) },
+    { archivo: 'sombrerito', el: h(C.Sombrerito, {}) },
+    { archivo: 'jarrito', el: h(C.Jarrito, {}) },
+    { archivo: 'ramo', el: h(C.Ramo) },
+  ];
+}
+
+// ---------- Mundo 2 "El Centro de los Números": cacomixtle, tarjeta, transportes, monumentos y cosas del Centro ----------
+
+const SALIDA_CDMX = resolve(FRONTEND, '..', 'docs', 'imagenes', 'cdmx');
+const SALIDA_CDMX_SVG = join(SALIDA_CDMX, 'svg');
+
+async function cargarCdmx() {
+  mkdirSync(TEMP, { recursive: true });
+  const destino = join(TEMP, 'CDMX.mjs');
+  await build({
+    entryPoints: [join(FRONTEND, 'src', 'componentes', 'CDMX.jsx')],
+    bundle: true, format: 'esm', platform: 'node', jsx: 'automatic',
+    external: ['react', 'react/jsx-runtime'], outfile: destino, logLevel: 'silent',
+  });
+  return import(pathToFileURL(destino).href);
+}
+
+/** Los dibujos del Centro que se exportan (los mismos componentes que usa la app). */
+function stickersCdmx(M) {
+  const h = createElement;
+  return [
+    { archivo: 'cacomixtle', el: h(M.Cacomixtle, {}) },
+    { archivo: 'tarjeta-metro', el: h(M.TarjetaMetro, {}) },
+    ...M.TRANSPORTES.map((t) => ({ archivo: `transporte-${t.id}`, el: h(M.TransporteNivel, { tipo: t.id, estado: 'hecho' }) })),
+    ...['angel', 'palacio', 'castillo', 'bellas', 'revolucion', 'kiosco', 'torre', 'jacaranda']
+      .map((tipo) => ({ archivo: `monumento-${tipo}`, el: h(M.Monumento, { tipo }) })),
+    ...['tacos', 'elotes', 'globero', 'organillero', 'taxi', 'farol', 'banca', 'metro', 'xolo', 'alebrije']
+      .map((tipo) => ({ archivo: `centro-${tipo}`, el: h(M.Monumento, { tipo }) })),
+    { archivo: 'persona', el: h(M.Persona, {}) },
+    { archivo: 'boleto', el: h(M.Boleto, {}) },
+    { archivo: 'libro', el: h(M.Libro, {}) },
+  ];
+}
+
+// ---------- Mundo 3 "La FES de los Números": peluche de la mascota, tlacuache, título, lugares y campus ----------
+
+const SALIDA_FES = resolve(FRONTEND, '..', 'docs', 'imagenes', 'fes');
+const SALIDA_FES_SVG = join(SALIDA_FES, 'svg');
+
+async function cargarFes() {
+  mkdirSync(TEMP, { recursive: true });
+  const destino = join(TEMP, 'FES.mjs');
+  await build({
+    entryPoints: [join(FRONTEND, 'src', 'componentes', 'FES.jsx')],
+    bundle: true, format: 'esm', platform: 'node', jsx: 'automatic',
+    external: ['react', 'react/jsx-runtime'], outfile: destino, logLevel: 'silent',
+  });
+  return import(pathToFileURL(destino).href);
+}
+
+/** Los dibujos de la FES que se exportan (los mismos componentes que usa la app). */
+function stickersFes(F) {
+  const h = createElement;
+  return [
+    { archivo: 'peluche-mascota', el: h(F.PelucheMascota, {}) },
+    { archivo: 'tlacuache', el: h(F.Tlacuache, {}) },
+    { archivo: 'titulo-fes-aragon', el: h(F.TituloFES) },
+    ...Object.keys(F.LUGARES).map((tipo) => ({ archivo: `lugar-${tipo}`, el: h(F.LugarNivel, { tipo, estado: 'hecho' }) })),
+    ...['torres', 'auditorio', 'mascota', 'morado', 'edificio', 'laboratorio', 'cancha', 'cafeteria', 'puesto', 'alumnos', 'arbol', 'bici', 'banca']
+      .map((tipo) => ({ archivo: `campus-${tipo}`, el: h(F.CampusDeco, { tipo }) })),
+  ];
+}
+
+// ---------- Mundo 4 "El Nevado de los Números": bolita de nieve, teporingo, título, paradas y decoración ----------
+
+const SALIDA_NEVADO = resolve(FRONTEND, '..', 'docs', 'imagenes', 'nevado');
+const SALIDA_NEVADO_SVG = join(SALIDA_NEVADO, 'svg');
+
+async function cargarNevado() {
+  mkdirSync(TEMP, { recursive: true });
+  const destino = join(TEMP, 'Nevado.mjs');
+  await build({
+    entryPoints: [join(FRONTEND, 'src', 'componentes', 'Nevado.jsx')],
+    bundle: true, format: 'esm', platform: 'node', jsx: 'automatic',
+    external: ['react', 'react/jsx-runtime'], outfile: destino, logLevel: 'silent',
+  });
+  return import(pathToFileURL(destino).href);
+}
+
+/** Los dibujos del Nevado que se exportan (los mismos componentes que usa la app). */
+function stickersNevado(N) {
+  const h = createElement;
+  return [
+    { archivo: 'bolita-de-nieve', el: h(N.EsferaNieve, {}) },
+    { archivo: 'teporingo', el: h(N.Teporingo, {}) },
+    { archivo: 'titulo-nevado-de-toluca', el: h(N.TituloNevado) },
+    ...Object.keys(N.PARADAS).map((tipo) => ({ archivo: `parada-${tipo}`, el: h(N.ParadaNivel, { tipo, estado: 'hecho' }) })),
+    ...['volcan', 'laguna', 'oyameles', 'cabana', 'roca', 'teporingo', 'excursionistas', 'puesto', 'munieco', 'letrero']
+      .map((tipo) => ({ archivo: `volcan-${tipo}`, el: h(N.NevadoDeco, { tipo }) })),
+  ];
+}
+
+/**
+ * Deja el SVG listo para usarse solo: con margen y con el borde blanco de sticker dibujado por un filtro
+ * (en la app ese borde lo pone la clase .sticker de app.css, que fuera de la app no existe).
+ */
+function aSvgCanal(markup) {
+  const svg = markup.match(/<svg[\s\S]*<\/svg>/)[0]; // TrajineraNivel y Ramo vienen dentro de un <span>
+  const [vx, vy, vw, vh] = svg.match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number);
+  const lado = Math.max(vw, vh);
+  const borde = +(lado * 0.035).toFixed(2); // grosor del borde blanco (≈ el de Mix)
+  const caida = +(lado * 0.025).toFixed(2); // sombrita de abajo
+  const m = borde * 2 + caida;
+  const [x, y, w, h] = [vx - m, vy - m, vw + 2 * m, vh + 2 * m];
+  const ancho = w >= h ? LADO : Math.round((LADO * w) / h);
+  const alto = h >= w ? LADO : Math.round((LADO * h) / w);
+  const filtro = `<defs><filter id="borde-sticker" filterUnits="userSpaceOnUse" x="${x}" y="${y}" width="${w}" height="${h}" color-interpolation-filters="sRGB">`
+    + `<feMorphology in="SourceAlpha" operator="dilate" radius="${borde}" result="grueso"/>`
+    + '<feFlood flood-color="#ffffff"/><feComposite in2="grueso" operator="in" result="blanco"/>'
+    + `<feOffset in="grueso" dy="${caida}" result="bajo"/>`
+    + '<feFlood flood-color="#1e1b3a" flood-opacity="0.22"/><feComposite in2="bajo" operator="in" result="sombra"/>'
+    + '<feMerge><feMergeNode in="sombra"/><feMergeNode in="blanco"/><feMergeNode in="SourceGraphic"/></feMerge>'
+    + '</filter></defs>';
+  const interior = svg.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+  const salida = `<svg xmlns="http://www.w3.org/2000/svg" width="${ancho}" height="${alto}" viewBox="${x} ${y} ${w} ${h}">`
+    + `${filtro}<g filter="url(#borde-sticker)">${interior}</g></svg>`;
+  return { svg: `<?xml version="1.0" encoding="UTF-8"?>\n${salida}\n`, ancho, alto };
+}
+
+// Qué exportar: `npm run stickers` hace todo; `npm run stickers -- kiko`, `-- canal`, `-- cdmx`, `-- fes` o `-- nevado` solo esa parte.
+const solo = process.argv[2];
 mkdirSync(SALIDA_SVG, { recursive: true });
 const navegador = buscarNavegador();
 if (!navegador) console.warn('No encontré Edge ni Chrome: solo genero los SVG.');
 
-for (const s of STICKERS) {
-  for (const cabeza of [false, true]) {
-    const nombre = `${s.archivo}${cabeza ? '-cabeza' : ''}`;
-    const markup = renderToStaticMarkup(createElement(Ajolote, { estado: 'feliz', tamano: LADO, traje: s.traje, cabeza }));
-    const { svg, ancho, alto } = aSvgSuelto(markup, cabeza);
-    const rutaSvg = join(SALIDA_SVG, `${nombre}.svg`);
-    writeFileSync(rutaSvg, svg);
-    if (navegador) aPng(navegador, rutaSvg, join(SALIDA, `${nombre}.png`), ancho, alto);
-    console.log(`✓ ${nombre} (${ancho}×${alto})`);
+if (!solo || solo === 'kiko') {
+  const Ajolote = await cargarAjolote();
+  for (const s of STICKERS) {
+    for (const cabeza of [false, true]) {
+      const nombre = `${s.archivo}${cabeza ? '-cabeza' : ''}`;
+      const markup = renderToStaticMarkup(createElement(Ajolote, { estado: 'feliz', tamano: LADO, traje: s.traje, cabeza }));
+      const { svg, ancho, alto } = aSvgSuelto(markup, cabeza);
+      const rutaSvg = join(SALIDA_SVG, `${nombre}.svg`);
+      writeFileSync(rutaSvg, svg);
+      if (navegador) aPng(navegador, rutaSvg, join(SALIDA, `${nombre}.png`), ancho, alto);
+      console.log(`✓ ${nombre} (${ancho}×${alto})`);
+    }
   }
+  console.log(`Listo: ${SALIDA}`);
+}
+
+if (!solo || solo === 'canal') {
+  const Canal = await cargarCanal();
+  mkdirSync(SALIDA_CANAL_SVG, { recursive: true });
+  for (const s of stickersCanal(Canal)) {
+    const { svg, ancho, alto } = aSvgCanal(renderToStaticMarkup(s.el));
+    const rutaSvg = join(SALIDA_CANAL_SVG, `${s.archivo}.svg`);
+    writeFileSync(rutaSvg, svg);
+    if (navegador) aPng(navegador, rutaSvg, join(SALIDA_CANAL, `${s.archivo}.png`), ancho, alto);
+    console.log(`✓ canal/${s.archivo} (${ancho}×${alto})`);
+  }
+  console.log(`Listo: ${SALIDA_CANAL}`);
+}
+
+if (!solo || solo === 'cdmx') {
+  const Cdmx = await cargarCdmx();
+  mkdirSync(SALIDA_CDMX_SVG, { recursive: true });
+  for (const s of stickersCdmx(Cdmx)) {
+    const { svg, ancho, alto } = aSvgCanal(renderToStaticMarkup(s.el));
+    const rutaSvg = join(SALIDA_CDMX_SVG, `${s.archivo}.svg`);
+    writeFileSync(rutaSvg, svg);
+    if (navegador) aPng(navegador, rutaSvg, join(SALIDA_CDMX, `${s.archivo}.png`), ancho, alto);
+    console.log(`✓ cdmx/${s.archivo} (${ancho}×${alto})`);
+  }
+  console.log(`Listo: ${SALIDA_CDMX}`);
+}
+
+if (!solo || solo === 'fes') {
+  const Fes = await cargarFes();
+  mkdirSync(SALIDA_FES_SVG, { recursive: true });
+  for (const s of stickersFes(Fes)) {
+    const { svg, ancho, alto } = aSvgCanal(renderToStaticMarkup(s.el));
+    const rutaSvg = join(SALIDA_FES_SVG, `${s.archivo}.svg`);
+    writeFileSync(rutaSvg, svg);
+    if (navegador) aPng(navegador, rutaSvg, join(SALIDA_FES, `${s.archivo}.png`), ancho, alto);
+    console.log(`✓ fes/${s.archivo} (${ancho}×${alto})`);
+  }
+  console.log(`Listo: ${SALIDA_FES}`);
+}
+if (!solo || solo === 'nevado') {
+  const Nevado = await cargarNevado();
+  mkdirSync(SALIDA_NEVADO_SVG, { recursive: true });
+  for (const s of stickersNevado(Nevado)) {
+    const { svg, ancho, alto } = aSvgCanal(renderToStaticMarkup(s.el));
+    const rutaSvg = join(SALIDA_NEVADO_SVG, `${s.archivo}.svg`);
+    writeFileSync(rutaSvg, svg);
+    if (navegador) aPng(navegador, rutaSvg, join(SALIDA_NEVADO, `${s.archivo}.png`), ancho, alto);
+    console.log(`✓ nevado/${s.archivo} (${ancho}×${alto})`);
+  }
+  console.log(`Listo: ${SALIDA_NEVADO}`);
 }
 rmSync(join(TEMP, 'perfil-navegador'), { recursive: true, force: true });
-console.log(`Listo: ${SALIDA}`);

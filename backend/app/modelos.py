@@ -34,6 +34,7 @@ class Usuario(Base):
     recuperacion_hash: Mapped[str] = mapped_column(String(64))
     version_sesion: Mapped[int] = mapped_column(Integer, default=0)  # sube al cerrar sesión o recuperar: invalida tokens viejos
     avatar: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    grado: Mapped[str | None] = mapped_column(String(3), nullable=True)  # P1–P6 o S1–S3 (solo alumnos); elige su diagnóstico
     creado: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
     ultimo_acceso: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -202,11 +203,12 @@ class Mascota(Base):
     __tablename__ = "mascotas"
 
     alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
-    nombre: Mapped[str] = mapped_column(String(20), default="Kiko")
+    nombre: Mapped[str] = mapped_column(String(20), default="Mix")
     comida: Mapped[int] = mapped_column(Integer, default=4)
     pecera: Mapped[int] = mapped_column(Integer, default=4)
     alegria: Mapped[int] = mapped_column(Integer, default=4)
     dormido: Mapped[bool] = mapped_column(Boolean, default=False)
+    cuidados_hasta: Mapped[dict] = mapped_column(JSON, default=dict)
     retos_desde_bajada: Mapped[int] = mapped_column(Integer, default=0)
     turno_medidor: Mapped[int] = mapped_column(Integer, default=0)
     # Trajes típicos que el alumno tiene (regalo de bienvenida al crear la cuenta) y el que trae puesto.
@@ -224,3 +226,44 @@ class Diagnostico(Base):
     aciertos: Mapped[int] = mapped_column(Integer)
     total: Mapped[int] = mapped_column(Integer)
     fecha: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
+    grado: Mapped[str | None] = mapped_column(String(3), nullable=True)  # examen de qué grado hizo (None = el general)
+
+
+class ExamenMundo(Base):
+    """Examen general al final de un mundo (hoy: El Canal de los Números).
+
+    `detalle` guarda todo lo que pasó en cada pregunta para el reporte del profesor:
+    {pregunta_id: {"intentos": [{"respuesta", "correcto", "tiempo_ms"}], "pistas": n, "estado": ..., "tiempo_ms": n}}
+    estado de cada pregunta: pendiente | a_la_primera | con_ayuda | por_reforzar
+    """
+    __tablename__ = "examenes_mundo"
+    __table_args__ = (UniqueConstraint("alumno_id", "leccion_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), index=True)
+    leccion_id: Mapped[str] = mapped_column(ForeignKey("lecciones.id"))
+    detalle: Mapped[dict] = mapped_column(JSON, default=dict)
+    terminado: Mapped[bool] = mapped_column(Boolean, default=False)
+    aciertos: Mapped[int] = mapped_column(Integer, default=0)  # preguntas logradas (a la primera o con ayuda)
+    total: Mapped[int] = mapped_column(Integer, default=0)
+    premio: Mapped[list] = mapped_column(JSON, default=list)  # trajes ganados al terminar
+    inicio: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
+    fin: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class Habitacion(Base):
+    """Una habitación por alumno; revisión para evitar sobrescribir cambios de otro dispositivo."""
+    __tablename__ = "habitaciones"
+    alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+    objetos: Mapped[list] = mapped_column(JSON, default=list)
+    revision: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class StickerAdquirido(Base):
+    """Una copia de cada diseño por alumno; conserva el precio realmente pagado."""
+    __tablename__ = "inventario_habitacion"
+    alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+    sticker_id: Mapped[str] = mapped_column(String(30), primary_key=True)
+    precio: Mapped[int] = mapped_column(Integer, default=0)
+    adquirido: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
+

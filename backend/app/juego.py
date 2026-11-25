@@ -13,8 +13,8 @@ VALORES = {
     "estrellas_con_ayuda": 2,    # VALOR INICIAL: acertar después de pistas o errores
     "bono_reto_del_dia": 5,      # VALOR INICIAL
     "estrellas_cofre": 10,       # VALOR INICIAL
-    "costo_alimentar": 1,        # VALOR INICIAL
-    "costo_jugar": 2,            # VALOR INICIAL
+    "espera_cuidado": 180,
+    "subida_cuidado": 2,
     "retos_por_bajada": 3,       # VALOR INICIAL: cada 3 retos baja una marca de un medidor
     "racha_para_subir_etapa": 3, # VALOR INICIAL: 3 retos seguidos sin pistas -> menos apoyo visual
     "xp_por_nivel": 30,          # VALOR INICIAL
@@ -26,9 +26,8 @@ VALORES = {
 MEDIDORES = ("comida", "pecera", "alegria")
 
 CUIDADOS = {
-    "alimentar": {"costo": VALORES["costo_alimentar"], "medidor": "comida", "sube": 2},
-    "jugar": {"costo": VALORES["costo_jugar"], "medidor": "alegria", "sube": 2},
-    "limpiar": {"costo": 0, "medidor": "pecera", "sube": VALORES["max_marcas"]},
+    "alimentar": {"costo": 0, "medidor": "comida", "sube": VALORES["subida_cuidado"]},
+    "limpiar": {"costo": 0, "medidor": "pecera", "sube": VALORES["subida_cuidado"]},
     "descansar": {"costo": 0, "medidor": None, "sube": 0},
 }
 
@@ -44,19 +43,23 @@ def _suma_repetida(a: int, b: int) -> str:
 
 
 OPERACIONES = {"×": lambda a, b: a * b, "+": lambda a, b: a + b, "−": lambda a, b: a - b}
+# Los ejercicios de los mundos también tienen división (reparto exacto, 2.º de primaria).
+# El tutor de IA sigue con OPERACIONES (sin división) hasta que Victor la agregue allá.
+OPERACIONES_EJERCICIOS = {**OPERACIONES, "÷": lambda a, b: a // b}
 
 
 def normalizar_op(op: str) -> str:
-    return {"x": "×", "X": "×", "*": "×", "-": "−", "–": "−"}.get(op, op)
+    return {"x": "×", "X": "×", "*": "×", "-": "−", "–": "−", "/": "÷"}.get(op, op)
 
 
 def diagnosticar(a: int, op: str, b: int, c: int, moneda: bool = False) -> dict:
     """Dice en qué paso se torció el procedimiento, con una pregunta socrática. Nunca da la respuesta."""
     op = normalizar_op(op)
-    if op not in OPERACIONES:
+    if op not in OPERACIONES_EJERCICIOS:
         raise ValueError(f"Operación no soportada: {op}")
-    esperado = OPERACIONES[op](a, b)
-    datos = f"{a} montones de {_f(b, moneda)}" if op == "×" else f"{_f(a, moneda)} y {_f(b, moneda)}"
+    esperado = OPERACIONES_EJERCICIOS[op](a, b)
+    datos = (f"{a} montones de {_f(b, moneda)}" if op == "×"
+             else f"{a} repartidos entre {b}" if op == "÷" else f"{_f(a, moneda)} y {_f(b, moneda)}")
     pasos = [
         {"texto": f"Datos: {datos}", "estado": "ok"},
         {"texto": f"{a} {op} {_f(b, moneda)}", "estado": "ok"},
@@ -78,6 +81,8 @@ def diagnosticar(a: int, op: str, b: int, c: int, moneda: bool = False) -> dict:
         pregunta = f"¿{_suma_repetida(a, b)} da {c}?" if a <= 6 else f"¿{a} × {b} da {c}? Cuenta de {b} en {b}."
     elif op == "+":
         pregunta = f"¿{a} + {b} da {c}? Cuenta desde {a} y avanza {b}."
+    elif op == "÷":
+        pregunta = f"Comprueba al revés: si a cada uno le tocan {c}, ¿{c} × {b} da {a}?"
     else:
         pregunta = f"Comprueba al revés: ¿{c} + {b} da {a}?"
     pasos[2]["estado"] = "casi"

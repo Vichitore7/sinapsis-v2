@@ -1,4 +1,4 @@
-# Imágenes de Selva Matemática
+# Imágenes de Mix
 
 Aquí se guardan **todas las imágenes PNG** del proyecto (stickers, ilustraciones, capturas para presentaciones…), listas para usarse fuera de la app: presentaciones, redes, pósters, documentos.
 
@@ -9,15 +9,61 @@ Una carpeta por tema. Dentro de cada una, los PNG van sueltos y, si existen, sus
 ```
 docs/imagenes/
 ├── README.md
-└── stickers/                 Kiko el ajolote como sticker (fondo transparente, 512 px)
-    ├── kiko.png                      Kiko sin traje
-    ├── kiko-cabeza.png               Solo la cabecita
-    ├── kiko-trajinero.png            Traje de trajinero de Xochimilco
-    ├── kiko-trajinero-cabeza.png
-    ├── kiko-trajinera.png            Traje de trajinera de Xochimilco
-    ├── kiko-trajinera-cabeza.png
-    └── svg/                          Los mismos dibujos en SVG (se agrandan sin perder calidad;
-                                      se editan en Figma o Illustrator)
+├── stickers/                 Mix el ajolote como sticker (fondo transparente, 512 px)
+│   ├── kiko.png                      Mix sin traje
+│   ├── kiko-cabeza.png               Solo la cabecita
+│   ├── kiko-trajinero.png            Traje de trajinero de Xochimilco
+│   ├── kiko-trajinero-cabeza.png
+│   ├── kiko-trajinera.png            Traje de trajinera de Xochimilco
+│   ├── kiko-trajinera-cabeza.png
+│   ├── kiko-<subcultura>-<estilo>.png  Premio del examen del Mundo 1: 20 trajes de subculturas de la CDMX
+│   │                                 (emo, hippie, punk, skate, manifestante ambientalista, ska, rap, rock,
+│   │                                 dark y lucha libre), dos estilos de cada una, también en versión -cabeza
+│   ├── kiko-fes-gorra.png / kiko-fes-cabello.png   Premio del Mundo 2: rumbo a la FES Aragón (sudadera azul
+│   │                                 con patita dorada, tenis y audífonos), también en versión -cabeza
+│   ├── kiko-nevado-gorro.png / kiko-nevado-orejeras.png   Premio del Mundo 3: ropa para el frío, rumbo al
+│   │                                 Nevado de Toluca, también en versión -cabeza
+│   ├── kiko-tolantongo-short.png / kiko-tolantongo-completo.png   Premio del Mundo 4: trajes de baño, rumbo a las
+│   │                                 Grutas de Tolantongo, también en versión -cabeza
+│   └── svg/                          Los mismos dibujos en SVG (se agrandan sin perder calidad;
+│                                     se editan en Figma o Illustrator)
+└── canal/                    Mundo 1 "El Canal de los Números" como stickers (borde blanco, 512 px)
+    ├── trajinera-<color>.png         Trajinera de los ejercicios (roja, azul, verde, amarilla, rosa)
+    ├── trajinera-nivel-<color>.png   Trajinera de los niveles del mapa (la portada va sin número)
+    ├── chinampa-ahuejotes.png        Chinampas de las orillas: con ahuejotes, con casita
+    ├── chinampa-casita.png           y con surcos de cempasúchil
+    ├── chinampa-cempasuchil.png
+    ├── lirio.png, pez.png, flor.png, persona.png, sombrerito.png, jarrito.png, ramo.png
+    └── svg/                          Los mismos dibujos en SVG (el borde blanco va incluido)
+└── cdmx/                     Mundo 2 "El Centro de los Números" como stickers (borde blanco, 512 px)
+    ├── cacomixtle.png                Los 3 premios de cada nivel
+    ├── tarjeta-metro.png             Sticker de premio: tarjeta de movilidad integrada
+    ├── transporte-<tipo>.png         Transportes de los niveles: metro, metrobus, trolebus, tren-ligero, cablebus,
+    │                                 rtp y ecobici (sin número)
+    ├── monumento-<lugar>.png         Monumentos del mapa: angel, palacio, castillo, bellas, revolucion, kiosco,
+    │                                 torre y jacaranda
+    ├── centro-<cosa>.png             Decoración del mapa: tacos, elotes, globero, organillero, taxi, farol, banca,
+    │                                 metro, xolo y alebrije
+    ├── persona.png, boleto.png, libro.png   Objetos para contar de los ejercicios (pictogramas)
+    └── svg/
+└── fes/                      Mundo 3 "La FES de los Números" como stickers (borde blanco, 512 px)
+    ├── peluche-mascota.png           Sticker de premio: peluche de la mascota de la FES
+    ├── tlacuache.png                 Los 3 premios de cada nivel
+    ├── titulo-fes-aragon.png         Letrero "¡Bienvenido a la FES Aragón!" del mapa
+    ├── lugar-<lugar>.png             Lugares de los niveles: biblioteca, laboratorio, canchas, cafetería, auditorio,
+    │                                 torre, explanada, salón y entrada (sin número)
+    ├── campus-<cosa>.png             Decoración del mapa: torres, auditorio, mascota, hombre de morado, edificio,
+    │                                 laboratorio, cancha, cafetería, puesto, alumnos, árbol, bici y banca
+    └── svg/
+└── nevado/                   Mundo 4 "El Nevado de los Números" como stickers (borde blanco, 512 px)
+    ├── bolita-de-nieve.png           Sticker de premio: esfera de nieve con el Nevado y un teporingo
+    ├── teporingo.png                 Los 3 premios de cada nivel
+    ├── titulo-nevado-de-toluca.png   Letrero "¡Bienvenido al Nevado de Toluca!" del mapa
+    ├── parada-<parada>.png           Paradas de la subida (los niveles, sin número): entrada, albergue, cabaña, puesto,
+    │                                 campamento, bosque, pradera, lagunas del Sol y de la Luna, cráter, mirador y cumbre
+    ├── volcan-<cosa>.png             Decoración del mapa: volcán, laguna, oyameles, cabaña, roca, teporingo,
+    │                                 excursionistas, puesto, muñeco de nieve y letrero
+    └── svg/
 ```
 
 ## Reglas
@@ -29,11 +75,16 @@ docs/imagenes/
 
 ## Volver a generar los stickers
 
-Los stickers salen del mismo dibujo de la app (`frontend/src/componentes/Ajolote.jsx`). Si cambia el dibujo o se agrega un traje:
+Los stickers salen del mismo dibujo de la app: Mix de `frontend/src/componentes/Ajolote.jsx`, el canal de `frontend/src/componentes/Canal.jsx`, el Centro de `frontend/src/componentes/CDMX.jsx` y la FES de `frontend/src/componentes/FES.jsx`. Por eso un elemento que se repite (una trajinera, un pez, una flor) siempre es el mismo dibujo, en la app y aquí. Si cambia un dibujo o se agrega uno nuevo:
 
 ```powershell
 cd frontend
-npm run stickers
+npm run stickers            # todo
+npm run stickers -- kiko    # solo Mix
+npm run stickers -- canal   # solo el canal
+npm run stickers -- cdmx    # solo el Centro
+npm run stickers -- fes     # solo la FES
+npm run stickers -- nevado  # solo el Nevado
 ```
 
-El script (`frontend/scripts/exportar-stickers.mjs`) sobrescribe los archivos de `stickers/` y `stickers/svg/`. Para el PNG usa Edge o Chrome sin abrir ventanas; no hay que instalar nada.
+El script (`frontend/scripts/exportar-stickers.mjs`) sobrescribe los archivos de `stickers/`, `canal/`, `cdmx/` y `fes/` (y sus `svg/`). En la app, el borde blanco lo pone la clase `.sticker` de `app.css`; en los SVG exportados va dibujado dentro del archivo para que se vea igual fuera de la app. Para el PNG usa Edge o Chrome sin abrir ventanas; no hay que instalar nada.

@@ -22,7 +22,7 @@ export function borrarBienvenida(usuarioId) {
   try { localStorage.removeItem(clave(usuarioId)); } catch { /* nada que borrar */ }
 }
 
-/** onInicio: seguir a la pantalla de inicio. onStickers: ir a Perfil > Stickers para vestir a Kiko. */
+/** onInicio: seguir a la pantalla de inicio. onStickers: ir a Perfil > Stickers para vestir a Mix. */
 export default function LogroBienvenida({ bienvenida, onInicio, onStickers }) {
   return (
     <section className="tarjeta logro-aviso" role="alertdialog" aria-labelledby="logro-titulo" aria-describedby="logro-texto">
@@ -36,14 +36,14 @@ export default function LogroBienvenida({ bienvenida, onInicio, onStickers }) {
       <div className="logro-regalo">
         {bienvenida.trajes.map((t) => (
           <figure key={t.id}>
-            <Ajolote estado="celebrando" tamano={96} traje={t.id} etiqueta={`Kiko con ${t.nombre.toLowerCase()}`} />
+            <Ajolote estado="celebrando" tamano={96} traje={t.id} etiqueta={`Mix con ${t.nombre.toLowerCase()}`} />
             <figcaption>{t.nombre}</figcaption>
           </figure>
         ))}
       </div>
       <span className="logro-pista"><I n="perfil" tamano={16} /> Los encuentras en tu Perfil → Stickers</span>
       <div className="logro-acciones">
-        <button className="btn btn-naranja btn-grande" onClick={onStickers} autoFocus><I n="sombrero" /> Vestir a Kiko</button>
+        <button className="btn btn-naranja btn-grande" onClick={onStickers} autoFocus><I n="sombrero" /> Vestir a Mix</button>
         <button className="btn btn-crema btn-grande" onClick={onInicio}>Ir al inicio <I n="flecha" /></button>
       </div>
     </section>

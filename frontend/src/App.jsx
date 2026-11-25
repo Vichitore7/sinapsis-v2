@@ -11,13 +11,16 @@ import Cuenta from './pantallas/Cuenta.jsx';
 import Inicio from './pantallas/Inicio.jsx';
 import Mapa from './pantallas/Mapa.jsx';
 import Reto from './pantallas/Reto.jsx';
-import Mochila from './pantallas/Mochila.jsx';
+import Habitacion from './pantallas/Habitacion.jsx';
 import Escaner from './pantallas/Escaner.jsx';
+import EscanerTarea from './pantallas/EscanerTarea.jsx';
 import Aulas from './pantallas/Aulas.jsx';
+import ActividadesAula from './pantallas/ActividadesAula.jsx';
 import Perfil from './pantallas/Perfil.jsx';
 import MiAula from './pantallas/MiAula.jsx';
 import DiagnosticoProfe from './pantallas/DiagnosticoProfe.jsx';
 import ExamenDiagnostico from './pantallas/ExamenDiagnostico.jsx';
+import ExamenMundo from './pantallas/ExamenMundo.jsx';
 import { loQuePide } from './logica/juego.js';
 
 // Cada rol ve su propio menú. El primero de la lista es su pantalla de inicio.
@@ -28,31 +31,26 @@ const NAV = {
     { id: 'mapa', texto: 'Mapa', corto: 'Mapa', icono: 'mapa' },
     { id: 'escaner', texto: 'Escáner + IA Tutor', corto: 'Escáner', icono: 'escaner' },
     { id: 'aula', texto: 'Mi Aula', corto: 'Aula', icono: 'aula' },
-    { id: 'mochila', texto: 'Mascota', corto: 'Mascota', icono: 'huella' },
+    { id: 'habitacion', texto: 'Habitación', corto: 'Habitación', icono: 'habitacion' },
   ],
   profesor: [
     { id: 'aulas', texto: 'Modo Aula', corto: 'Aula', icono: 'aula' },
+    { id: 'actividades', texto: 'Actividades', corto: 'Tareas', icono: 'libro' },
     { id: 'diagnostico', texto: 'Diagnóstico', corto: 'Diagnóstico', icono: 'cerebro' },
     { id: 'perfil', texto: 'Perfil', corto: 'Perfil', icono: 'perfil' },
   ],
 };
 
 const PANTALLAS = {
-  alumno: { inicio: Inicio, mapa: Mapa, reto: Reto, mochila: Mochila, escaner: Escaner, aula: MiAula, perfil: Perfil, logros: Perfil },
-  profesor: { aulas: Aulas, diagnostico: DiagnosticoProfe, perfil: Perfil },
+  alumno: { inicio: Inicio, mapa: Mapa, reto: Reto, examen: ExamenMundo, habitacion: Habitacion, mochila: Habitacion, mascota: Habitacion, escaner: Escaner, aula: MiAula, perfil: Perfil, logros: Perfil },
+  profesor: { aulas: Aulas, actividades: ActividadesAula, diagnostico: DiagnosticoProfe, perfil: Perfil },
 };
-
-/** Promedio del bienestar del ajolote de 0 a 5 (se muestra como corazones). */
-function vidaAjolote(b) {
-  if (!b) return 5;
-  return Math.round((b.comida + b.pecera + b.alegria) / 3);
-}
 
 function Avisos({ estado, rol }) {
   const [abierto, setAbierto] = useState(false);
   const pide = rol === 'alumno' ? loQuePide(estado.bienestar) : null;
   const avisos = [];
-  if (pide) avisos.push({ texto: `${estado.nombreAjolote} te necesita: revisa su ${pide === 'comida' ? 'comida' : pide === 'pecera' ? 'pecera' : 'alegría'}.`, ruta: '/mochila' });
+  if (pide) avisos.push({ texto: `${estado.nombreAjolote} te necesita: revisa su ${pide === 'comida' ? 'comida' : pide === 'pecera' ? 'pecera' : 'alegría'}.`, ruta: '/habitacion' });
   return (
     <div className="avisos">
       <button className="boton-redondo" aria-label={`Avisos${avisos.length ? `: ${avisos.length} nuevo` : ''}`} aria-expanded={abierto} onClick={() => setAbierto(!abierto)}>
@@ -95,8 +93,10 @@ export default function App() {
   const nav = NAV[rol];
   const pantallas = PANTALLAS[rol];
   const id = pantallas[pantalla] ? pantalla : nav[0].id;
-  const Pantalla = pantallas[id];
-  const activa = id === 'reto' ? 'mapa' : id === 'logros' ? 'perfil' : id;
+  // #/escaner/:aula.:actividad → escanear las páginas de una tarea completa; con .:problema, el escáner de siempre.
+  const tareaCompleta = rol === 'alumno' && id === 'escaner' && String(param || '').split('.').length === 2;
+  const Pantalla = tareaCompleta ? EscanerTarea : pantallas[id];
+  const activa = ['mochila', 'mascota'].includes(id) ? 'habitacion' : id === 'reto' || id === 'examen' ? 'mapa' : id === 'logros' ? 'perfil' : id;
   const alumno = rol === 'alumno';
 
   return (
@@ -104,11 +104,11 @@ export default function App() {
       <aside className="lateral" aria-label="Menú">
         <a href="#/" className="logo">
           <span className="logo-icono"><CabezaKiko tamano={38} /></span>
-          <span className="logo-texto">Selva<small>Matemática</small></span>
+          <span className="logo-texto">Mix</span>
         </a>
 
         {alumno ? (
-          <button className="tarjeta-estrellas" onClick={() => ir('/mochila')} aria-label={`${estado.estrellas} estrellas, nivel ${estado.nivel}. Ir a la mochila`}>
+          <button className="tarjeta-estrellas" onClick={() => ir('/habitacion')} aria-label={`${estado.estrellas} estrellas, nivel ${estado.nivel}. Ir a la habitación`}>
             <span className="estrellas"><I n="estrella" tamano={18} className="texto-selva" /> {estado.estrellas}</span>
             <span className="nivel">Nivel {estado.nivel}</span>
           </button>
@@ -123,36 +123,35 @@ export default function App() {
           {nav.map((n, i) => (
             <a key={n.id} href={`#/${i === 0 ? '' : n.id}`} className={`menu-item${activa === n.id ? ' activo' : ''}`}
               aria-current={activa === n.id ? 'page' : undefined}>
-              {n.id === 'mochila' ? <CabezaKiko tamano={28} /> : <I n={n.icono} tamano={22} />}
+              <I n={n.icono} tamano={22} />
               <span className="texto-largo">{n.texto}</span>
               <span className="texto-corto">{n.corto}</span>
             </a>
           ))}
         </nav>
 
-        <a href={alumno ? '#/mochila' : '#/perfil'} className="tarjeta-kiko">
+        <a href={alumno ? '#/habitacion' : '#/perfil'} className="tarjeta-kiko">
           <span className="kiko-icono"><CabezaKiko tamano={34} /></span>
           <span>
-            <b>{alumno ? `${estado.nombreAjolote} el Ajolote` : 'Kiko el Ajolote'}</b>
+            <b>{alumno ? `${estado.nombreAjolote} el Ajolote` : 'Mix el Ajolote'}</b>
             <small>{alumno && estado.dormido ? 'Está dormido. ¡Despiértalo!' : '¡Listo para aprender!'}</small>
           </span>
         </a>
       </aside>
 
       <header className="barra-top">
-        <a href="#/" className="logo logo-movil" aria-label="Selva Matemática">
+        <a href="#/" className="logo logo-movil" aria-label="Mix">
           <span className="logo-icono"><CabezaKiko tamano={32} /></span>
         </a>
         <div className="pastillas">
           {alumno ? (
             <>
               <span className="pastilla" title="Días seguidos jugando"><I n="fuego" tamano={16} className="c-fuego" /> <span className="solo-ancho">Racha: </span>{estado.rachaDias} día{estado.rachaDias === 1 ? '' : 's'}</span>
-              <span className="pastilla" title={`Bienestar de ${estado.nombreAjolote}`}><I n="corazon" tamano={16} className="c-corazon" /> {vidaAjolote(estado.bienestar)} / 5</span>
               <span className="pastilla" title="Experiencia acumulada"><I n="gema" tamano={16} className="c-gema" /> {estado.xp}</span>
-              <button className="pastilla pastilla-estrellas solo-movil" onClick={() => ir('/mochila')} aria-label={`${estado.estrellas} estrellas`}><I n="estrella" tamano={16} /> {estado.estrellas}</button>
+              <button className="pastilla pastilla-estrellas solo-movil" onClick={() => ir('/habitacion')} aria-label={`${estado.estrellas} estrellas`}><I n="estrella" tamano={16} /> {estado.estrellas}</button>
             </>
           ) : (
-            <span className="pastilla"><I n="wifi" tamano={16} className="texto-selva" /> <span className="solo-ancho">Sincronizado con Selva</span></span>
+            <span className="pastilla"><I n="wifi" tamano={16} className="texto-selva" /> <span className="solo-ancho">Sincronizado</span></span>
           )}
         </div>
         <div className="top-derecha">
@@ -162,7 +161,7 @@ export default function App() {
       </header>
 
       <main className="contenido" id="contenido">
-        <Pantalla key={id === 'reto' ? param : id} retoId={param} />
+        <Pantalla key={id === 'reto' || id === 'escaner' ? `${id}:${param || ''}` : ['mochila', 'mascota'].includes(id) ? 'habitacion' : id} retoId={param} />
       </main>
     </div>
   );

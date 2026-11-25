@@ -7,7 +7,7 @@
 >
 > Detalle en [fuentes.md](fuentes.md).
 
-Base curricular para diseñar los **mundos** (Mapa, para divertirse) y los **módulos** (Aula, para estudiar) de Selva Matemática.
+Base curricular para diseñar los **mundos** (Mapa, para divertirse) y los **módulos** (Aula, para estudiar) de Mix.
 
 Los temas salen de los **Programas Sintéticos 2024 de la SEP** (Nueva Escuela Mexicana), del campo formativo *Saberes y Pensamiento Científico*. Ahí vive matemáticas en toda la educación básica. Las fuentes y sus licencias están en [fuentes.md](fuentes.md).
 

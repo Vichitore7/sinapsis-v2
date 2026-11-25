@@ -41,7 +41,14 @@ COLUMNAS_NUEVAS = {
     "aulas": {"nivel": "VARCHAR(40)", "requiere_aprobacion": "BOOLEAN NOT NULL DEFAULT 0"},
     "aula_alumnos": {"estado": "VARCHAR(10) NOT NULL DEFAULT 'activo'"},
     # Las cuentas que ya existían también reciben los trajes de bienvenida (su logro "Inicio de la aventura" ya está hecho).
-    "mascotas": {"trajes": "JSON NOT NULL DEFAULT '[\"trajinero\", \"trajinera\"]'", "traje": "VARCHAR(20)"},
+    "mascotas": {"trajes": "JSON NOT NULL DEFAULT '[\"trajinero\", \"trajinera\"]'", "traje": "VARCHAR(20)", "cuidados_hasta": "JSON NOT NULL DEFAULT '{}'"},
+    # Diagnóstico según el grado: el grado que elige el alumno al crear su cuenta.
+    "usuarios": {"grado": "VARCHAR(3)"},
+    "diagnosticos": {"grado": "VARCHAR(3)"},
+    # Escalera de pistas: avance que el navegador todavía no confirma (turnos del tutor).
+    "escaleras": {"pendiente": "JSON"},
+    # Tareas del aula organizadas por módulo.
+    "actividades": {"modulo": "VARCHAR(40)"},
 }
 
 
@@ -55,3 +62,11 @@ def migrar_columnas(eng) -> None:
             for nombre, tipo in columnas.items():
                 if nombre not in existentes:
                     conn.execute(text(f"ALTER TABLE {tabla} ADD COLUMN {nombre} {tipo}"))
+
+
+def bloquear_escritura(db: Session) -> None:
+    """Serializa operaciones de economía antes de leer saldo (SQLite)."""
+    if db.get_bind().dialect.name == "sqlite":
+        conn = db.connection()
+        if not conn.connection.driver_connection.in_transaction:
+            conn.exec_driver_sql("BEGIN IMMEDIATE")

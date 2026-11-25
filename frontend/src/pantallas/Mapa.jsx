@@ -7,7 +7,8 @@ import { CabezaKiko, MisionCumplida, Proximamente } from '../componentes/Comunes
 import { api } from '../api.js';
 import { hoy, nodosDeMundo, retosCompletadosDe, siguientePaso } from '../logica/juego.js';
 import { STICKERS } from '../contenido/mundos.js';
-import { COLORES_NIVEL, ChinampaIsla, Lirio, PecesNivel, TrajineraNivel } from '../componentes/Canal.jsx';
+import { ChipFase, temaDe } from '../componentes/Temas.jsx';
+import { TarjetaMetro } from '../componentes/CDMX.jsx';
 
 // Posición horizontal de cada nodo para dibujar el sendero en zigzag.
 const ZIGZAG = [12, 52, 22, 58, 30, 64];
@@ -17,13 +18,6 @@ const CONSEJOS = [
   'Si te equivocas, mira la senda de pasos: ahí se ve dónde se torció el camino.',
   'Pedir una pista no te quita nada. ¡Los exploradores valientes preguntan!',
   'Cuenta de 5 en 5 o de 10 en 10 para llegar más rápido al total.',
-];
-
-const CONSEJOS_CANAL = [
-  'Para contar sin perderte, toca cada flor con tu dedo.',
-  'Cuenta de 10 en 10 los ramos y luego las flores sueltas.',
-  'Sumar es juntar; restar es quitar. ¡Usa tus dedos!',
-  'Cada trajinera lleva 3 peces: resuelve sus 3 ejercicios para llenarla.',
 ];
 
 function Estrellas({ llenas }) {
@@ -89,41 +83,35 @@ function mundoDondeVa(estado, mundos) {
   return abiertos.length ? abiertos[abiertos.length - 1].id : null;
 }
 
-// Las trajineras navegan por el centro del canal en una curva suave.
+// Los niveles (trajineras, transportes…) van por el centro del mapa en una curva suave.
 const CURVA_CANAL = ['center', 'flex-end', 'center', 'flex-start'];
-// Chinampas y lirios esparcidos por las orillas (top en % del alto del canal).
-const DECO_CANAL = [
-  { tipo: 'isla', lado: 'izq', top: '1%', variante: 0 },
-  { tipo: 'lirio', lado: 'der', top: '6%' },
-  { tipo: 'isla', lado: 'der', top: '12%', variante: 1 },
-  { tipo: 'lirio', lado: 'izq', top: '19%' },
-  { tipo: 'isla', lado: 'izq', top: '24%', variante: 2 },
-  { tipo: 'isla', lado: 'der', top: '35%', variante: 0 },
-  { tipo: 'lirio', lado: 'izq', top: '42%' },
-  { tipo: 'isla', lado: 'izq', top: '48%', variante: 1 },
-  { tipo: 'lirio', lado: 'der', top: '55%' },
-  { tipo: 'isla', lado: 'der', top: '60%', variante: 2 },
-  { tipo: 'isla', lado: 'izq', top: '72%', variante: 0 },
-  { tipo: 'lirio', lado: 'der', top: '78%' },
-  { tipo: 'isla', lado: 'der', top: '84%', variante: 1 },
-  { tipo: 'isla', lado: 'izq', top: '93%', variante: 2 },
-];
+/** Examen general de un mundo temático: sin_empezar | en_curso | terminado. */
+function examenDe(estado, mundoId) {
+  return estado.examenes?.[mundoId] || { estado: 'sin_empezar' };
+}
 
-/** Mundo del canal: cada nivel es una trajinera con 3 peces (uno por ejercicio resuelto); las chinampas adornan las orillas. */
-function SenderoCanal({ mundo, estado, onCofre }) {
+/**
+ * Mundo temático por niveles: cada nivel es un nodo del tema (trajinera en el canal, transporte en el Centro)
+ * con 3 premios (peces, cacomixtles) — uno por ejercicio resuelto — y al final el examen general.
+ */
+function SenderoTematico({ mundo, estado }) {
+  const tema = temaDe(mundo);
+  const { Nodo, Medallas, Deco } = tema;
   const { nodos, cofre } = nodosDeMundo(estado, mundo);
+  const examen = examenDe(estado, mundo.id);
   const niveles = [];
   for (const n of nodos) {
     let g = niveles.find((x) => x.nivel === n.reto.nivel);
-    if (!g) niveles.push((g = { nivel: n.reto.nivel, tema: n.reto.nivelTema, titulo: n.reto.nivelTitulo, nodos: [] }));
+    if (!g) niveles.push((g = { nivel: n.reto.nivel, tema: n.reto.nivelTema, titulo: n.reto.nivelTitulo, fase: n.reto.faseCPA, nodos: [] }));
     g.nodos.push(n);
   }
+  const { Titulo } = tema;
   return (
-    <div className="canal-mapa">
-      {DECO_CANAL.map((d, k) => (
-        <span key={k} className={`canal-deco ${d.lado} ${d.tipo}`} style={{ top: d.top }} aria-hidden="true">
-          {d.tipo === 'lirio' ? <Lirio /> : <ChinampaIsla variante={d.variante} />}
-        </span>
+    <div className={tema.claseMapa}>
+      {Titulo && <Titulo />}
+      {tema.deco.map((d, k) => (
+        <span key={k} className={`canal-deco ${d.lado || ''} ${d.tipo}`} aria-hidden="true"
+          style={{ top: d.top, ...(d.x ? { [d.lado === 'izq' ? 'left' : 'right']: d.x } : {}) }}><Deco d={d} /></span>
       ))}
       <ol className="sendero sendero-canal" aria-label={`Niveles de ${mundo.nombre}`}>
         {niveles.map((g, i) => {
@@ -132,35 +120,49 @@ function SenderoCanal({ mundo, estado, onCofre }) {
           const est = hechos === g.nodos.length ? 'hecho' : actual ? 'actual' : 'bloq';
           const destino = (actual || g.nodos[0]).reto;
           const nombre = `Nivel ${g.nivel}: ${g.titulo}`;
-          const color = COLORES_NIVEL[(g.nivel - 1) % COLORES_NIVEL.length];
+          const transporte = tema.nombreNodo(g.nivel);
           return (
             <li key={g.nivel} className="paso-sendero paso-canal" style={{ alignSelf: CURVA_CANAL[i % CURVA_CANAL.length] }}>
               {est === 'actual' && <span className="kiko-aqui"><CabezaKiko tamano={22} /> ¡{estado.nombreAjolote} está aquí!</span>}
               {est === 'bloq' ? (
-                <span className="trajinera-nodo" aria-label={`${nombre}, bloqueado`}>
-                  <TrajineraNivel estado="bloq" color={color}><I n="candado" tamano={18} /></TrajineraNivel>
+                <span className="trajinera-nodo" aria-label={`${nombre} (${transporte}), bloqueado`}>
+                  <Nodo nivel={g.nivel} estado="bloq"><I n="candado" tamano={18} /></Nodo>
                 </span>
               ) : (
                 <a href={`#/reto/${destino.id}`} className="trajinera-nodo"
-                  aria-label={est === 'hecho' ? `${nombre}, completado. Repasar` : `${nombre}, ${hechos} de 3 peces. Jugar`}>
-                  <TrajineraNivel estado={est} color={color}>{est === 'hecho' ? <I n="check" tamano={20} grosor={3} /> : g.nivel}</TrajineraNivel>
+                  aria-label={est === 'hecho' ? `${nombre}, completado. Repasar` : `${nombre}, ${hechos} de 3 ${tema.palabras.premios}. Jugar`}>
+                  <Nodo nivel={g.nivel} estado={est}>{est === 'hecho' ? <I n="check" tamano={20} grosor={3} /> : g.nivel}</Nodo>
                 </a>
               )}
-              <PecesNivel llenos={hechos} />
+              <Medallas llenos={hechos} />
               <span className={`etq-nodo${est === 'bloq' ? ' texto-suave' : ''}`}>{nombre}</span>
-              <small className="etq-tema">{g.tema}</small>
+              <small className="etq-tema">{g.tema}{tema.nombreNodo(g.nivel) !== 'Trajinera' ? ` · ${transporte}` : ''}</small>
+              <ChipFase fase={g.fase} />
             </li>
           );
         })}
-        <li className="paso-sendero paso-canal" style={{ alignSelf: CURVA_CANAL[niveles.length % CURVA_CANAL.length] }}>
-          {cofre === 'actual' ? (
-            <button className="nodo-s nodo-actual nodo-cofre" onClick={onCofre} aria-label="Cofre del embarcadero: ¡ábrelo!"><I n="cofre" tamano={28} /></button>
+        {/* Al final del mundo: el examen general (en lugar del cofre). */}
+        <li className="paso-sendero paso-canal paso-examen" style={{ alignSelf: CURVA_CANAL[niveles.length % CURVA_CANAL.length] }}>
+          {cofre === 'abierto' ? (
+            <a href={`#/examen/${mundo.id}`} className="nodo-s nodo-hecho nodo-examen" aria-label="Examen general terminado. Ver certificado">
+              <I n="logros" tamano={28} />
+            </a>
+          ) : cofre === 'actual' ? (
+            <>
+              {examen.estado !== 'terminado' && <span className="kiko-aqui"><CabezaKiko tamano={22} /> ¡Último reto!</span>}
+              <a href={`#/examen/${mundo.id}`} className="nodo-s nodo-actual nodo-examen"
+                aria-label={examen.estado === 'terminado' ? 'Examen terminado: viste a Mix para abrir el siguiente mundo' : 'Examen general: ¡preséntalo!'}>
+                <I n={examen.estado === 'terminado' ? 'logros' : 'birrete'} tamano={30} />
+              </a>
+            </>
           ) : (
-            <span className={`nodo-s ${cofre === 'abierto' ? 'nodo-hecho' : 'nodo-bloq'}`} aria-label={cofre === 'abierto' ? 'Cofre abierto' : 'Cofre bloqueado'}>
-              <I n={cofre === 'abierto' ? 'check' : 'cofre'} tamano={24} />
-            </span>
+            <span className="nodo-s nodo-bloq nodo-examen" aria-label="Examen general bloqueado"><I n="birrete" tamano={26} /></span>
           )}
-          <span className="etq-nodo">Cofre del embarcadero</span>
+          <span className="etq-nodo">{examen.estado === 'terminado' ? `Certificado · ${examen.aciertos}/${examen.total}` : 'Examen general'}</span>
+          <small className="etq-tema">
+            {cofre === 'abierto' ? 'Mundo terminado' : examen.estado === 'terminado' ? 'Viste a Mix con su traje nuevo'
+              : examen.estado === 'en_curso' ? 'Examen a medias: ¡termínalo!' : 'Gana tu certificado y 2 trajes'}
+          </small>
         </li>
       </ol>
     </div>
@@ -237,7 +239,7 @@ export default function Mapa() {
   const pct = total ? Math.round((hechos / total) * 100) : 0;
   const paso = siguientePaso(estado, mundos);
   const bonoPendiente = estado.ultimoBonoDia !== hoy();
-  const listaConsejos = mundos.find((m) => m.id === mundoActual)?.tema === 'xochimilco' ? CONSEJOS_CANAL : CONSEJOS;
+  const listaConsejos = temaDe(mundos.find((m) => m.id === mundoActual))?.consejos || CONSEJOS;
   const consejo = listaConsejos[hechos % listaConsejos.length];
   const alternar = (id) => setAbiertos((s) => {
     const nuevo = new Set(s);
@@ -265,7 +267,7 @@ export default function Mapa() {
         </div>
         <div className="chips">
           <span className="pastilla"><I n="estrella" tamano={16} className="texto-selva" /> {hechos} / {total}</span>
-          <span className="pastilla"><I n="rayo" tamano={16} className="c-fuego" /> {estado.dormido ? 'Kiko dormido' : 'Energía al 100%'}</span>
+          <span className="pastilla"><I n="rayo" tamano={16} className="c-fuego" /> {estado.dormido ? 'Mix dormido' : 'Energía al 100%'}</span>
         </div>
       </section>
 
@@ -280,13 +282,14 @@ export default function Mapa() {
       ) : (
         <div className="grid-12">
           <div className="col-8 pila-lg">
-            {jugables.map((mundo) => {
+            {jugables.map((mundo, idx) => {
+              const previo = idx > 0 ? jugables[idx - 1] : null;
               const { abierto, cofre } = nodosDeMundo(estado, mundo);
               const hechosM = retosCompletadosDe(estado, mundo);
               const entrar = abierto || cofre === 'abierto';
               const desplegado = abiertos.has(mundo.id);
               const aqui = mundo.id === mundoActual;
-              const canal = mundo.tema === 'xochimilco';
+              const tema = temaDe(mundo);
               const cabecera = (
                 <button type="button" className="mundo-cabecera" aria-expanded={desplegado} aria-controls={`mundo-${mundo.id}`}
                   onClick={() => alternar(mundo.id)}>
@@ -313,7 +316,23 @@ export default function Mapa() {
                 return (
                   <section key={mundo.id} className="tarjeta-suave mundo-bloqueado">
                     {cabecera}
-                    {desplegado && (
+                    {desplegado && (temaDe(previo) ? (
+                      // Después de un mundo con examen, en lugar de una llave se pide vestir a Mix con un traje ganado en él.
+                      <div id={`mundo-${mundo.id}`} className="tarjeta cofre-secreto" style={{ marginTop: 14 }}>
+                        <span className="icono-caja ic-gris grande"><CabezaKiko tamano={40} /></span>
+                        <div style={{ flex: 1 }}>
+                          <b className="t-sm">El traje de la siguiente aventura</b>
+                          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>
+                            {examenDe(estado, previo.id).estado === 'terminado'
+                              ? `Ponle a ${estado.nombreAjolote} uno de los trajes que ganaste en el examen para abrir este mundo.`
+                              : `Termina el examen general de ${previo.nombre}: ganas tu certificado y 2 trajes nuevos.`}
+                          </p>
+                        </div>
+                        {examenDe(estado, previo.id).estado === 'terminado' ? (
+                          <a className="btn btn-naranja btn-chico" href={`#/examen/${previo.id}`}><I n="sombrero" tamano={16} /> Vestir a {estado.nombreAjolote}</a>
+                        ) : <span className="pastilla"><I n="sombrero" tamano={16} /> 0 / 1 Traje</span>}
+                      </div>
+                    ) : (
                       <div id={`mundo-${mundo.id}`} className="tarjeta cofre-secreto" style={{ marginTop: 14 }}>
                         <span className="icono-caja ic-gris grande"><I n="cofre" tamano={26} /></span>
                         <div style={{ flex: 1 }}>
@@ -322,31 +341,41 @@ export default function Mapa() {
                         </div>
                         <span className="pastilla"><I n="llave" tamano={16} /> 0 / 1 Llave</span>
                       </div>
-                    )}
+                    ))}
                   </section>
                 );
               }
               return (
-                <section key={mundo.id} className={`tarjeta mundo${desplegado ? ' tarjeta-grande' : ''}${canal ? ' mundo-canal' : ''}`}>
-                  {!canal && <span className="burbuja-deco b1" aria-hidden="true" />}
+                <section key={mundo.id} className={`tarjeta mundo${desplegado ? ' tarjeta-grande' : ''}${tema ? ` mundo-canal ${tema.clase}` : ''}`}>
+                  {!tema && <span className="burbuja-deco b1" aria-hidden="true" />}
                   {cabecera}
                   {desplegado && (
                   <div id={`mundo-${mundo.id}`}>
-                  {canal
-                    ? <SenderoCanal mundo={mundo} estado={estado} onCofre={() => abrir(mundo)} />
+                  {tema
+                    ? <SenderoTematico mundo={mundo} estado={estado} />
                     : <Sendero mundo={mundo} estado={estado} onCofre={() => abrir(mundo)} />}
-                  {paso && paso.mundo.id === mundo.id && (
-                    <div className="siguiente-desafio">
-                      <span className="icono-caja ic-blanco"><I n="triangulo" /></span>
-                      <div style={{ flex: 1 }}>
-                        <b className="t-md">Siguiente Desafío: {paso.tipo === 'reto' ? paso.reto.titulo : 'Cofre del mundo'}</b>
-                        <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>{paso.tipo === 'reto' ? paso.reto.enunciado : '¡Ábrelo para ganar un sticker!'}</p>
+                  {paso && paso.mundo.id === mundo.id && (() => {
+                    // En un mundo temático, el último paso es el examen general (no un cofre).
+                    const ex = tema && paso.tipo === 'cofre' ? examenDe(estado, mundo.id) : null;
+                    const titulo = paso.tipo === 'reto' ? paso.reto.titulo
+                      : ex ? (ex.estado === 'terminado' ? 'Viste a Mix con su traje nuevo' : 'Examen general') : 'Cofre del mundo';
+                    const texto = paso.tipo === 'reto' ? paso.reto.enunciado
+                      : ex ? (ex.estado === 'terminado' ? 'Ponte uno de los trajes que ganaste para abrir el siguiente mundo.'
+                        : 'Una pregunta de cada nivel. Gana tu certificado y 2 trajes nuevos para Mix.')
+                        : '¡Ábrelo para ganar un sticker!';
+                    const boton = paso.tipo === 'reto' ? 'Jugar Ahora' : ex ? (ex.estado === 'terminado' ? 'Vestir a Mix' : ex.estado === 'en_curso' ? 'Seguir examen' : 'Presentar examen') : 'Abrir cofre';
+                    const accion = () => (paso.tipo === 'reto' ? ir(`/reto/${paso.reto.id}`) : ex ? ir(`/examen/${mundo.id}`) : abrir(mundo));
+                    return (
+                      <div className="siguiente-desafio">
+                        <span className="icono-caja ic-blanco"><I n={ex ? 'birrete' : 'triangulo'} /></span>
+                        <div style={{ flex: 1 }}>
+                          <b className="t-md">Siguiente Desafío: {titulo}</b>
+                          <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>{texto}</p>
+                        </div>
+                        <button className="btn btn-naranja" onClick={accion}>{boton} <I n="jugar" tamano={16} /></button>
                       </div>
-                      <button className="btn btn-naranja" onClick={() => (paso.tipo === 'reto' ? ir(`/reto/${paso.reto.id}`) : abrir(mundo))}>
-                        {paso.tipo === 'reto' ? 'Jugar Ahora' : 'Abrir cofre'} <I n="jugar" tamano={16} />
-                      </button>
-                    </div>
-                  )}
+                    );
+                  })()}
                   </div>
                   )}
                 </section>
@@ -400,7 +429,7 @@ export default function Mapa() {
                   const tiene = estado.stickers.includes(id);
                   return (
                     <div key={id} className={`coleccion-item${tiene ? '' : ' falta'}`}>
-                      <I n={id === 'mochila' ? 'mochila' : id === 'sombrero' ? 'sombrero' : 'chispa'} tamano={24} />
+                      {id === 'tarjeta' ? <TarjetaMetro tamano={34} /> : <I n={id === 'mochila' ? 'mochila' : id === 'sombrero' ? 'sombrero' : 'chispa'} tamano={24} />}
                       <b>{s.nombre.split(' ')[0]}</b>
                       <small>{tiene ? 'Ganado' : 'Bloqueado'}</small>
                     </div>

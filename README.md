@@ -1,4 +1,4 @@
-# Selva Matemática (sinapsis-v2)
+# Mix (sinapsis-v2)
 
 **IA que enseña a pensar.** Plataforma gamificada de matemáticas básicas para alumnas y alumnos de 9 a 15 años en México. Se explora una selva de mundos y retos junto a un ajolote guía que nunca castiga el error: lo convierte en una pista.
 
@@ -61,7 +61,8 @@ Después de instalarlo **cierra y vuelve a abrir la terminal** para que reconozc
 
 **Extensiones recomendadas de VS Code:** "Python" (Microsoft) y "ES7+ React snippets" (opcional). Para que VS Code entienda el backend: `Ctrl+Shift+P` → *Python: Select Interpreter* → elige `backend/.venv` (aparece después del paso 3).
 
-> **uv** es como `npm` pero para Python: `uv sync` ≈ `npm install`, `uv run ...` ≈ `npm run ...`. No es una extensión de VS Code; es un programa de terminal.
+> **uv** es como `npm` pero para Python: `uv sync` ≈ `npm install`, `uv run ...` ≈ `npm run ...`. No es una extensión de VS Code; es un programa de terminal.curl -LsSf https://astral.sh/uv/install.sh | sh
+
 
 ---
 
@@ -289,7 +290,7 @@ frontend/
 
 - **Agregar o cambiar retos:** edita `backend/app/contenido.py` y corre `cd backend && uv run python -m app.semilla`.
 - **Agregar un endpoint:** crea la función en `backend/app/rutas/`, valida la entrada en `esquemas.py`, agrega su llamada en `frontend/src/api.js` y escribe una prueba en `backend/tests/`.
-- **Ajustar estrellas, costos o reglas:** `VALORES` al inicio de `backend/app/juego.py` (y los costos que muestra la Mochila en `frontend/src/logica/juego.js`).
+- **Ajustar estrellas, costos o reglas:** `VALORES` al inicio de `backend/app/juego.py` (los cuidados ya no tienen costo).
 - **Cambiar a PostgreSQL:** cambia `DATABASE_URL` en `.env` e instala el driver: `uv add "psycopg[binary]"`.
 - **Ver y probar la API sin frontend:** http://localhost:8000/docs.
 
@@ -314,3 +315,23 @@ frontend/
 - [ ] Modo sin conexión para el alumno: guardar intentos y enviarlos al volver el internet.
 - [ ] Revisar el tema Noche con diseño: el sistema solo define el tema Día.
 - [ ] Despliegue (Railway, Render o servidor propio) con `ENTORNO=produccion` y HTTPS.
+
+
+## Habitación del ajolote (integración v2.0)
+
+La sección **Mascota** se reemplazó por **Habitación** (`#/habitacion`; alias `#/mochila` y `#/mascota`). Se mantiene el rediseño Stitch y el progreso de los mundos, los exámenes, los trajes, el diagnóstico, las aulas y el tutor. La habitación tiene decoración isométrica, inventario, compras con las estrellas reales, cuidados arrastrables, descanso y guardado por alumno. Trajes conserva el armario y permite equipar los premios necesarios para abrir mundos.
+
+- [Diseño y API de Habitación](docs/selva-matematica/Habitacion.md)
+- [Pruebas de integración](docs/PRUEBAS-HABITACION.md)
+
+Arranca los servicios como antes (`uv sync`, `uv run uvicorn app.main:app --reload` en backend; `npm ci`, `npm run dev` en frontend). Para conservar cuentas, usa una copia de **la base de datos de esta nueva versión v2.0** y su `.env` local, con ambos servidores detenidos y respaldo previo. No reemplaces la base de esta versión con la de la versión anterior del juego: los usuarios y mundos podrían no coincidir. Este ZIP no fusiona bases de datos ni incluye archivos privados, entornos virtuales o dependencias instaladas. Las tablas activas de Habitación se crean al arrancar; se migra automáticamente la columna de temporizadores de mascotas. El minijuego de burbujas se retiró. Los datos de una tabla histórica de burbujas no se borran.
+
+### Actualización de Cuidados v3
+
+Alimentar, limpiar y dormir son gratuitos y tienen recargas independientes de tres minutos, validadas por FastAPI. Cada barra que llega a cinco marcas desde un valor menor da una estrella verde sin XP. Jugar abre Mundos. El descanso requiere cama y se termina tocando la pantalla. Consulta [reglas](docs/selva-matematica/Recompensas-y-cuidados.md).
+
+### Actualización Tienda v4
+
+La tienda desbloquea decoraciones según las trajineras completadas de El Canal de los Números, no según la XP. Los accesorios especiales se desbloquean al superar las trajineras 3, 6, 9 y 12. Los precios, estrellas verdes e inventario previo se conservan. No se requiere ninguna migración adicional ni dependencias nuevas. Consulta [Habitación](docs/selva-matematica/Habitacion.md).
+
+En Tienda y Trajes v4, el personaje de Habitación usa el ajolote original de Mix (sin traje especial por defecto). El armario permite volver a ese aspecto sin perder los trajes ni el progreso.

@@ -3,6 +3,7 @@
 // Evolución: las branquias ganan un color nuevo por cada mundo superado.
 // Accesorios: stickers ganados ('mochila', 'bufanda', ...).
 import { useId } from 'react';
+import { SUBCULTURAS } from './TrajesSubculturas.jsx';
 
 const COLORES_BRANQUIAS = ['var(--magia)', 'var(--selva)', 'var(--pista)', 'var(--sol)'];
 
@@ -78,7 +79,7 @@ function Extra({ estado }) {
 }
 
 // ---------- Trajes típicos de las trajineras de Xochimilco ----------
-// Colores fijos (no dependen del tema): son la ropa de Kiko, igual de día y de noche.
+// Colores fijos (no dependen del tema): son la ropa de Mix, igual de día y de noche.
 const ROPA = {
   manta: '#fbf8f0', palma: '#f1dfa8', palmaHilo: '#cfae62', liston: '#2b2738',
   faja: '#5b6fa8', rojo: '#d62839', rosa: '#ff6fa5', amarillo: '#ffc83d', verde: '#1fa971',
@@ -89,6 +90,7 @@ const C = { stroke: 'var(--tinta)', strokeWidth: 2.5, strokeLinejoin: 'round' };
 
 /** Siluetas extra que también llevan borde blanco de sticker. */
 function SiluetaTraje({ traje, cabeza }) {
+  if (SUBCULTURAS[traje]) return SUBCULTURAS[traje].silueta?.(cabeza) ?? null;
   if (traje === 'trajinero') {
     return (
       <>
@@ -111,6 +113,7 @@ function SiluetaTraje({ traje, cabeza }) {
 
 /** Herramienta en la mano: garrocha de bambú (trajinero) o remo de madera (trajinera). Va detrás de las branquias. */
 function Herramienta({ traje }) {
+  if (SUBCULTURAS[traje]) return SUBCULTURAS[traje].herramienta?.() ?? null;
   if (traje === 'trajinero') {
     return (
       <g>
@@ -133,6 +136,7 @@ function Herramienta({ traje }) {
 
 /** Ropa del cuerpo, recortada a la silueta del cuerpo (la cabeza va encima). */
 function RopaCuerpo({ traje, recorte }) {
+  if (SUBCULTURAS[traje]) return <g clipPath={`url(#${recorte})`}>{SUBCULTURAS[traje].ropa?.()}</g>;
   if (traje === 'trajinero') {
     return (
       <g clipPath={`url(#${recorte})`}>
@@ -165,6 +169,7 @@ function RopaCuerpo({ traje, recorte }) {
 
 /** Detalles sobre el cuerpo que salen de la silueta (nudo de la faja, morral, listones). */
 function DetallesCuerpo({ traje }) {
+  if (SUBCULTURAS[traje]) return SUBCULTURAS[traje].detalles?.() ?? null;
   if (traje === 'trajinero') {
     return (
       <g {...C} strokeWidth="2">
@@ -183,6 +188,7 @@ function DetallesCuerpo({ traje }) {
 
 /** Sombrero de palma o pañoleta con trenzas y flor. */
 function Tocado({ traje }) {
+  if (SUBCULTURAS[traje]) return SUBCULTURAS[traje].tocado?.() ?? null;
   if (traje === 'trajinero') {
     return (
       <g>
@@ -221,8 +227,8 @@ function Tocado({ traje }) {
   return null;
 }
 
-// cabeza: solo la cabecita (logo del inicio de sesión y saludos de Kiko).
-// traje: 'trajinero' | 'trajinera' | null (regalo de bienvenida, se elige en Perfil > Vestir a Kiko).
+// cabeza: solo la cabecita (logo del inicio de sesión y saludos de Mix).
+// traje: 'trajinero' | 'trajinera' | null (regalo de bienvenida, se elige en Perfil > Vestir a Mix).
 export default function Ajolote({ estado = 'feliz', tamano = 140, mundosSuperados = 0, accesorios = [], etiqueta, cabeza = false, traje = null }) {
   const recorte = `cuerpo-${useId().replace(/:/g, '')}`;
   const brilla = estado === 'celebrando';

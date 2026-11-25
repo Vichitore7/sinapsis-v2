@@ -14,6 +14,7 @@ async function pedir(metodo, ruta, cuerpo) {
     res = await fetch(`/api${ruta}`, {
       method: metodo,
       credentials: 'same-origin',
+      cache: 'no-store',
       headers: cuerpo !== undefined ? { 'Content-Type': 'application/json' } : undefined,
       body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
     });
@@ -47,6 +48,21 @@ export const api = {
   despertar: () => pedir('POST', '/mascota/despertar'),
   renombrarMascota: (nombre) => pedir('PATCH', '/mascota', { nombre }),
   vestir: (traje) => pedir('PUT', '/mascota/traje', { traje }),
+  examen: (leccionId) => pedir('GET', `/examenes/${encodeURIComponent(leccionId)}`),
+  responderExamen: (leccionId, preguntaId, d) => pedir('POST', `/examenes/${encodeURIComponent(leccionId)}/preguntas/${encodeURIComponent(preguntaId)}`, d),
+  terminarExamen: (leccionId) => pedir('POST', `/examenes/${encodeURIComponent(leccionId)}/terminar`),
+
+  // Tutor de IA (Mix en el chat del escáner). Regresa { respuesta, origen: 'claude' | 'reglas' }.
+  tutor: (d) => pedir('POST', '/tutor', d),
+  // Lee la operación de la foto del cuaderno. Regresa { lectura: { a, op, b, c, dudoso } | null, origen }.
+  leerFoto: (foto) => pedir('POST', '/escaner/leer', { foto }),
+  // Guarda en la memoria de aprendizaje una operación confirmada en el escáner. Regresa { concepto, estado }.
+  registrarEscaneo: (op) => pedir('POST', '/escaner/resultado', op),
+
+  // Habitación (misma sesión y saldo del juego)
+  habitacion: () => pedir('GET', '/habitacion'),
+  guardarHabitacion: (d) => pedir('PUT', '/habitacion', d),
+  comprarSticker: (stickerId) => pedir('POST', '/habitacion/compras', { stickerId }),
 
   // Aulas
   aulas: () => pedir('GET', '/aulas'),
@@ -64,6 +80,19 @@ export const api = {
   panel: (id) => pedir('GET', `/aulas/${id}/panel`),
   detalleAlumno: (id, alumnoId) => pedir('GET', `/aulas/${id}/alumnos/${alumnoId}`),
   unirse: (codigo) => pedir('POST', '/aulas/unirse', { codigo }),
+  // Actividades del aula (app/actividades.py): el profesor deja problemas; el alumno los resuelve y los escanea.
+  actividades: (aulaId) => pedir('GET', `/aulas/${aulaId}/actividades`),
+  actividad: (aulaId, actId) => pedir('GET', `/aulas/${aulaId}/actividades/${actId}`),
+  crearActividad: (aulaId, d) => pedir('POST', `/aulas/${aulaId}/actividades`, d),
+  borrarActividad: (aulaId, actId) => pedir('DELETE', `/aulas/${aulaId}/actividades/${actId}`),
+  bancoProblemas: () => pedir('GET', '/actividades/banco'),
+  // Foto de una página completa: Mix lee todas sus operaciones y las acomoda en los problemas (no registra nada).
+  leerPagina: (actId, foto) => pedir('POST', `/actividades/${actId}/leer-pagina`, { foto }),
+  escaneoActividad: (actId, problemaId, op) => pedir('POST', `/actividades/${actId}/problemas/${problemaId}/escaneo`, op),
+  resueltoEnChat: (actId, problemaId) => pedir('POST', `/actividades/${actId}/problemas/${problemaId}/resuelto-en-chat`),
+  entregarActividad: (actId) => pedir('POST', `/actividades/${actId}/entregar`),
+  comprensionGrupo: (aulaId) => pedir('GET', `/aulas/${aulaId}/comprension`),
+  comprensionAlumno: (aulaId, alumnoId) => pedir('GET', `/aulas/${aulaId}/alumnos/${alumnoId}/comprension`),
 
   // Examen diagnóstico (alumno)
   diagnostico: () => pedir('GET', '/diagnostico'),
@@ -97,6 +126,7 @@ export function adaptarMundos(mundos) {
       nivel: r.nivel || null,
       nivelTema: r.nivel_tema || null,
       nivelTitulo: r.nivel_titulo || null,
+      faseCPA: r.fase_cpa || null, // concreto | pictórico | abstracto (método CPA)
       mundo,
     }));
     return mundo;
@@ -125,10 +155,12 @@ export function adaptarEstado(r) {
     nombreAjolote: r.mascota.nombre,
     bienestar: { comida: r.mascota.comida, pecera: r.mascota.pecera, alegria: r.mascota.alegria },
     dormido: r.mascota.dormido,
+    cuidadosHasta: Object.fromEntries(Object.entries(r.mascota.cuidados_restantes || {}).map(([id, seg]) => [id, performance.now() + seg * 1000])), 
     trajes: r.mascota.trajes || [],
     traje: r.mascota.traje || null,
     logros: r.logros,
     mapa: r.mapa,
     diagnosticoHecho: r.diagnostico_hecho,
+    examenes: r.examenes || {},
   };
 }

@@ -1,5 +1,5 @@
 /* =========================================================
-   Selva Matemática — estilos de la app.
+   Mix — estilos de la app.
    Parte 1: componentes base copiados de docs/selva-matematica/components/bundle.css
    (sin el @import de Google Fonts: las fuentes vienen empaquetadas para funcionar sin internet).
    Parte 2: diseño de pantallas.
@@ -89,8 +89,8 @@ a { color: inherit; }
 /* Sticker: borde blanco grueso y sombra sólida */
 .sticker { filter: drop-shadow(2px 0 0 var(--borde-sticker)) drop-shadow(-2px 0 0 var(--borde-sticker)) drop-shadow(0 2px 0 var(--borde-sticker)) drop-shadow(0 -2px 0 var(--borde-sticker)) drop-shadow(0 3px 0 rgba(30, 27, 58, 0.22)); overflow: visible; }
 .ajolote { flex: none; overflow: visible; filter: drop-shadow(0 3px 0 rgba(30, 27, 58, 0.22)); }
-/* Kiko y los íconos sticker se dibujan con --tinta (contorno, ojos) y --superficie (borde blanco, brillo de ojos).
-   De noche esos tokens se invierten y Kiko quedaba con ojos blancos y borde oscuro; aquí se fijan al look de día. */
+/* Mix y los íconos sticker se dibujan con --tinta (contorno, ojos) y --superficie (borde blanco, brillo de ojos).
+   De noche esos tokens se invierten y Mix quedaba con ojos blancos y borde oscuro; aquí se fijan al look de día. */
 .ajolote, svg.sticker { --tinta: var(--contorno); --superficie: var(--borde-sticker); }
 
 /* Ajolote con globo */

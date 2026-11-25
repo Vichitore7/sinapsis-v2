@@ -32,6 +32,8 @@ function apodoMagico() {
 
 const PRIMARIA = ['1°', '2°', '3°', '4°', '5°', '6°'];
 const SECUNDARIA = ['1° Año', '2° Año', '3° Año'];
+// 'Primaria • 5°' → 'P5' y 'Secundaria • 2° Año' → 'S2': el código que guarda el servidor para elegir el diagnóstico.
+const codigoGrado = (g) => `${g.startsWith('Secundaria') ? 'S' : 'P'}${g.match(/\d/)[0]}`;
 
 /** Se muestra UNA sola vez después de registrarse o recuperar. */
 export function MostrarCodigo({ codigo, onListo, titulo = '¡Guarda tu código secreto!' }) {
@@ -84,9 +86,9 @@ export default function Cuenta() {
         const r = await api.login({ usuario: form.usuario, password: form.password });
         await entrar(r.usuario);
       } else if (modo === 'crear') {
-        const r = await api.registro({ usuario: form.usuario, apodo: form.apodo, password: form.password, rol: form.rol });
-        // El nivel escolar todavía no existe en el servidor: se guarda en este dispositivo.
-        if (alumno) { try { localStorage.setItem(`selva:grado:${r.usuario.id}`, grado); } catch { /* sin almacenamiento */ } }
+        // El grado se guarda en el servidor y decide qué examen diagnóstico le toca al alumno.
+        const r = await api.registro({ usuario: form.usuario, apodo: form.apodo, password: form.password, rol: form.rol,
+          ...(alumno && { grado: codigoGrado(grado) }) });
         // La notificación del logro de bienvenida sale al terminar el examen diagnóstico.
         if (r.bienvenida) guardarBienvenida(r.usuario.id, r.bienvenida);
         setPendiente({ usuario: r.usuario, codigo: r.codigo_recuperacion });
@@ -123,8 +125,8 @@ export default function Cuenta() {
   return (
     <div className="portada portada-simple">
       <div className="portada-kiko">
-        <span className="kiko-cabeza"><Ajolote estado="feliz" tamano={150} cabeza etiqueta="Kiko, el ajolote de Selva Matemática" /></span>
-        <h1 className="logo-texto grande">Selva<small>Matemática</small></h1>
+        <span className="kiko-cabeza"><Ajolote estado="feliz" tamano={150} cabeza etiqueta="Mix, el ajolote" /></span>
+        <h1 className="logo-texto grande">Mix</h1>
       </div>
 
       <section className="tarjeta tarjeta-entrada">
