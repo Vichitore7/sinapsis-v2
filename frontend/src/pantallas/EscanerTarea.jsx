@@ -63,7 +63,7 @@ export default function EscanerTarea({ retoId }) {
       const r = await api.leerPagina(act.id, foto);
       setPaginas((n) => n + 1);
       if (r.origen !== 'claude') {
-        setAviso('Ahorita no pude leer la página. Escanea cada problema por separado con su botón. 📸');
+        setAviso('Ahorita no pude leer la página. Escanea cada problema por separado con su botón.');
         setPaso('lista');
         return;
       }
@@ -73,7 +73,7 @@ export default function EscanerTarea({ retoId }) {
       if (!nuevos.length) {
         setAviso(r.encontrados.length
           ? 'Esos problemas ya van derecho. Tómale foto a la página donde están los que faltan.'
-          : 'No encontré problemas de esta tarea en la foto. Revisa que se vea toda la página, con buena luz. 🔍');
+          : 'No encontré problemas de esta tarea en la foto. Revisa que se vea toda la página, con buena luz.');
         setPaso('lista');
         return;
       }
@@ -105,7 +105,7 @@ export default function EscanerTarea({ retoId }) {
     await cargar();
     setLeidos([]);
     const partes = [];
-    if (bien) partes.push(`${bien} ${bien === 1 ? 'va' : 'van'} derecho 🌟`);
+    if (bien) partes.push(`${bien} ${bien === 1 ? 'va' : 'van'} derecho`);
     if (mal) partes.push(`${mal} ${mal === 1 ? 'tiene' : 'tienen'} algo que revisar (lo vemos juntos, sin prisa)`);
     if (sinResultado) partes.push(`${sinResultado} sin resultado: termínalo en tu cuaderno y vuelve a tomar la foto`);
     setAviso(partes.length ? `Revisé tu página: ${partes.join(', ')}.` : 'No pude revisar esa página. Intenta otra vez.');
@@ -149,7 +149,7 @@ export default function EscanerTarea({ retoId }) {
 
       {paso === 'leyendo' && (
         <section className="tarjeta centro-col" style={{ textAlign: 'center' }} aria-live="polite">
-          <DiceAjolote estado="curioso" tamano={90}>Estoy leyendo tu página con mi lupa… 🔍</DiceAjolote>
+          <DiceAjolote estado="curioso" tamano={90}>Estoy leyendo tu página con mi lupa…</DiceAjolote>
         </section>
       )}
 

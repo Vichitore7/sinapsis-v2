@@ -87,7 +87,7 @@ function Captura({ onFoto, pendientes, enLinea, onLeerPendiente, historial }) {
                 <span className="reciente-op">{h.a}{h.op}{h.b}</span>
                 <span>
                   <b className="cuerpo-sm">{h.fecha}</b>
-                  <small className={h.correcto ? 'texto-selva' : 'texto-naranja'}>{h.correcto ? 'Resuelto 🎉' : 'En curso 💬'}</small>
+                  <small className={h.correcto ? 'texto-selva' : 'texto-naranja'}>{h.correcto ? 'Resuelto' : 'En curso'}</small>
                 </span>
               </div>
             ))}
@@ -327,7 +327,7 @@ function Diagnostico({ operacion, pista, onOtra, resuelta = false }) {
 // ---------- Chat del tutor (pistas socráticas, nunca la respuesta) ----------
 const SALUDO = {
   de: 'kiko',
-  texto: '¡Hola explorador! 🔍 Toma una foto de UNA operación de tu cuaderno y la revisamos juntos. No te voy a dar la respuesta directa: tú eres el genio aquí.',
+  texto: '¡Hola explorador! Toma una foto de UNA operación de tu cuaderno y la revisamos juntos. No te voy a dar la respuesta directa: tú eres el genio aquí.',
 };
 
 /** El grado que eligió el alumno al crear su cuenta (Cuenta.jsx lo guarda en este dispositivo). */
@@ -341,9 +341,9 @@ const VISITA = (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random
 let contadorTurnos = 0;
 
 // Pregunta al resolver (la misma que pone el backend en PREGUNTA_DUDAS) y sus dos botones.
-const PREGUNTA_DUDAS = '¿Te quedó todo claro o tienes alguna duda de lo que vimos? 💬';
-const TODO_CLARO = '¡Todo claro! 👍';
-const TENGO_DUDA = 'Tengo una duda 🙋';
+const PREGUNTA_DUDAS = '¿Te quedó todo claro o tienes alguna duda de lo que vimos?';
+const TODO_CLARO = '¡Todo claro!';
+const TENGO_DUDA = 'Tengo una duda';
 
 function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacion, pistasActivas = hayOperacion, onReiniciar, onConfirmarOtro, onDudas }) {
   const [texto, setTexto] = useState('');
@@ -393,8 +393,8 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
                   {m.dibujo && <div className="msg-dibujo"><DibujoTutor dibujo={m.dibujo} /></div>}
                   {m.confirmar && !m.respondido && (
                     <div className="msg-botones">
-                      <button type="button" className="chip-sug" onClick={() => onConfirmarOtro(i, true)}>✅ Sí, eso dice</button>
-                      <button type="button" className="chip-sug" onClick={() => onConfirmarOtro(i, false)}>✏️ No</button>
+                      <button type="button" className="chip-sug" onClick={() => onConfirmarOtro(i, true)}>Sí, eso dice</button>
+                      <button type="button" className="chip-sug" onClick={() => onConfirmarOtro(i, false)}>No</button>
                     </div>
                   )}
                   {m.dudas && !m.respondido && (
@@ -418,8 +418,8 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
         <span ref={fin} />
       </div>
       <div className="chat-sugerencias">
-        <button className="chip-sug" onClick={onPista} disabled={!pistasActivas || ocupado}>💡 Dame otra pista</button>
-        <button className="chip-sug" onClick={onEjemplo} disabled={!hayOperacion}>🧩 Dibújalo con bloques</button>
+        <button className="chip-sug" onClick={onPista} disabled={!pistasActivas || ocupado}>Dame otra pista</button>
+        <button className="chip-sug" onClick={onEjemplo} disabled={!hayOperacion}>Dibújalo con bloques</button>
       </div>
       <form className="chat-entrada" onSubmit={enviar}>
         <button type="button" className="boton-redondo" onClick={() => camara.current.click()} disabled={ocupado} aria-label="Tomar foto para Mix"><I n="camara" /></button>
@@ -480,7 +480,7 @@ export default function Escaner({ retoId }) {
   // Modo actividad: el escaneo cuenta para el problema (y el servidor también lo registra para Mix).
   const escanearParaActividad = (op) => api.escaneoActividad(ctxAct.actividad, ctxAct.problema, op).then((r) => {
     if (!r.coincide) {
-      decir({ de: 'kiko', texto: `Ojo: esta no es la operación del problema (${r.problema}). Revisa tu foto o tu cuaderno y escanéalo otra vez. 🔍` });
+      decir({ de: 'kiko', texto: `Ojo: esta no es la operación del problema (${r.problema}). Revisa tu foto o tu cuaderno y escanéalo otra vez.` });
     }
     refrescarActividad();
     return true;
@@ -525,7 +525,7 @@ export default function Escaner({ retoId }) {
     const texto = mensajes[indice]?.confirmar;
     setMensajes((xs) => xs.map((m, i) => (i === indice ? { ...m, respondido: true } : m)));
     if (!si) {
-      decir({ de: 'yo', texto: 'No' }, { de: 'kiko', texto: 'Va. Escríbeme tu ejercicio aquí, tal como está en tu cuaderno, y lo vemos juntos. ✏️' });
+      decir({ de: 'yo', texto: 'No' }, { de: 'kiko', texto: 'Va. Escríbeme tu ejercicio aquí, tal como está en tu cuaderno, y lo vemos juntos.' });
       return;
     }
     setEjercicio(texto);
@@ -596,7 +596,7 @@ export default function Escaner({ retoId }) {
     if (op && op.c !== '') confirmar(op, true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const YA_RESUELTA = '¡Ese ejercicio ya lo resolviste! 🌟 Cuéntame cómo lo pensaste, o escanea otro para seguir practicando.';
+  const YA_RESUELTA = '¡Ese ejercicio ya lo resolviste! Cuéntame cómo lo pensaste, o escanea otro para seguir practicando.';
 
   // Al resolver, Mix pregunta si quedó claro: "¡Todo claro!" cierra y "Tengo una duda" sigue la plática.
   const responderDudas = (indice, claro) => {
@@ -661,7 +661,7 @@ export default function Escaner({ retoId }) {
       return;
     }
     const id = ++peticion.current;
-    decir({ de: 'kiko', texto: 'Estoy leyendo tu foto con mi lupa… 🔍', pensando: id });
+    decir({ de: 'kiko', texto: 'Estoy leyendo tu foto con mi lupa…', pensando: id });
     const mia = conversacion.current;
     const { lectura: leida, otro } = await leerFoto(comprimida);
     setMensajes((xs) => xs.filter((m) => m.pensando !== id));
@@ -671,14 +671,14 @@ export default function Escaner({ retoId }) {
       return;
     }
     if (!leida) {
-      decir({ de: 'kiko', texto: 'No encontré un ejercicio en esa foto. Prueba con UNO solo y buena luz, o escríbemelo aquí. 📸' });
+      decir({ de: 'kiko', texto: 'No encontré un ejercicio en esa foto. Prueba con UNO solo y buena luz, o escríbemelo aquí.' });
       return;
     }
     // Nunca se diagnostica sin que el alumno confirme: la lectura va a la pantalla de confirmación del escáner.
     setFoto(comprimida);
     setLectura(leida);
     setPaso('lectura');
-    decir({ de: 'kiko', texto: 'Ya leí tu foto. Revisa en el escáner que esté igual que en tu cuaderno y confírmalo. 🌟' });
+    decir({ de: 'kiko', texto: 'Ya leí tu foto. Revisa en el escáner que esté igual que en tu cuaderno y confírmalo.' });
     columnaEscaner.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
@@ -695,7 +695,7 @@ export default function Escaner({ retoId }) {
     if (enLinea) {
       const id = ++peticion.current;
       const turno = `${VISITA}:${++contadorTurnos}`;
-      decir({ de: 'kiko', texto: 'Mix está pensando… 🤔', pensando: id });
+      decir({ de: 'kiko', texto: 'Mix está pensando…', pensando: id });
       const sinPensando = (xs) => xs.filter((m) => m.pensando !== id);
       const mia = conversacion.current;
       // Reiniciaron la plática o confirmaron otro ejercicio mientras Mix pensaba: esta respuesta ya no va.
@@ -733,7 +733,7 @@ export default function Escaner({ retoId }) {
         if (vieja()) return;
         setMensajes(sinPensando);
         if (!contexto.operacion) {
-          decir({ de: 'kiko', texto: 'Uy, no pude escucharte bien. ¿Me lo vuelves a escribir en un momento? 🌱' });
+          decir({ de: 'kiko', texto: 'Uy, no pude escucharte bien. ¿Me lo vuelves a escribir en un momento?' });
           return;
         }
       }
@@ -743,7 +743,7 @@ export default function Escaner({ retoId }) {
 
   const respuestaLocal = (texto) => {
     if (!operacion) {
-      decir({ de: 'kiko', texto: 'Primero escanea o escribe tu operación, así sé de qué estamos platicando. 📸' });
+      decir({ de: 'kiko', texto: 'Primero escanea o escribe tu operación, así sé de qué estamos platicando.' });
       return;
     }
     if (resuelta) {
@@ -752,9 +752,9 @@ export default function Escaner({ retoId }) {
       if (pideExplicacion) {
         decir({ de: 'kiko', texto: `Claro, te explico: ${explicacionResuelta(operacion)} ¿Con eso te quedó más claro?` });
       } else if (texto === TODO_CLARO || /todo claro|ya entend[ií]|ninguna duda|no tengo (ninguna )?duda/i.test(texto)) {
-        decir({ de: 'kiko', texto: '¡Qué bien! 🌟 Me gustó mucho cómo lo trabajaste. Cuando quieras, escanea otro ejercicio y seguimos.' });
+        decir({ de: 'kiko', texto: '¡Qué bien! Me gustó mucho cómo lo trabajaste. Cuando quieras, escanea otro ejercicio y seguimos.' });
       } else if (texto === TENGO_DUDA || /^\W*(s[ií],?\s*)?tengo (una |alguna )?dudas?\W*$/iu.test(texto)) {
-        decir({ de: 'kiko', texto: '¡Claro! ¿Qué parte quieres que veamos otra vez? Puede ser un paso, el porqué de algo o una palabra que no te quedó clara. 🔍' });
+        decir({ de: 'kiko', texto: '¡Claro! ¿Qué parte quieres que veamos otra vez? Puede ser un paso, el porqué de algo o una palabra que no te quedó clara.' });
       } else {
         decir({ de: 'kiko', texto: YA_RESUELTA });
       }
@@ -762,9 +762,9 @@ export default function Escaner({ retoId }) {
     }
     const d = diagnosticarOperacion(operacion);
     if (!d.correcto && yaLoDijo(operacion, quitarNegados(texto)) && conDuda(texto)) {
-      decir({ de: 'kiko', texto: '¿Cómo llegaste a ese número? Cuéntame tus pasos y lo comprobamos juntos. 🔍' });
+      decir({ de: 'kiko', texto: '¿Cómo llegaste a ese número? Cuéntame tus pasos y lo comprobamos juntos.' });
     } else if (resolvioEnChat(operacion, texto)) {
-      decir({ de: 'kiko', texto: `¡Lo lograste! 🌟 Corrígelo en tu cuaderno para que tu sendero quede derecho. ${PREGUNTA_DUDAS}`, premio: '¡Lo lograste!', dudas: true });
+      decir({ de: 'kiko', texto: `¡Lo lograste! Corrígelo en tu cuaderno para que tu sendero quede derecho. ${PREGUNTA_DUDAS}`, premio: '¡Lo lograste!', dudas: true });
     } else if (d.correcto) {
       decir({ de: 'kiko', texto: '¡Tu operación ya estaba bien! Explícame cómo lo pensaste: eso también es aprender.' });
     } else {
@@ -797,7 +797,7 @@ export default function Escaner({ retoId }) {
           {paso === 'sinConexion' && <SinConexion cuantas={pendientes.length} onListo={reiniciar} />}
           {paso === 'leyendo' && (
             <section className="sm-card centro-col" style={{ textAlign: 'center' }} aria-live="polite">
-              <DiceAjolote estado="curioso" tamano={90}>Estoy leyendo tu cuaderno con mi lupa… 🔍</DiceAjolote>
+              <DiceAjolote estado="curioso" tamano={90}>Estoy leyendo tu cuaderno con mi lupa…</DiceAjolote>
               {foto && <img className="foto-leyendo" src={foto} alt="La foto que estoy leyendo" />}
             </section>
           )}
