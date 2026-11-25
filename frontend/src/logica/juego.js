@@ -4,7 +4,7 @@
 
 export const VALORES = {
   metaSalon: 60, // VALOR INICIAL: estrellas para el premio del salón (Modo Aula sin internet)
-  costos: { alimentar: 1, jugar: 2, limpiar: 0, descansar: 0 }, // deben coincidir con backend/app/juego.py
+  costos: { alimentar: 0, limpiar: 0, descansar: 0 }, // deben coincidir con backend/app/juego.py
 };
 
 const MEDIDORES = ['comida', 'pecera', 'alegria'];

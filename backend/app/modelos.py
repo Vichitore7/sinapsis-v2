@@ -208,6 +208,7 @@ class Mascota(Base):
     pecera: Mapped[int] = mapped_column(Integer, default=4)
     alegria: Mapped[int] = mapped_column(Integer, default=4)
     dormido: Mapped[bool] = mapped_column(Boolean, default=False)
+    cuidados_hasta: Mapped[dict] = mapped_column(JSON, default=dict)
     retos_desde_bajada: Mapped[int] = mapped_column(Integer, default=0)
     turno_medidor: Mapped[int] = mapped_column(Integer, default=0)
     # Trajes típicos que el alumno tiene (regalo de bienvenida al crear la cuenta) y el que trae puesto.
@@ -248,3 +249,21 @@ class ExamenMundo(Base):
     premio: Mapped[list] = mapped_column(JSON, default=list)  # trajes ganados al terminar
     inicio: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
     fin: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class Habitacion(Base):
+    """Una habitación por alumno; revisión para evitar sobrescribir cambios de otro dispositivo."""
+    __tablename__ = "habitaciones"
+    alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+    objetos: Mapped[list] = mapped_column(JSON, default=list)
+    revision: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class StickerAdquirido(Base):
+    """Una copia de cada diseño por alumno; conserva el precio realmente pagado."""
+    __tablename__ = "inventario_habitacion"
+    alumno_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id", ondelete="CASCADE"), primary_key=True)
+    sticker_id: Mapped[str] = mapped_column(String(30), primary_key=True)
+    precio: Mapped[int] = mapped_column(Integer, default=0)
+    adquirido: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=ahora)
+

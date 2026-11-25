@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+from math import ceil
+from time import time
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
@@ -135,7 +137,8 @@ def resumen(db: Session, alumno: Usuario) -> dict:
         "ejemplos_vistos": list(est.ejemplos_vistos),
         "stats": dict(est.stats),
         "mascota": {"nombre": m.nombre, **medidores, "dormido": m.dormido, "pide": juego.lo_que_pide(medidores),
-                    "trajes": list(m.trajes or []), "traje": m.traje},
+                    "trajes": list(m.trajes or []), "traje": m.traje,
+                    "cuidados_restantes": {a: max(0, ceil((m.cuidados_hasta or {}).get(a, 0) - time())) for a in juego.CUIDADOS}},
         "logros": juego.logros(len(completados), est.stats, len(est.lecciones_terminadas)),
         "mapa": estado_mapa(db, est, completados),
         "diagnostico_hecho": db.get(Diagnostico, alumno.id) is not None,
@@ -213,12 +216,19 @@ def _premiar(db: Session, alumno: Usuario, est: EstadoJuego, m: Mascota, e: Ejer
     stats["retos_sin_ayuda"] = stats.get("retos_sin_ayuda", 0) + (0 if con_ayuda else 1)
     est.stats = stats
 
+    alegria_anterior = m.alegria
     des = juego.desgaste_al_jugar(m.retos_desde_bajada, m.turno_medidor)
     m.retos_desde_bajada, m.turno_medidor = des.retos_desde_bajada, des.turno
     if des.medidor:
         setattr(m, des.medidor, max(juego.VALORES["min_marcas"], getattr(m, des.medidor) - 1))
+    # En el turno de desgaste de alegría prevalece la bajada original.
+    # Los demás retos nuevos correctos recuperan dos marcas, sin premiar repasos.
+    if des.medidor != "alegria":
+        m.alegria = min(juego.VALORES["max_marcas"], m.alegria + juego.VALORES["subida_cuidado"])
+    estrella_cuidado = int(alegria_anterior < juego.VALORES["max_marcas"] == m.alegria)
+    est.estrellas += estrella_cuidado
     m.dormido = False
-    return {"ganadas": ganadas, "bono": bono, "repaso": False}
+    return {"ganadas": ganadas, "bono": bono, "repaso": False, "estrella_cuidado": estrella_cuidado}
 
 
 def abrir_cofre(db: Session, alumno: Usuario, leccion_id: str) -> dict:
@@ -257,17 +267,32 @@ def cuidar(db: Session, alumno: Usuario, accion: str) -> dict:
     if not c:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Cuidado desconocido.")
     est, m = estado_de(db, alumno)
-    if est.estrellas < c["costo"]:
-        raise HTTPException(status.HTTP_409_CONFLICT, f"Te faltan {c['costo'] - est.estrellas} estrellas.")
+    if m.dormido:
+        raise HTTPException(409, "Despierta primero a tu ajolote.")
+    ahora = time()
+    plazos = dict(m.cuidados_hasta or {})
+    restante = ceil(plazos.get(accion, 0) - ahora)
+    if restante > 0:
+        raise HTTPException(409, f"Espera {restante} segundos para repetir este cuidado.")
     if accion == "descansar":
+        # La cama debe estar colocada en la habitación persistida.
+        from .rutas.habitacion import inicializar
+        h = inicializar(db, alumno)
+        if not any(o["stickerId"] == "cama" for o in h.objetos):
+            raise HTTPException(409, "Coloca y guarda la cama antes de dormir.")
         m.dormido = True
     else:
-        est.estrellas -= c["costo"]
-        setattr(m, c["medidor"], min(juego.VALORES["max_marcas"], getattr(m, c["medidor"]) + c["sube"]))
-        m.dormido = False
+        medidor = c["medidor"]
+        anterior = getattr(m, medidor)
+        nuevo = min(juego.VALORES["max_marcas"], anterior + c["sube"])
+        setattr(m, medidor, nuevo)
+        if anterior < juego.VALORES["max_marcas"] == nuevo:
+            est.estrellas += 1  # saldo, nunca XP
         stats = dict(est.stats)
         stats["cuidados"] = stats.get("cuidados", 0) + 1
         est.stats = stats
+    plazos[accion] = ahora + juego.VALORES["espera_cuidado"]
+    m.cuidados_hasta = plazos
     db.commit()
     return resumen(db, alumno)
 

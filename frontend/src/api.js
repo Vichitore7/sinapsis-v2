@@ -14,6 +14,7 @@ async function pedir(metodo, ruta, cuerpo) {
     res = await fetch(`/api${ruta}`, {
       method: metodo,
       credentials: 'same-origin',
+      cache: 'no-store',
       headers: cuerpo !== undefined ? { 'Content-Type': 'application/json' } : undefined,
       body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
     });
@@ -53,6 +54,11 @@ export const api = {
 
   // Tutor de IA (Kiko en el chat del escáner). Regresa { respuesta, origen: 'claude' | 'reglas' }.
   tutor: (d) => pedir('POST', '/tutor', d),
+
+  // Habitación (misma sesión y saldo del juego)
+  habitacion: () => pedir('GET', '/habitacion'),
+  guardarHabitacion: (d) => pedir('PUT', '/habitacion', d),
+  comprarSticker: (stickerId) => pedir('POST', '/habitacion/compras', { stickerId }),
 
   // Aulas
   aulas: () => pedir('GET', '/aulas'),
@@ -132,6 +138,7 @@ export function adaptarEstado(r) {
     nombreAjolote: r.mascota.nombre,
     bienestar: { comida: r.mascota.comida, pecera: r.mascota.pecera, alegria: r.mascota.alegria },
     dormido: r.mascota.dormido,
+    cuidadosHasta: Object.fromEntries(Object.entries(r.mascota.cuidados_restantes || {}).map(([id, seg]) => [id, performance.now() + seg * 1000])), 
     trajes: r.mascota.trajes || [],
     traje: r.mascota.traje || null,
     logros: r.logros,

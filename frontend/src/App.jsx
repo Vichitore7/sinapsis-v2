@@ -11,7 +11,7 @@ import Cuenta from './pantallas/Cuenta.jsx';
 import Inicio from './pantallas/Inicio.jsx';
 import Mapa from './pantallas/Mapa.jsx';
 import Reto from './pantallas/Reto.jsx';
-import Mochila from './pantallas/Mochila.jsx';
+import Habitacion from './pantallas/Habitacion.jsx';
 import Escaner from './pantallas/Escaner.jsx';
 import Aulas from './pantallas/Aulas.jsx';
 import Perfil from './pantallas/Perfil.jsx';
@@ -29,7 +29,7 @@ const NAV = {
     { id: 'mapa', texto: 'Mapa', corto: 'Mapa', icono: 'mapa' },
     { id: 'escaner', texto: 'Escáner + IA Tutor', corto: 'Escáner', icono: 'escaner' },
     { id: 'aula', texto: 'Mi Aula', corto: 'Aula', icono: 'aula' },
-    { id: 'mochila', texto: 'Mascota', corto: 'Mascota', icono: 'huella' },
+    { id: 'habitacion', texto: 'Habitación', corto: 'Habitación', icono: 'habitacion' },
   ],
   profesor: [
     { id: 'aulas', texto: 'Modo Aula', corto: 'Aula', icono: 'aula' },
@@ -39,7 +39,7 @@ const NAV = {
 };
 
 const PANTALLAS = {
-  alumno: { inicio: Inicio, mapa: Mapa, reto: Reto, examen: ExamenMundo, mochila: Mochila, escaner: Escaner, aula: MiAula, perfil: Perfil, logros: Perfil },
+  alumno: { inicio: Inicio, mapa: Mapa, reto: Reto, examen: ExamenMundo, habitacion: Habitacion, mochila: Habitacion, mascota: Habitacion, escaner: Escaner, aula: MiAula, perfil: Perfil, logros: Perfil },
   profesor: { aulas: Aulas, diagnostico: DiagnosticoProfe, perfil: Perfil },
 };
 
@@ -47,7 +47,7 @@ function Avisos({ estado, rol }) {
   const [abierto, setAbierto] = useState(false);
   const pide = rol === 'alumno' ? loQuePide(estado.bienestar) : null;
   const avisos = [];
-  if (pide) avisos.push({ texto: `${estado.nombreAjolote} te necesita: revisa su ${pide === 'comida' ? 'comida' : pide === 'pecera' ? 'pecera' : 'alegría'}.`, ruta: '/mochila' });
+  if (pide) avisos.push({ texto: `${estado.nombreAjolote} te necesita: revisa su ${pide === 'comida' ? 'comida' : pide === 'pecera' ? 'pecera' : 'alegría'}.`, ruta: '/habitacion' });
   return (
     <div className="avisos">
       <button className="boton-redondo" aria-label={`Avisos${avisos.length ? `: ${avisos.length} nuevo` : ''}`} aria-expanded={abierto} onClick={() => setAbierto(!abierto)}>
@@ -91,7 +91,7 @@ export default function App() {
   const pantallas = PANTALLAS[rol];
   const id = pantallas[pantalla] ? pantalla : nav[0].id;
   const Pantalla = pantallas[id];
-  const activa = id === 'reto' || id === 'examen' ? 'mapa' : id === 'logros' ? 'perfil' : id;
+  const activa = ['mochila', 'mascota'].includes(id) ? 'habitacion' : id === 'reto' || id === 'examen' ? 'mapa' : id === 'logros' ? 'perfil' : id;
   const alumno = rol === 'alumno';
 
   return (
@@ -103,7 +103,7 @@ export default function App() {
         </a>
 
         {alumno ? (
-          <button className="tarjeta-estrellas" onClick={() => ir('/mochila')} aria-label={`${estado.estrellas} estrellas, nivel ${estado.nivel}. Ir a la mochila`}>
+          <button className="tarjeta-estrellas" onClick={() => ir('/habitacion')} aria-label={`${estado.estrellas} estrellas, nivel ${estado.nivel}. Ir a la habitación`}>
             <span className="estrellas"><I n="estrella" tamano={18} className="texto-selva" /> {estado.estrellas}</span>
             <span className="nivel">Nivel {estado.nivel}</span>
           </button>
@@ -118,14 +118,14 @@ export default function App() {
           {nav.map((n, i) => (
             <a key={n.id} href={`#/${i === 0 ? '' : n.id}`} className={`menu-item${activa === n.id ? ' activo' : ''}`}
               aria-current={activa === n.id ? 'page' : undefined}>
-              {n.id === 'mochila' ? <CabezaKiko tamano={28} /> : <I n={n.icono} tamano={22} />}
+              <I n={n.icono} tamano={22} />
               <span className="texto-largo">{n.texto}</span>
               <span className="texto-corto">{n.corto}</span>
             </a>
           ))}
         </nav>
 
-        <a href={alumno ? '#/mochila' : '#/perfil'} className="tarjeta-kiko">
+        <a href={alumno ? '#/habitacion' : '#/perfil'} className="tarjeta-kiko">
           <span className="kiko-icono"><CabezaKiko tamano={34} /></span>
           <span>
             <b>{alumno ? `${estado.nombreAjolote} el Ajolote` : 'Kiko el Ajolote'}</b>
@@ -143,7 +143,7 @@ export default function App() {
             <>
               <span className="pastilla" title="Días seguidos jugando"><I n="fuego" tamano={16} className="c-fuego" /> <span className="solo-ancho">Racha: </span>{estado.rachaDias} día{estado.rachaDias === 1 ? '' : 's'}</span>
               <span className="pastilla" title="Experiencia acumulada"><I n="gema" tamano={16} className="c-gema" /> {estado.xp}</span>
-              <button className="pastilla pastilla-estrellas solo-movil" onClick={() => ir('/mochila')} aria-label={`${estado.estrellas} estrellas`}><I n="estrella" tamano={16} /> {estado.estrellas}</button>
+              <button className="pastilla pastilla-estrellas solo-movil" onClick={() => ir('/habitacion')} aria-label={`${estado.estrellas} estrellas`}><I n="estrella" tamano={16} /> {estado.estrellas}</button>
             </>
           ) : (
             <span className="pastilla"><I n="wifi" tamano={16} className="texto-selva" /> <span className="solo-ancho">Sincronizado con Selva</span></span>
@@ -156,7 +156,7 @@ export default function App() {
       </header>
 
       <main className="contenido" id="contenido">
-        <Pantalla key={id === 'reto' ? param : id} retoId={param} />
+        <Pantalla key={id === 'reto' ? param : ['mochila', 'mascota'].includes(id) ? 'habitacion' : id} retoId={param} />
       </main>
     </div>
   );
