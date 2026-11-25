@@ -19,6 +19,8 @@ docs/imagenes/
 │   ├── kiko-<subcultura>-<estilo>.png  Premio del examen del Mundo 1: 20 trajes de subculturas de la CDMX
 │   │                                 (emo, hippie, punk, skate, manifestante ambientalista, ska, rap, rock,
 │   │                                 dark y lucha libre), dos estilos de cada una, también en versión -cabeza
+│   ├── kiko-fes-gorra.png / kiko-fes-cabello.png   Premio del Mundo 2: rumbo a la FES Aragón (sudadera azul
+│   │                                 con patita dorada, tenis y audífonos), también en versión -cabeza
 │   └── svg/                          Los mismos dibujos en SVG (se agrandan sin perder calidad;
 │                                     se editan en Figma o Illustrator)
 └── canal/                    Mundo 1 "El Canal de los Números" como stickers (borde blanco, 512 px)

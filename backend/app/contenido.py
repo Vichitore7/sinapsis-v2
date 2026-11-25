@@ -45,6 +45,7 @@ UNIDADES = [
 
 STICKERS = {
     "flor": "Flor de la chinampa",
+    "tarjeta": "Tarjeta del Metro",
     "mochila": "Mochila de la selva",
     "bufanda": "Bufanda del mercado",
     "sombrero": "Sombrero del río",
@@ -54,6 +55,9 @@ STICKERS = {
 TRAJES = {
     "trajinero": "Traje de trajinero",
     "trajinera": "Traje de trajinera",
+    # Premio del examen del Mundo 2 (rumbo a la FES Aragón): sudadera azul con patita dorada, tenis y audífonos.
+    "fes-gorra": "FES Aragón: sudadera y gorra",
+    "fes-cabello": "FES Aragón: sudadera y cabello largo",
 }
 
 # Premio del examen general del Mundo 1: subculturas de la CDMX, cada una con dos estilos.

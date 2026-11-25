@@ -67,6 +67,8 @@ export const TEMAS = {
       siguiente: 'Con los 3 peces zarpa la siguiente trajinera.',
       irSiguiente: 'Ir a la siguiente trajinera',
       examenListo: 'Ya puedes presentar el examen general del canal.',
+      diploma: 'Certificado de explorador',
+      premioTitulo: 'Subculturas de la CDMX',
     },
     consejos: [
       'Para contar sin perderte, toca cada flor con tu dedo.',
@@ -92,6 +94,8 @@ export const TEMAS = {
       siguiente: 'Con los 3 cacomixtles sale el siguiente transporte.',
       irSiguiente: 'Ir al siguiente transporte',
       examenListo: 'Ya puedes presentar el examen general del Centro.',
+      diploma: 'Constancia de explorador',
+      premioTitulo: '¡Nos vamos a la FES Aragón!',
     },
     consejos: [
       'Para leer un número grande, empieza por las centenas: las cajas de 100.',

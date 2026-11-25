@@ -8,6 +8,7 @@ import { api } from '../api.js';
 import { hoy, nodosDeMundo, retosCompletadosDe, siguientePaso } from '../logica/juego.js';
 import { STICKERS } from '../contenido/mundos.js';
 import { ChipFase, temaDe } from '../componentes/Temas.jsx';
+import { TarjetaMetro } from '../componentes/CDMX.jsx';
 
 // Posición horizontal de cada nodo para dibujar el sendero en zigzag.
 const ZIGZAG = [12, 52, 22, 58, 30, 64];
@@ -426,7 +427,7 @@ export default function Mapa() {
                   const tiene = estado.stickers.includes(id);
                   return (
                     <div key={id} className={`coleccion-item${tiene ? '' : ' falta'}`}>
-                      <I n={id === 'mochila' ? 'mochila' : id === 'sombrero' ? 'sombrero' : 'chispa'} tamano={24} />
+                      {id === 'tarjeta' ? <TarjetaMetro tamano={34} /> : <I n={id === 'mochila' ? 'mochila' : id === 'sombrero' ? 'sombrero' : 'chispa'} tamano={24} />}
                       <b>{s.nombre.split(' ')[0]}</b>
                       <small>{tiene ? 'Ganado' : 'Bloqueado'}</small>
                     </div>

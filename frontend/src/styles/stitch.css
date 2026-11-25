@@ -1087,3 +1087,9 @@ a.trajinera-nodo:focus-visible { outline: 3px solid var(--st-naranja-2); outline
 .cdmx-bolsita::before { content: ''; position: absolute; top: -7px; left: 50%; width: 22px; height: 10px; transform: translateX(-50%);
   border: 2.5px solid #1e1b3a; border-bottom: 0; border-radius: 10px 10px 0 0; }
 .cdmx-bolsita i { width: 14px; height: 14px; border-radius: 999px; border: 2px solid #1e1b3a; }
+
+/* Sticker del mundo en el resultado del examen (Tarjeta del Metro, Flor de la chinampa…) */
+.examen-sticker { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.examen-sticker > div { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 180px; }
+.examen-sticker-arte { display: grid; place-items: center; width: 116px; height: 92px; border-radius: 18px; background: var(--st-naranja-claro); }
+.sticker-arte .tarjeta-metro { display: block; }

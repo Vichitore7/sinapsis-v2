@@ -355,6 +355,20 @@ export function Monumento({ tipo }) {
   return <svg viewBox="0 0 120 120" aria-hidden="true" className="monumento">{MONUMENTOS[tipo] || COSAS[tipo]}</svg>;
 }
 
+/** Sticker de la Tarjeta del Metro (tarjeta de movilidad integrada): premio al terminar el Mundo 2. */
+export function TarjetaMetro({ tamano = 64 }) {
+  return (
+    <svg width={tamano} height={tamano * 0.66} viewBox="0 0 100 66" aria-hidden="true" className="tarjeta-metro">
+      <rect x="3" y="3" width="94" height="60" rx="9" fill="#f37021" {...L} strokeWidth="3" />
+      <path d="M3 44 Q50 30 97 44 V54 Q97 63 88 63 H12 Q3 63 3 54 Z" fill="#e4007c" />
+      <rect x="12" y="12" width="16" height="12" rx="2" fill="#f5c542" {...L} strokeWidth="1.5" />
+      <path d="M16 16 H24 M16 20 H24" stroke="#c97c1a" strokeWidth="1.2" />
+      <path d="M58 30 V12 L68 23 L78 12 V30" fill="none" stroke="#fff" strokeWidth="4.5" strokeLinejoin="round" />
+      <text x="50" y="56" textAnchor="middle" fontFamily="'Nunito', sans-serif" fontWeight="900" fontSize="8.5" fill="#fff">MOVILIDAD INTEGRADA</text>
+    </svg>
+  );
+}
+
 /** Papel picado de colores colgado de lado a lado. */
 export function PapelPicado() {
   const colores = ['#ff4fa0', '#ffd166', '#2e9e44', '#3a86ff', '#f37021', '#a77bd8'];

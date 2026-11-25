@@ -12,6 +12,8 @@ import I from '../componentes/IconosUI.jsx';
 import SendaPasos from '../componentes/SendaPasos.jsx';
 import { DiceAjolote } from '../componentes/Comunes.jsx';
 import { ChipFase, temaDe } from '../componentes/Temas.jsx';
+import { TarjetaMetro } from '../componentes/CDMX.jsx';
+import { Flor } from '../componentes/Canal.jsx';
 import { TRAJES } from '../contenido/mundos.js';
 import { MAX_PISTAS } from '../logica/pistas.js';
 
@@ -144,6 +146,13 @@ function Pregunta({ leccionId, pregunta, numero, total, preguntas, onCerrada, Vi
   );
 }
 
+/** Dibujo del sticker que da el mundo (si no hay dibujo propio, una chispa). */
+function ArteSticker({ id }) {
+  if (id === 'tarjeta') return <TarjetaMetro tamano={92} />;
+  if (id === 'flor') return <Flor tamano={64} />;
+  return <I n="chispa" tamano={48} />;
+}
+
 function Resultado({ examen, mundo, siguiente }) {
   const { estado, aplicarServidor } = useJuego();
   const [vistiendo, setVistiendo] = useState(null);
@@ -151,6 +160,8 @@ function Resultado({ examen, mundo, siguiente }) {
   const abierto = siguiente ? Boolean(estado.mapa?.[siguiente.id]?.abierta) : examen.mundo_abierto;
   const practicar = examen.preguntas.filter((p) => p.estado === 'por_reforzar').map((p) => p.nivel_tema);
   const kiko = estado.nombreAjolote;
+  const palabras = temaDe(mundo)?.palabras || {};
+  const diploma = palabras.diploma || 'Certificado de explorador';
 
   const ponerse = async (traje) => {
     setVistiendo(traje);
@@ -166,7 +177,7 @@ function Resultado({ examen, mundo, siguiente }) {
           <span className="diploma-marca"><span className="diploma-sm">SM</span> Selva Matemática</span>
           <span className="chip chip-oro">Mundo {mundo.numero} terminado</span>
         </div>
-        <p className="diploma-titulo">Certificado de explorador</p>
+        <p className="diploma-titulo">{diploma}</p>
         <p className="diploma-nombre">{estado.apodo}</p>
         <p className="cuerpo-md">
           Terminó el <b>examen general de {mundo.nombre}</b> y logró {examen.aciertos} de {examen.total} preguntas.
@@ -180,14 +191,25 @@ function Resultado({ examen, mundo, siguiente }) {
         </div>
       </div>
       <div className="chips">
-        <button className="btn btn-crema btn-chico" onClick={() => window.print()}><I n="imprimir" tamano={16} /> Imprimir certificado</button>
+        <button className="btn btn-crema btn-chico" onClick={() => window.print()}><I n="imprimir" tamano={16} /> Imprimir {diploma.split(" ")[0].toLowerCase()}</button>
         {practicar.length > 0 && <span className="chip chip-ambar"><I n="foco" tamano={14} /> Para practicar: {practicar.join(', ')}</span>}
       </div>
+
+      {examen.sticker && (
+        <section className="tarjeta examen-sticker">
+          <span className="sticker examen-sticker-arte"><ArteSticker id={examen.sticker.id} /></span>
+          <div>
+            <span className="sobre"><I n="libro" tamano={14} /> Sticker nuevo para tu álbum</span>
+            <b className="t-md">{examen.sticker.nombre}</b>
+            <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Lo encuentras en tu Perfil → Stickers.</p>
+          </div>
+        </section>
+      )}
 
       <section className="tarjeta pila-md examen-premio">
         <div>
           <span className="sobre"><I n="chispa" tamano={14} /> ¡Ganaste {examen.premio.length} trajes nuevos!</span>
-          <h2 className="t-lg" style={{ margin: '4px 0 0' }}>Subculturas de la CDMX</h2>
+          <h2 className="t-lg" style={{ margin: '4px 0 0' }}>{palabras.premioTitulo || 'Trajes nuevos'}</h2>
           <p className="cuerpo-md texto-suave" style={{ margin: '2px 0 0' }}>
             {abierto
               ? `¡Listo! ${siguiente ? `El Mundo ${siguiente.numero}: ${siguiente.nombre} ya está abierto.` : 'Ya abriste el siguiente mundo.'}`

@@ -218,10 +218,15 @@ LECCION = {
     "id": LECCION_ID,
     "nombre": "El Centro de los Números",
     "concepto": "Números hasta el 1000, operaciones y medida (2.º)",
-    "sticker": "mochila",
+    "sticker": "tarjeta",  # sticker de la Tarjeta del Metro (tarjeta de movilidad integrada)
     "entrada": "¡Bienvenido al Centro, pasajero! Con tu tarjeta de movilidad vamos a recorrer la ciudad, estación por estación.",
     "tema": TEMA,
 }
+
+
+# Premio del examen: en lugar de trajes de subculturas al azar, los 2 atuendos para irse a la FES Aragón
+# (sudadera azul con patita dorada, tenis y audífonos; uno con gorra y pantalón, otro con cabello largo y falda).
+PREMIO_TRAJES = ["fes-gorra", "fes-cabello"]
 
 
 def ejercicios() -> list[dict]:

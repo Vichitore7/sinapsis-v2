@@ -4,6 +4,7 @@
 
 export const STICKERS = {
   flor: { nombre: 'Flor de la chinampa' },
+  tarjeta: { nombre: 'Tarjeta del Metro' },
   mochila: { nombre: 'Mochila de la selva' },
   bufanda: { nombre: 'Bufanda del mercado' },
   sombrero: { nombre: 'Sombrero del río' },
@@ -14,6 +15,9 @@ export const STICKERS = {
 export const TRAJES = {
   trajinero: { nombre: 'Traje de trajinero', origen: 'Inicio de sesión', detalle: 'Sombrero de palma, camisa de manta, faja tejida y garrocha de bambú.' },
   trajinera: { nombre: 'Traje de trajinera', origen: 'Inicio de sesión', detalle: 'Pañoleta bordada, trenzas, blusa con flores, falda de rayas y remo.' },
+  // Rumbo a la FES Aragón: premio fijo del examen del Mundo 2 (sudadera azul con patita dorada, tenis y audífonos).
+  'fes-gorra': { nombre: 'FES Aragón: sudadera y gorra', origen: 'Constancia Mundo 2', detalle: 'Sudadera azul con patita dorada, gorra, pantalón, tenis y audífonos.' },
+  'fes-cabello': { nombre: 'FES Aragón: sudadera y cabello largo', origen: 'Constancia Mundo 2', detalle: 'Sudadera azul con patita dorada, cabello largo, falda, tenis y audífonos.' },
   // Subculturas de la CDMX: premio del examen general del Mundo 1 (2 al azar, de estilos distintos).
   // Los nombres dicen cómo se ve el traje; cualquiera puede usar cualquiera.
   ...Object.fromEntries([

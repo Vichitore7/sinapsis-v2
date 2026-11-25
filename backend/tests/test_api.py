@@ -130,7 +130,8 @@ def test_centro_division_y_examen_abren_el_mercado(cliente):
     assert cliente.post("/api/lecciones/c2/cofre").status_code == 409  # termina con examen
     premio = _examen(cliente, cdmx)
     est = cliente.get("/api/juego/estado").json()
-    assert est["examenes"]["c2"]["estado"] == "terminado" and "mochila" in est["stickers"]
+    assert est["examenes"]["c2"]["estado"] == "terminado" and "tarjeta" in est["stickers"]
+    assert premio == ["fes-gorra", "fes-cabello"]  # premio fijo: los 2 atuendos de la FES Aragón (no subculturas al azar)
     assert set(premio) <= set(est["mascota"]["trajes"]) and est["mapa"]["m2"]["abierta"] is False
     assert cliente.put("/api/mascota/traje", json={"traje": premio[1]}).json()["mapa"]["m2"]["abierta"] is True
 

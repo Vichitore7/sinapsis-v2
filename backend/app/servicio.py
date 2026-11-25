@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from . import juego
-from .contenido import MUNDOS_TEMATICOS, STICKERS, TRAJES, sortear_trajes_subcultura
+from .contenido import MUNDOS_TEMATICOS, STICKERS, TRAJES, UNIDADES, sortear_trajes_subcultura
 from .modelos import Diagnostico, Ejercicio, EstadoJuego, ExamenMundo, Intento, Leccion, Mascota, Progreso, Unidad, Usuario
 
 
@@ -312,6 +312,12 @@ def _examen(db: Session, alumno_id: int, leccion_id: str) -> ExamenMundo | None:
     return db.scalar(select(ExamenMundo).where(ExamenMundo.alumno_id == alumno_id, ExamenMundo.leccion_id == leccion_id))
 
 
+def _sticker_de(leccion_id: str) -> dict | None:
+    """El sticker que da un mundo al terminarlo, según el contenido."""
+    sid = next((l["sticker"] for u in UNIDADES for l in u["lecciones"] if l["id"] == leccion_id), None)
+    return {"id": sid, "nombre": STICKERS.get(sid, sid)} if sid else None
+
+
 def _salida_examen(ex: ExamenMundo, preguntas: list[dict], est: EstadoJuego) -> dict:
     return {
         "leccion_id": ex.leccion_id, "terminado": ex.terminado, "aciertos": ex.aciertos, "total": ex.total,
@@ -320,6 +326,8 @@ def _salida_examen(ex: ExamenMundo, preguntas: list[dict], est: EstadoJuego) -> 
         "premio": [{"id": t, "nombre": TRAJES.get(t, t)} for t in (ex.premio or [])],
         "fecha_fin": ex.fin.isoformat() if ex.fin else None,
         "mundo_abierto": ex.leccion_id in est.lecciones_terminadas,
+        # Sticker del mundo que se gana al terminar (en el Centro, la Tarjeta del Metro).
+        "sticker": _sticker_de(ex.leccion_id) if ex.terminado else None,
     }
 
 
@@ -397,7 +405,9 @@ def terminar_examen(db: Session, alumno: Usuario, leccion_id: str) -> dict:
         ex.terminado = True
         ex.fin = datetime.now(timezone.utc)
         ex.aciertos = sum(1 for v in ex.detalle.values() if v["estado"] in LOGRADAS)
-        ex.premio = sortear_trajes_subcultura(list(m.trajes or []))
+        # Premio fijo del mundo (p. ej. los atuendos de la FES Aragón) o, si no tiene, 2 trajes de subculturas al azar.
+        fijo = getattr(MUNDOS_TEMATICOS.get(leccion_id), "PREMIO_TRAJES", None)
+        ex.premio = [t for t in fijo if t not in (m.trajes or [])] if fijo else sortear_trajes_subcultura(list(m.trajes or []))
         m.trajes = [*(m.trajes or []), *ex.premio]
         est.estrellas += juego.VALORES["estrellas_cofre"]
         est.xp += juego.VALORES["estrellas_cofre"]

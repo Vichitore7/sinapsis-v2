@@ -218,7 +218,56 @@ function Mascara({ color, adorno, flamas }) {
   );
 }
 
-// ---------- Los 20 trajes ----------
+// ---------- Piezas de los atuendos de la FES Aragón (premio del Mundo 2) ----------
+
+const AZUL_FES = '#1d3f8f';
+const ORO = '#f5b700';
+
+function Audifonos() {
+  return (
+    <g>
+      <path d="M40 104 Q38 36 100 32 Q162 36 160 104" fill="none" stroke={R.negro} strokeWidth="7" strokeLinecap="round" />
+      <path d="M40 104 Q38 36 100 32 Q162 36 160 104" fill="none" stroke={ORO} strokeWidth="2" strokeLinecap="round" strokeDasharray="1 7" />
+      <rect x="28" y="88" width="16" height="30" rx="7" fill={R.negro} {...C} />
+      <rect x="156" y="88" width="16" height="30" rx="7" fill={R.negro} {...C} />
+      <circle cx="36" cy="103" r="3" fill={ORO} /><circle cx="164" cy="103" r="3" fill={ORO} />
+    </g>
+  );
+}
+
+/** Patita dorada al centro de la sudadera. */
+function Patita() {
+  return (
+    <g fill={ORO}>
+      <ellipse cx="100" cy="161" rx="7" ry="5.5" />
+      {[[90, 153], [96, 148], [104, 148], [110, 153]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="3" />)}
+    </g>
+  );
+}
+
+function Sudadera({ abajo }) {
+  return (
+    <g>
+      <rect x="60" y="124" width="80" height="58" fill={AZUL_FES} />
+      <path d="M92 132 V144 M108 132 V144" stroke={R.blanco} strokeWidth="2" strokeLinecap="round" />
+      <Patita />
+      {abajo}
+    </g>
+  );
+}
+
+function Tenis() {
+  return (
+    <g {...C} strokeWidth="2">
+      <ellipse cx="72" cy="178" rx="16" ry="8" fill={R.blanco} />
+      <ellipse cx="128" cy="178" rx="16" ry="8" fill={R.blanco} />
+      <path d="M62 180 H82 M118 180 H138" stroke={AZUL_FES} strokeWidth="3" />
+      <path d="M66 172 L72 176 M124 172 L130 176" stroke={ORO} strokeWidth="2" />
+    </g>
+  );
+}
+
+// ---------- Los 20 trajes de subculturas + los 2 atuendos de la FES ----------
 
 export const SUBCULTURAS = {
   'emo-rayas': {
@@ -556,5 +605,41 @@ export const SUBCULTURAS = {
         <circle cx="100" cy="163" r="7" fill={R.amarillo} stroke="var(--tinta)" strokeWidth="2" />
       </g>
     ),
+  },
+
+  // ---------- Rumbo a la FES Aragón (premio del Mundo 2): sudadera azul con patita dorada, tenis y audífonos ----------
+  'fes-gorra': {
+    tocado: () => (
+      <g>
+        <g {...C}>
+          <path d="M48 68 Q50 32 100 30 Q150 32 152 68 Q100 56 48 68 Z" fill={AZUL_FES} />
+          <path d="M60 66 Q100 76 150 64 Q156 74 146 78 Q100 86 62 74 Z" fill={AZUL_FES} />
+        </g>
+        <circle cx="100" cy="46" r="5" fill={ORO} />
+        <Audifonos />
+      </g>
+    ),
+    silueta: () => <><path d="M46 70 Q48 28 100 26 Q152 28 154 70 Z" /><rect x="26" y="86" width="20" height="34" rx="8" /><rect x="154" y="86" width="20" height="34" rx="8" /></>,
+    ropa: () => <Sudadera abajo={<rect x="60" y="166" width="80" height="16" fill="#3a4a6b" />} />,
+    detalles: () => <Tenis />,
+  },
+  'fes-cabello': {
+    tocado: () => (
+      <g>
+        <CabelloLargo color={R.cafe} />
+        <circle cx="140" cy="62" r="5" fill={ORO} {...C} strokeWidth="1.5" />
+        <Audifonos />
+      </g>
+    ),
+    silueta: () => <><path d="M28 150 Q24 60 100 40 Q176 60 172 150 Z" /><rect x="26" y="86" width="20" height="34" rx="8" /><rect x="154" y="86" width="20" height="34" rx="8" /></>,
+    ropa: () => (
+      <Sudadera abajo={(
+        <g>
+          <rect x="60" y="164" width="80" height="18" fill="#c9c6d8" />
+          {[68, 80, 92, 104, 116, 128].map((x) => <path key={x} d={`M${x} 164 L${x + 4} 182`} stroke="#9a96b0" strokeWidth="2" />)}
+        </g>
+      )} />
+    ),
+    detalles: () => <Tenis />,
   },
 };

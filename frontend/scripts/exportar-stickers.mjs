@@ -36,7 +36,9 @@ const STICKERS = [
   // Subculturas de la CDMX (premio del examen general del Mundo 1): todos los trajes de TrajesSubculturas.jsx.
   ...['emo-rayas', 'emo-mono', 'hippie-guitarra', 'hippie-flores', 'punk-verde', 'punk-rosa', 'skate-gorra', 'skate-gorro',
     'manif-xochimilco', 'manif-ajolote', 'ska-sombrero', 'ska-cuadros', 'rap-gorra', 'rap-chongo', 'rock-chopo', 'rock-mezclilla',
-    'dark-capa', 'dark-encaje', 'lucha-azul', 'lucha-rosa'].map((t) => ({ archivo: `kiko-${t}`, traje: t })),
+    'dark-capa', 'dark-encaje', 'lucha-azul', 'lucha-rosa',
+    // Rumbo a la FES Aragón (premio del Mundo 2)
+    'fes-gorra', 'fes-cabello'].map((t) => ({ archivo: `kiko-${t}`, traje: t })),
 ];
 
 async function cargarAjolote() {
