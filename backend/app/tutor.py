@@ -1,4 +1,4 @@
-"""Tutor de IA: Kiko responde con preguntas socráticas usando Claude, sin dar nunca la respuesta.
+"""Tutor de IA: Mix responde con preguntas socráticas usando Claude, sin dar nunca la respuesta.
 
 Su manual es `app/agente.md` (personalidad, reglas, cómo adaptarse al alumno, fuentes). Se le manda a Claude
 en cada mensaje junto con el material de estudio (`docs/material-de-estudio/`) del grado del alumno.
@@ -32,7 +32,7 @@ log = logging.getLogger("selva.tutor")
 
 MAX_HISTORIAL = 10        # mensajes anteriores que se mandan a Claude
 MAX_TEXTO = 300           # caracteres por mensaje del historial
-MAX_RESPUESTA = 700       # caracteres de la respuesta de Kiko (cabe un dibujo corto)
+MAX_RESPUESTA = 700       # caracteres de la respuesta de Mix (cabe un dibujo corto)
 
 MANUAL = Path(__file__).resolve().parent / "agente.md"
 
@@ -178,7 +178,7 @@ _CUENTA = re.compile(rf"({_NUM})\s*([x×*+\-−–÷:])\s*({_NUM})")
 
 
 def _secreto(op: dict) -> dict | None:
-    """Lo que Kiko no puede decir de una operación (si el alumno no la tiene bien)."""
+    """Lo que Mix no puede decir de una operación (si el alumno no la tiene bien)."""
     d = operaciones.diagnosticar(op)
     if d["correcto"]:
         return None
@@ -211,11 +211,11 @@ def _bloqueada(texto: str, mensaje: str, secretos: list[dict]) -> bool:
             continue  # 7 × 1 = 7: no se puede filtrar por cifras sin bloquear todo
         if s["tipo"] == "fraccion":
             if operaciones.trae_fraccion(mensaje, v):
-                continue  # el alumno ya lo dijo: Kiko puede repetirlo para felicitarlo
+                continue  # el alumno ya lo dijo: Mix puede repetirlo para felicitarlo
             if operaciones.trae_fraccion(texto, v):
                 return True
             continue
-        # Si el alumno ya lo dijo (un solo número nuevo), Kiko puede repetirlo para felicitarlo.
+        # Si el alumno ya lo dijo (un solo número nuevo), Mix puede repetirlo para felicitarlo.
         nuevos = {Fraction(n) for n in numeros_en(mensaje)} - s["visibles"]
         if nuevos == {v}:
             continue
@@ -245,6 +245,29 @@ LIMITE_ALCANZADO = ("¡Hoy platicamos un montón! Voy a descansar un ratito para
 # Respaldo sin IA cuando el ejercicio ya está resuelto (antes decía "Primero escanea tu operación").
 YA_RESUELTA = ("¡Ese ejercicio ya lo resolviste! 🌟 Cuéntame cómo lo pensaste, o escanea otro para seguir "
                "practicando.")
+
+# Al resolver, Mix no corta la plática: pregunta si quedó claro (el navegador pone los botones de abajo) y, si quedó
+# alguna duda, se la explica sobre lo que vieron. La pregunta la pone el código para que salga siempre igual.
+PREGUNTA_DUDAS = "¿Te quedó todo claro o tienes alguna duda de lo que vimos? 💬"
+RESUELTA_REGLAS = "¡Lo lograste! 🌟 Corrígelo en tu cuaderno para que tu sendero quede derecho."
+# Respuestas a los botones (y a lo que escriba igual): las da el código, sin gastar en Claude.
+TODO_CLARO = "¡Qué bien! 🌟 Me gustó mucho cómo lo trabajaste. Cuando quieras, escanea otro ejercicio y seguimos."
+QUE_DUDA = ("¡Claro! ¿Qué parte quieres que veamos otra vez? Puede ser un paso, el porqué de algo o una palabra "
+            "que no te quedó clara. 🔍")
+_TODO_CLARO = re.compile(r"todo claro|(?:me )?qued[oó] (?:todo )?claro|ya entend[ií]|entend[ií] todo|"
+                         r"ninguna duda|no tengo (?:ninguna )?duda|sin dudas|todo bien", re.I)
+_NO_CLARO = re.compile(r"\bno (?:me )?(?:entend|qued[oó] claro|le entiendo)", re.I)
+_SOLO_DUDA = re.compile(r"^\W*(?:s[ií],?\s*)?(?:tengo|tenía|me qued[oó]) (?:una |alguna |unas )?dudas?\W*$", re.I)
+
+
+def _respuesta_de_dudas(mensaje: str) -> str | None:
+    """Botones "¡Todo claro!" / "Tengo una duda" (o lo mismo escrito): respuesta fija del código."""
+    m = mensaje or ""
+    if _TODO_CLARO.search(m) and not _NO_CLARO.search(m):
+        return TODO_CLARO
+    if _SOLO_DUDA.search(m):
+        return QUE_DUDA
+    return None
 
 
 # Respaldo sin IA cuando el alumno quiere descansar (no es un atasco: no se le da otra pista).
@@ -391,7 +414,7 @@ def _preguntar_a_claude(operacion: dict | None, grado: str | None, mensaje: str,
         r = _cliente_claude().messages.create(
             model=config.TUTOR_MODELO,
             max_tokens=1500,
-            # Formato fijo: el texto de Kiko y, si ayuda, un dibujo que la app pinta con los stickers del juego.
+            # Formato fijo: el texto de Mix y, si ayuda, un dibujo que la app pinta con los stickers del juego.
             output_config={"effort": config.TUTOR_ESFUERZO,
                            "format": {"type": "json_schema", "schema": dibujos.ESQUEMA}},
             # El manual y el material van primero y no cambian: se cachean. Los datos de la conversación, al final.
@@ -448,7 +471,7 @@ def _sin_genero(texto: str) -> str:
 def _operacion_del_chat(mensaje: str, historial: list[dict]) -> tuple[dict | None, str]:
     """La cuenta que el alumno escribió en el chat ("cuánto es 800 + 77").
 
-    Se toma como su ejercicio: así usa la misma escalera de pasitos verificados y Kiko no olvida qué quería resolver.
+    Se toma como su ejercicio: así usa la misma escalera de pasitos verificados y Mix no olvida qué quería resolver.
     Regresa (operación, estado): estado "nueva" (la escribió en este mensaje), "sigue" (de mensajes anteriores) o
     "resuelta" (en un mensaje posterior ya dijo el resultado).
     """
@@ -475,7 +498,7 @@ _PRACTICA = re.compile(rf"(?:cu[aá]nto (?:es|da|te da|ser[ií]a)|resuelve|prueb
 
 
 def _practica_de_kiko(historial: list[dict], mensaje: str) -> dict | None:
-    """Si Kiko propuso un ejercicio para practicar ("¿cuánto es 245 + 137?") y el alumno lo está contestando, ese es
+    """Si Mix propuso un ejercicio para practicar ("¿cuánto es 245 + 137?") y el alumno lo está contestando, ese es
     ahora su ejercicio: con su respuesta como resultado, para diagnosticarlo con el código."""
     ultimo_kiko = next((m.get("texto") or "" for m in reversed(historial) if m.get("de") == "kiko"), "")
     encontrados = _PRACTICA.findall(ultimo_kiko)
@@ -490,7 +513,7 @@ _EXPRESION = re.compile(r"(\d+)\s*(\+|−|-|×|x|\*|÷|más|menos|por|entre|y)\s
 
 
 def _verificar_respuesta(historial: list[dict], mensaje: str) -> str | None:
-    """Si Kiko preguntó una cuenta ("¿cuánto suman 70 y 7?") y el alumno contestó con un número, el CÓDIGO dice si
+    """Si Mix preguntó una cuenta ("¿cuánto suman 70 y 7?") y el alumno contestó con un número, el CÓDIGO dice si
     está bien. Haiku llegó a decirle a un alumno que 70 + 7 no era 77."""
     ultimo_kiko = next((m.get("texto") or "" for m in reversed(historial) if m.get("de") == "kiko"), "")
     respuestas = numeros_en(_FRACCION.sub(" ", mensaje or ""))
@@ -526,7 +549,7 @@ _LUGARES = ["unidades", "decenas", "centenas", "unidades de millar", "decenas de
 
 def _valor_posicional(mensaje: str, historial: list[dict]) -> str | None:
     """Datos verificados de valor posicional de los números que menciona el alumno (Haiku llegó a decir que el
-    7 de 877 valía 77). Son para que Kiko revise lo que dice el alumno, no para dárselos."""
+    7 de 877 valía 77). Son para que Mix revise lo que dice el alumno, no para dárselos."""
     textos = [mensaje] + [m.get("texto") or "" for m in reversed(historial[-6:]) if m.get("de") != "kiko"]
     vistos: list[str] = []
     for t in textos:
@@ -560,22 +583,44 @@ def _anotar_si_lo_resolvio(db, alumno_id: int, operacion: dict | None, mensaje: 
 def responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: list[dict],
               grado: str | None = None, ejercicio: str | None = None, db=None,
               turno: str | None = None, recibido: str | None = None) -> dict:
-    """Contrato: {"respuesta": str, "origen": "claude" | "reglas", "dibujo": dict | None, "resuelta": bool}.
+    """Contrato: {"respuesta": str, "origen": "claude" | "reglas", "dibujo": dict | None, "resuelta": bool,
+    "cierre": bool}.
 
+    `cierre`: lo resolvió en ESTE mensaje; Mix pregunta si quedó claro y el navegador pone los botones.
     `resuelta`: su ejercicio ya está resuelto (en este mensaje o antes). El navegador marca "Tu sendero" como
     terminado y ya no ofrece pistas de ese ejercicio.
     """
     marca: dict = {}
     salida = _responder(alumno_id, operacion, mensaje, historial, grado, ejercicio, db, turno, recibido, marca)
-    return {**salida, "resuelta": bool(salida.get("resuelta") or marca.get("resuelta"))}
+    return {**salida, "resuelta": bool(salida.get("resuelta") or marca.get("resuelta")),
+            "cierre": bool(salida.get("cierre") or marca.get("cierre"))}
 
 
-# El ejercicio terminó: Kiko cierra (antes, con la plática llena de preguntas de pasos, seguía preguntando sin fin).
-TERMINADO = ("Su ejercicio ({op}) está TERMINADO: ya lo resolvió. No le hagas más preguntas de pasos ni de cuentas "
-             "sobre ese ejercicio, ni le pidas otra vez que lo explique. Si te cuenta cómo lo pensó, reconócelo en una o "
-             "dos frases y cierra con calidez (puede escanear otro cuando quiera). Si te pregunta algo, respóndele en "
-             "pocas palabras, sin convertirlo en otro ejercicio.")
+# El ejercicio terminó: Mix cierra (antes, con la plática llena de preguntas de pasos, seguía preguntando sin fin).
+TERMINADO = ("Su ejercicio ({op}) está TERMINADO: ya lo resolvió, así que ya puedes mencionar su resultado. Ahora es "
+             "el momento de sus DUDAS sobre lo que vieron. Si pregunta algo de ese ejercicio o de ese tema (por qué se "
+             "hace un paso, qué significa una palabra, otra forma de verlo), explícaselo con claridad en 2 a 4 frases "
+             "cortas, con un dibujo si ayuda, y al final pregúntale si con eso le quedó más claro. No le pongas "
+             "ejercicios nuevos ni le preguntes cuentas para que las resuelva. Si te cuenta cómo lo pensó, reconócelo "
+             "en una o dos frases. Si pregunta algo que no tiene que ver con lo que vieron, regrésalo con amabilidad al "
+             "tema (o a escanear otro ejercicio).")
 CIERRE = "¡Lo lograste! 🌟 Tu ejercicio quedó resuelto. Cuando quieras, escanea otro y lo vemos juntos."
+SIGUE_DUDAS = "Si te queda otra duda de lo que vimos, pregúntame; si no, escanea otro cuando quieras. 🌟"
+# Una pregunta que le pide hacer una cuenta ("¿cuánto es 300 + 200?"): con el ejercicio terminado ya no va.
+_PIDE_CUENTA = re.compile(r"cu[aá]nt[oa]s?|qu[eé] n[uú]mero|resuelve|calcula|intenta|prueba", re.I)
+
+
+def _sin_preguntas_de_cuentas(texto: str) -> str:
+    """Quita las oraciones que le piden resolver una cuenta; deja las explicaciones (aunque traigan cuentas)."""
+    oraciones = re.split(r"(?<=[.!?])\s+", texto.strip())
+    quedan = [o for o in oraciones if not ("?" in o and _EXPRESION.search(o) and _PIDE_CUENTA.search(o))]
+    return " ".join(quedan).strip()
+
+
+def _sin_preguntas(texto: str) -> str:
+    """Quita las preguntas de Claude al felicitar: la pregunta de cierre la pone el código (PREGUNTA_DUDAS)."""
+    oraciones = re.split(r"(?<=[.!?])\s+", texto.strip())
+    return " ".join(o for o in oraciones if "?" not in o).strip()
 
 
 def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: list[dict],
@@ -598,7 +643,7 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
     resuelta_antes = None
     if operacion and db is not None and not resolvio and estrategia.resuelta(db, alumno_id, operacion):
         resuelta_antes, operacion = operacion, None  # ya no se le vuelve a preguntar
-    # 2) Sin operación: una cuenta que escribió en el chat, o la de práctica que le propuso Kiko, es su ejercicio.
+    # 2) Sin operación: una cuenta que escribió en el chat, o la de práctica que le propuso Mix, es su ejercicio.
     resuelta_chat = False
     del_chat = operacion is None and not ejercicio
     if del_chat:
@@ -607,7 +652,7 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
         en_curso = estrategia.activa(db, alumno_id, historial) if db is not None else None
         practica = _practica_de_kiko(historial, mensaje)
         # Prioridad: 1) pide explícitamente otra cuenta; 2) sigue con su ejercicio en curso hasta resolverlo
-        # (aunque en el chat aparezcan sub-preguntas como "¿40 + 30?"); 3) la práctica que acaba de proponer Kiko;
+        # (aunque en el chat aparezcan sub-preguntas como "¿40 + 30?"); 3) la práctica que acaba de proponer Mix;
         # 4) una cuenta que escribió. Una cuenta "nueva" dentro de su respuesta ("7 + 5 son 13… sería 373") no es otra.
         if op_alumno is not None and estado_chat == "nueva" and pide_otra:
             operacion = op_alumno
@@ -617,6 +662,8 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
             operacion, estado_chat = practica, "practica"
         else:
             operacion = op_alumno
+        if estado_chat == "resuelta" and op_alumno is not None:
+            resuelta_antes = resuelta_antes or op_alumno
         if estado_chat == "resuelta" and op_alumno is not None and db is not None:
             estrategia.cerrar(db, alumno_id, op_alumno)
             db.commit()
@@ -626,6 +673,7 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
         if estado_chat == "resuelta":
             operacion, resuelta_chat = None, True
         if operacion is not None and db is not None and estrategia.resuelta(db, alumno_id, operacion):
+            resuelta_antes = resuelta_antes or operacion
             operacion, resuelta_chat = None, True
         if operacion is not None and not resolvio:
             resolvio = _anotar_si_lo_resolvio(db, alumno_id, operacion, mensaje)
@@ -633,8 +681,16 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
     ya_resuelta = resuelta_antes is not None or (operacion is None and resuelta_chat)
     terminado = bool(resolvio or ya_resuelta)
     marca["resuelta"] = terminado
-    reglas = {"respuesta": YA_RESUELTA if ya_resuelta and not operacion else por_reglas(operacion, mensaje),
-              "origen": "reglas", "dibujo": None}
+    marca["cierre"] = resolvio  # lo resolvió en ESTE mensaje: el navegador muestra "¡Todo claro!" / "Tengo una duda"
+    if resolvio:
+        respuesta_reglas = f"{RESUELTA_REGLAS} {PREGUNTA_DUDAS}"
+    elif ya_resuelta and not operacion:
+        respuesta_reglas = _respuesta_de_dudas(mensaje) or YA_RESUELTA
+    else:
+        respuesta_reglas = por_reglas(operacion, mensaje)
+    reglas = {"respuesta": respuesta_reglas, "origen": "reglas", "dibujo": None}
+    if ya_resuelta and not operacion and _respuesta_de_dudas(mensaje):
+        return reglas  # "¡Todo claro!" / "Tengo una duda": lo contesta el código
     if not config.TUTOR_ACTIVO:
         return reglas
     if not limite.permitir(alumno_id):
@@ -658,7 +714,7 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
     def entregar(respuesta: dict, dibujo_tipo: str | None = None, anota_ayuda: bool = False) -> dict:
         """Guarda y entrega. Con turno, el avance de la escalera y la ayuda en la memoria quedan pendientes de que
         el navegador confirme (en su siguiente mensaje) que mostró esta respuesta. Sin turno, se guardan ya."""
-        respuesta = {**respuesta, "resuelta": terminado}  # así un reintento del turno también la trae
+        respuesta = {**respuesta, "resuelta": terminado, "cierre": resolvio}  # así un reintento del turno también la trae
         if db is not None:
             ayuda = ({"concepto": concepto[0], "nombre": concepto[1], "dibujo": dibujo_tipo}
                      if anota_ayuda and concepto else None)
@@ -687,16 +743,16 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
         if db is not None and paso:
             db.rollback()
         return reglas
-    # Si en ESTE mensaje resolvió su ejercicio, no se revisa contra la última sub-pregunta de Kiko (p. ej. "¿40 + 30?"):
-    # antes eso le decía a Kiko "375 no es correcto" justo cuando el alumno acababa de resolver 245 + 130.
+    # Si en ESTE mensaje resolvió su ejercicio, no se revisa contra la última sub-pregunta de Mix (p. ej. "¿40 + 30?"):
+    # antes eso le decía a Mix "375 no es correcto" justo cuando el alumno acababa de resolver 245 + 130.
     verificacion = None if (paso or resolvio) else _verificar_respuesta(historial, mensaje)
     op_contexto = operacion
     if resolvio and operacion:
         r = operaciones.resultado_texto(operacion)
         nota = (f"El alumno ACABA DE RESOLVER su ejercicio ({operacion['a']} {operacion['op']} {operacion['b']} = {r}): "
-                "lo dijo en este mensaje. El ejercicio TERMINÓ. Felicítalo con calidez, sin exagerar, y pídele UNA sola "
-                "vez que te cuente cómo lo pensó. No le hagas más preguntas de pasos ni de cuentas, ni le digas que "
-                "algo está mal.")
+                "lo dijo en este mensaje. El ejercicio TERMINÓ. Felicítalo con calidez, sin exagerar, en una o dos "
+                "frases y SIN hacerle preguntas (la pregunta de cierre la agrega el código). No le digas que algo está "
+                "mal.")
         verificacion = f"{verificacion}\n{nota}" if verificacion else nota
         op_contexto = None  # ya no está pendiente: que el contexto no lo describa como ejercicio por resolver
     if duda:
@@ -716,13 +772,18 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
     if not salida:
         return sin_claude("Claude no respondió")
     texto = _sin_genero(salida["respuesta"])
-    if ya_resuelta and "?" in texto and _EXPRESION.search(texto):
-        texto = CIERRE  # red de seguridad: con el ejercicio terminado, Kiko ya no pregunta cuentas
+    if ya_resuelta:
+        # Red de seguridad: con el ejercicio terminado, Mix explica sus dudas, pero ya no le pide resolver cuentas.
+        limpio = _sin_preguntas_de_cuentas(texto)
+        if limpio != texto.strip():
+            texto = f"{limpio} {SIGUE_DUDAS}".strip() if limpio else CIERRE
+    if resolvio:
+        texto = f"{_sin_preguntas(texto) or '¡Lo lograste! 🌟'} {PREGUNTA_DUDAS}"
     if paso and paso.get("texto_fijo"):
         # Escalones 4 y 5: las cuentas (y la pregunta) las pone el código, verificadas. Del modelo solo una frase de ánimo.
         texto = f"{estrategia.frase_de_animo(texto, paso['escalon'], paso.get('modo'))} {paso['texto_fijo']}"
 
-    # Resultados que Kiko no puede decir: el de la operación escaneada (si está mal) y los de las cuentas
+    # Resultados que Mix no puede decir: el de la operación escaneada (si está mal) y los de las cuentas
     # que el alumno escribió en el chat (este mensaje y sus mensajes anteriores).
     secretos = []
     if operacion and (s := _secreto(operacion)):
@@ -730,6 +791,8 @@ def _responder(alumno_id: int, operacion: dict | None, mensaje: str, historial: 
     textos_alumno = [mensaje, ejercicio or ""] + [m.get("texto") or "" for m in historial[-MAX_HISTORIAL:] if m.get("de") != "kiko"]
     for t in textos_alumno:
         secretos.extend(cuentas_en(t))
+    if ya_resuelta and resuelta_antes and (hecho := _secreto(resuelta_antes)):
+        secretos = [s for s in secretos if s["valor"] != hecho["valor"]]  # ya lo resolvió: puede explicarlo
     if _bloqueada(texto, mensaje, secretos):
         return sin_claude("la respuesta de Claude traía un resultado; la bloqueo")
     # El dibujo también cumple la regla de oro: si al contarlo sale un resultado secreto, se quita.

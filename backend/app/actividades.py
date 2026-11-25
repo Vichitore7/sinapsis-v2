@@ -4,7 +4,7 @@ Aula y Escáner son para estudiar (el Mapa es para jugar), así que esto vive ap
 
 - El profesor arma una actividad con título, instrucciones, material (texto y enlaces) y problemas: los escribe él o
   los toma del banco de prueba por grado (`BANCO`, con texto propio; los temas siguen el estándar de contenidos).
-- El alumno resuelve cada problema en su cuaderno y lo escanea. Kiko revisa la operación (filtro obligatorio): si algo
+- El alumno resuelve cada problema en su cuaderno y lo escanea. Mix revisa la operación (filtro obligatorio): si algo
   está mal, le ayuda en el chat hasta que lo corrige. Cuando todos los problemas pasaron por el escáner, puede entregar.
 - Con lo que resolvieron, el profesor ve qué domina, qué comprende y qué se le dificulta a cada alumno (`comprension`).
 
@@ -205,19 +205,38 @@ def registrar_escaneo(db: Session, alumno_id: int, actividad: Actividad, problem
         estado["resuelto"] = True
         estado["con_ayuda"] = len(estado["intentos"]) > 1  # lo corrigió después de un escaneo con error
     av.problemas = {**av.problemas, problema_id: estado}
-    aprendizaje.resultado_escaneo(db, alumno_id, op)  # memoria de Kiko y escalera de pistas, como el escáner normal
+    aprendizaje.resultado_escaneo(db, alumno_id, op)  # memoria de Mix y escalera de pistas, como el escáner normal
     return {"coincide": True, "correcto": bool(d["correcto"]), "resuelto": estado["resuelto"], "problema": texto_problema(p)}
 
 
+def emparejar_pagina(actividad: Actividad, leidas: list[dict]) -> dict:
+    """Las operaciones leídas de una página del cuaderno, cada una con su problema de la tarea. No guarda nada: el
+    alumno confirma (o corrige su resultado) y después cada una se registra con `registrar_escaneo`.
+
+    Regresa {"encontrados": [{problema_id, numero, texto, lectura}], "otras": [texto]} (otras = no son de la tarea).
+    """
+    libres = {p["id"]: (n, p) for n, p in enumerate(actividad.problemas, start=1)}
+    encontrados, otras = [], []
+    for op in leidas:
+        pid = next((i for i, (_, p) in libres.items() if _coincide(p, op)), None)
+        if pid is None:
+            otras.append(f"{op['a']} {op['op']} {op['b']}")
+            continue
+        n, p = libres.pop(pid)
+        lectura = {k: op.get(k) or "" for k in ("a", "op", "b", "c", "residuo")} | {"dudoso": bool(op.get("dudoso"))}
+        encontrados.append({"problema_id": pid, "numero": n, "texto": texto_problema(p), "lectura": lectura})
+    return {"encontrados": sorted(encontrados, key=lambda e: e["numero"]), "otras": otras}
+
+
 def resuelto_en_chat(db: Session, alumno_id: int, actividad: Actividad, problema_id: str) -> dict:
-    """Kiko confirmó en el chat que ya lo resolvió (después de escanearlo con error). No hace commit."""
+    """Mix confirmó en el chat que ya lo resolvió (después de escanearlo con error). No hace commit."""
     p = next((x for x in actividad.problemas if x["id"] == problema_id), None)
     if p is None:
         raise LookupError("Ese problema no existe.")
     av = _avance(db, alumno_id, actividad)
     estado = av.problemas.get(problema_id)
     if not estado or not estado["intentos"]:
-        return {"resuelto": False}  # primero tiene que escanearlo (el filtro de Kiko es obligatorio)
+        return {"resuelto": False}  # primero tiene que escanearlo (el filtro de Mix es obligatorio)
     op = operaciones.validar({"a": p["a"], "op": p["op"], "b": p["b"], "c": ""})
     if not estado["resuelto"] and estrategia.resuelta(db, alumno_id, op):
         av.problemas = {**av.problemas, problema_id: {**estado, "resuelto": True, "con_ayuda": True}}
@@ -226,7 +245,7 @@ def resuelto_en_chat(db: Session, alumno_id: int, actividad: Actividad, problema
 
 
 def puede_entregar(actividad: Actividad, av: AvanceActividad | None) -> bool:
-    """Todos los problemas pasaron por el escáner (por el filtro de Kiko) al menos una vez."""
+    """Todos los problemas pasaron por el escáner (por el filtro de Mix) al menos una vez."""
     hechos = (av.problemas if av else {})
     return all((hechos.get(p["id"]) or {}).get("intentos") for p in actividad.problemas)
 
@@ -265,7 +284,7 @@ def respuestas_de(actividad: Actividad, av: AvanceActividad | None) -> list[dict
         elif e.get("resuelto"):
             error = aprendizaje.NOMBRES_ERROR.get(primero.get("tipo_error") or "", "")
             estado, nota = "con_ayuda", (f"Primero contestó {resp(primero)}" + (f" ({error})" if error else "")
-                                         + "; lo corrigió con ayuda de Kiko.")
+                                         + "; lo corrigió con ayuda de Mix.")
         else:
             ultimo = intentos[-1]
             error = aprendizaje.NOMBRES_ERROR.get(ultimo.get("tipo_error") or "", "")
@@ -295,7 +314,7 @@ def _categoria(intentados: int, primera: int, con_ayuda: int, sin_resolver: int)
 
 def comprension(db: Session, actividades: list[Actividad], alumno_id: int) -> list[dict]:
     """Por módulo (los mismos de las tareas): qué tal le va con lo que resolvió en las actividades (escaneado), qué
-    error repite y qué le ha funcionado en el chat con Kiko. Solo conteos y etiquetas: nunca el texto del chat."""
+    error repite y qué le ha funcionado en el chat con Mix. Solo conteos y etiquetas: nunca el texto del chat."""
     por_tema: dict[str, dict] = {}
     for act in actividades:
         av = db.get(AvanceActividad, (alumno_id, act.id))
@@ -321,7 +340,7 @@ def comprension(db: Session, actividades: list[Actividad], alumno_id: int) -> li
     salida = []
     for t in por_tema.values():
         categoria, frase = _categoria(t["intentados"], t["primera"], t["con_ayuda"], t["sin_resolver"])
-        # Lo que le ha funcionado en el chat con Kiko, juntando los conceptos del módulo.
+        # Lo que le ha funcionado en el chat con Mix, juntando los conceptos del módulo.
         juntas: dict[str, dict] = {}
         for concepto in t["conceptos"]:
             memoria = db.get(aprendizaje.Aprendizaje, (alumno_id, concepto))

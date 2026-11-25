@@ -1,5 +1,5 @@
 // Actividades del aula (alumno). El profesor deja problemas y material; el alumno los resuelve en su CUADERNO y los
-// escanea: Kiko revisa cada uno (filtro obligatorio) y le ayuda si algo está mal. Luego entrega.
+// escanea: Mix revisa cada uno (filtro obligatorio) y le ayuda si algo está mal. Luego entrega.
 // #/aula/:aula.:actividad → la actividad.  #/escaner/:aula.:actividad.:problema → escanear ese problema.
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
@@ -9,7 +9,7 @@ import { agrupar } from './ActividadesProfe.jsx';
 
 const ESTADOS = {
   pendiente: { texto: 'Por escanear', clase: 'chip-gris' },
-  revisar: { texto: 'Kiko encontró algo', clase: 'chip-casi' },
+  revisar: { texto: 'Mix encontró algo', clase: 'chip-casi' },
   resuelto: { texto: 'Resuelto', clase: 'chip-verde' },
 };
 
@@ -94,8 +94,13 @@ export function ActividadAlumno({ aulaId, actividadId }) {
       <section className="tarjeta pila-md">
         <h2 className="t-md" style={{ margin: 0 }}>Problemas</h2>
         <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>
-          Resuélvelos en tu cuaderno y escanea cada uno: Kiko lo revisa y, si algo no cuadra, te ayuda a encontrarlo.
+          Resuélvelos en tu cuaderno y tómale foto a tu página: Mix revisa todos y, si algo no cuadra, te ayuda a encontrarlo.
         </p>
+        {!a.entregada && a.resueltos < a.problemas.length && (
+          <button className="btn btn-naranja" style={{ alignSelf: 'flex-start' }} onClick={() => ir(`/escaner/${aulaId}.${a.id}`)}>
+            <I n="camara" tamano={16} /> Tomar foto de mi página
+          </button>
+        )}
         <ol className="problemas-lista">
           {a.problemas.map((p, n) => (
             <li key={p.id} className={`problema problema-${p.estado}`}>
@@ -107,7 +112,7 @@ export function ActividadAlumno({ aulaId, actividadId }) {
               <span className={`chip ${ESTADOS[p.estado].clase}`}>{ESTADOS[p.estado].texto}</span>
               {p.estado !== 'resuelto' && (
                 <button className="btn btn-naranja btn-chico" onClick={() => ir(`/escaner/${aulaId}.${a.id}.${p.id}`)}>
-                  <I n="camara" tamano={14} /> {p.estado === 'pendiente' ? 'Escanear' : 'Revisar con Kiko'}
+                  <I n="camara" tamano={14} /> {p.estado === 'pendiente' ? 'Escanear' : 'Revisar con Mix'}
                 </button>
               )}
             </li>
@@ -116,7 +121,7 @@ export function ActividadAlumno({ aulaId, actividadId }) {
         {!a.entregada && (
           <div className="fila-entre">
             <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>
-              {a.puede_entregar ? '¡Listo! Ya pasaste todos los problemas por Kiko.' : 'Para entregar, escanea todos los problemas.'}
+              {a.puede_entregar ? '¡Listo! Ya pasaste todos los problemas por Mix.' : 'Para entregar, escanea todos los problemas.'}
             </p>
             <button className="btn btn-verde" disabled={!a.puede_entregar || entregando} onClick={entregar}>
               <I n="check" tamano={16} /> Entregar actividad
@@ -142,11 +147,11 @@ export function BannerActividad({ aulaId, actividad, problemaId }) {
         {p.enunciado && <p className="cuerpo-sm" style={{ margin: '2px 0 0' }}>{p.enunciado}</p>}
         <b className="t-lg">{p.texto}</b>
         <p className="cuerpo-sm" style={{ margin: '2px 0 0' }}>
-          {listo ? '✓ ¡Problema resuelto! Kiko ya lo revisó.' : 'Resuélvelo en tu cuaderno y escanéalo: Kiko lo revisa contigo.'}
+          {listo ? '✓ ¡Problema resuelto! Mix ya lo revisó.' : 'Resuélvelo en tu cuaderno y escanéalo: Mix lo revisa contigo.'}
         </p>
       </div>
-      <button className={`btn btn-chico ${listo ? 'btn-verde' : 'btn-crema'}`} onClick={() => ir(`/aula/${aulaId}.${actividad.id}`)}>
-        <I n="atras" tamano={14} /> Volver a la actividad
+      <button className={`btn btn-chico ${listo ? 'btn-verde' : 'btn-crema'}`} onClick={() => ir(`/escaner/${aulaId}.${actividad.id}`)}>
+        <I n="atras" tamano={14} /> Volver a mi tarea
       </button>
     </section>
   );

@@ -1,4 +1,4 @@
-// Trajes de subculturas de la CDMX para Kiko: premio del examen general del Mundo 1.
+// Trajes de subculturas de la CDMX para Mix: premio del examen general del Mundo 1.
 // Cada subcultura tiene dos estilos (el nombre dice cómo se ve, sin etiquetas de género). Ajolote.jsx los dibuja con estas piezas:
 //   silueta(cabeza): formas extra que llevan el borde blanco de sticker
 //   herramienta():   lo que carga en la mano (va detrás de las branquias)
@@ -6,7 +6,7 @@
 //   detalles():      lo que sale del cuerpo (botas, paliacate, cinturón)
 //   tocado():        cabello, gorros y lentes (van encima de la cara)
 // Coordenadas del ajolote (viewBox 200×200): cabeza en (100,100) radio 62×52, cuerpo en (100,152) 36×26, ojos en y=100.
-// Colores fijos: es la ropa de Kiko, igual de día y de noche.
+// Colores fijos: es la ropa de Mix, igual de día y de noche.
 
 const C = { stroke: 'var(--tinta)', strokeWidth: 2.5, strokeLinejoin: 'round', strokeLinecap: 'round' };
 const R = {

@@ -196,7 +196,7 @@ export function resolvioEnChat(op, texto) {
   return !diagnosticarOperacion(op).correcto && yaLoDijo(op, quitarNegados(texto)) && !conDuda(texto);
 }
 
-/** "Tu sendero" de una operación que el alumno ya resolvió con Kiko: los pasos de la cuenta bien hecha (con el
+/** "Tu sendero" de una operación que el alumno ya resolvió con Mix: los pasos de la cuenta bien hecha (con el
  *  resultado que encontró, no con el que había escrito), todos en verde. */
 export function senderoResuelto(op) {
   const r = resultado(op);

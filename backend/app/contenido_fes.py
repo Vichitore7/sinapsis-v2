@@ -187,14 +187,14 @@ NIVELES = [
                 850, "−", 467, _algoritmo(850, 467, "−"), _p_algoritmo("−")),
     ]),
     ("Comparar fracciones", "Las Pizzas de la Cafetería", CONCRETO, [
-        _opcion("f3-n04-1", "Mitad o cuarto", "En la cafetería, Kiko pide 1/2 de pizza y su amiga 1/4 de otra pizza del mismo tamaño. ¿Qué signo va en 1/2 __ 1/4?", _SIGNOS, ">",
+        _opcion("f3-n04-1", "Mitad o cuarto", "En la cafetería, Mix pide 1/2 de pizza y su amiga 1/4 de otra pizza del mismo tamaño. ¿Qué signo va en 1/2 __ 1/4?", _SIGNOS, ">",
                 _pizzas((1, 2, "1/2"), (1, 4, "1/4")), _P_SIGNO, "¿Qué pedazo es más grande: la mitad o la cuarta parte?"),
         _opcion("f3-n04-2", "De mayor a menor", "Tres pizzas iguales se partieron distinto: 1/8, 1/2 y 1/4. ¿Cómo quedan ordenados los pedazos de MAYOR a menor?",
                 ["1/2 > 1/4 > 1/8", "1/8 > 1/4 > 1/2", "1/4 > 1/2 > 1/8"], "1/2 > 1/4 > 1/8",
                 _pizzas((1, 8, "1/8"), (1, 2, "1/2"), (1, 4, "1/4")), _P_FRACCION, "Entre más pedazos, ¿cada uno es más grande o más chico?"),
-        _opcion("f3-n04-3", "¿Quién comió más?", "Kiko comió 2/4 de una pizza y su amigo 1/2 de otra igual. ¿Quién comió más?",
-                ["Kiko", "Su amigo", "Comieron lo mismo"], "Comieron lo mismo",
-                _pizzas((2, 4, "Kiko: 2/4"), (1, 2, "Su amigo: 1/2")), _P_FRACCION, "Mira las partes pintadas: ¿alguna es más grande?"),
+        _opcion("f3-n04-3", "¿Quién comió más?", "Mix comió 2/4 de una pizza y su amigo 1/2 de otra igual. ¿Quién comió más?",
+                ["Mix", "Su amigo", "Comieron lo mismo"], "Comieron lo mismo",
+                _pizzas((2, 4, "Mix: 2/4"), (1, 2, "Su amigo: 1/2")), _P_FRACCION, "Mira las partes pintadas: ¿alguna es más grande?"),
     ]),
     # ---------------- Pictórico ----------------
     ("Multiplicar por 10, 20 y 30 y en arreglos", "Las Butacas del Auditorio", PICTORICO, [
@@ -210,7 +210,7 @@ NIVELES = [
                 {"tipo": "reparto", "total": 36, "entre": 4, "objeto": "torta"}, _p_reparto(36, 4)),
         _cuenta("f3-n06-2", "Paquetes de plumones", "En la papelería hay 24 plumones y se arman paquetes de 6. ¿Cuántos paquetes salen?", 24, "÷", 6,
                 {"tipo": "agrupar", "total": 24, "cada": 6, "objeto": "plumon"}, _p_agrupar(24, 6)),
-        _opcion("f3-n06-3", "Comprobar la división", "Kiko repartió 45 galletas entre 5 amigos y a cada uno le tocaron 9 (45 ÷ 5 = 9). ¿Qué multiplicación lo comprueba?",
+        _opcion("f3-n06-3", "Comprobar la división", "Mix repartió 45 galletas entre 5 amigos y a cada uno le tocaron 9 (45 ÷ 5 = 9). ¿Qué multiplicación lo comprueba?",
                 ["9 × 5 = 45", "9 + 5 = 14", "45 × 5 = 225"], "9 × 5 = 45",
                 {"tipo": "reparto", "total": 45, "entre": 5, "objeto": "galleta"}, _P_COMPROBAR, "¿Qué operación usa el 9, el 5 y el 45?"),
     ]),
@@ -243,7 +243,7 @@ NIVELES = [
                 None, _P_MEDIDA, "¿Qué es más: la mitad de un kilo o la cuarta parte?"),
     ]),
     ("Fracciones equivalentes", "El Pastel de la Graduación", ABSTRACTO, [
-        _opcion("f3-n10-1", "Dos rebanadas", "En la graduación, Kiko se sirve 1/4 de pastel y luego otro 1/4. ¿Cuánto pastel se sirvió?", ["1/2", "2/8", "1/8"], "1/2",
+        _opcion("f3-n10-1", "Dos rebanadas", "En la graduación, Mix se sirve 1/4 de pastel y luego otro 1/4. ¿Cuánto pastel se sirvió?", ["1/2", "2/8", "1/8"], "1/2",
                 None, _P_EQUIV, "Dos cuartos juntos, ¿qué parte del pastel tapan?"),
         _conteo("f3-n10-2", "Rebanadas chiquitas", "¿Cuántas rebanadas de 1/16 se necesitan para formar 1/8 de pastel?", 2,
                 None, _P_EQUIV, "Un octavo es el doble de grande que un dieciseisavo."),
@@ -261,11 +261,11 @@ NIVELES = [
                 _TABLA_DEPORTES, _P_FRECUENCIA, "¿Qué deporte tiene el número más grande?"),
     ]),
     ("Repaso final", "El Gran Desafío de la FES", ABSTRACTO, [
-        _conteo("f3-n12-1", "Las galletas", "Kiko compra 3 cajas con 12 galletas cada una y se come 5. ¿Cuántas galletas le quedan?", 31,
+        _conteo("f3-n12-1", "Las galletas", "Mix compra 3 cajas con 12 galletas cada una y se come 5. ¿Cuántas galletas le quedan?", 31,
                 None, _P_DOS_PASOS, "Primero: ¿cuántas galletas había en las 3 cajas?"),
         _conteo("f3-n12-2", "La sudadera de oferta", "Una sudadera de la FES costaba $100 y hoy cuesta la mitad, 1/2 de $100. ¿Cuánto cuesta hoy?", 50,
                 None, _P_MITAD_PESOS, "La mitad de 100 es partir 100 en 2 partes iguales.", moneda=True),
-        _conteo("f3-n12-3", "La caja de regalo", "Para la graduación, Kiko arma una caja con forma de cubo usando cuadrados de cartón. ¿Cuántos cuadrados necesita?", 6,
+        _conteo("f3-n12-3", "La caja de regalo", "Para la graduación, Mix arma una caja con forma de cubo usando cuadrados de cartón. ¿Cuántos cuadrados necesita?", 6,
                 None, _P_CUBO, "Cuenta las caras: arriba, abajo y los lados."),
     ]),
 ]
@@ -321,7 +321,7 @@ EXAMEN = [
             None, _P_EQUIV, "¿Cuántos cuartos caben en una mitad?"),
     _opcion("f3-ex-11", "La encuesta", "Según la tabla de frecuencias, ¿qué deporte tiene MENOS votos?", ["Fútbol", "Básquet", "Voleibol"], "Voleibol",
             _TABLA_DEPORTES, _P_FRECUENCIA, "¿Qué deporte tiene el número más chico?"),
-    _conteo("f3-ex-12", "La caja de zapatos", "Kiko arma una caja como de zapatos (prisma rectangular): 2 tapas y 4 lados. ¿Cuántos rectángulos de cartón usa?", 6,
+    _conteo("f3-ex-12", "La caja de zapatos", "Mix arma una caja como de zapatos (prisma rectangular): 2 tapas y 4 lados. ¿Cuántos rectángulos de cartón usa?", 6,
             None, _P_CUBO, "Suma las tapas y los lados."),
 ]
 

@@ -55,7 +55,7 @@ def test_escanear_revisa_y_resolver_con_ayuda(cliente, nuevo_cliente):
 def test_resolverlo_en_el_chat_cuenta_solo_despues_de_escanearlo(cliente, nuevo_cliente):
     aula, act_id, (teo,) = _clase(cliente, nuevo_cliente)
     url = f"/api/actividades/{act_id}/problemas/p1/resuelto-en-chat"
-    assert teo.post(url).json() == {"resuelto": False}  # sin escanear, no (el filtro de Kiko es obligatorio)
+    assert teo.post(url).json() == {"resuelto": False}  # sin escanear, no (el filtro de Mix es obligatorio)
     _escanear(teo, act_id, "p1", 6, "×", 7, 13)
     assert teo.post(url).json() == {"resuelto": False}  # todavía no lo resuelve en el chat
     teo.post("/api/tutor", json={"operacion": {"a": 6, "op": "×", "b": 7, "c": 13}, "mensaje": "ya me salió 42"})
@@ -67,7 +67,7 @@ def test_entregar_pide_que_todo_pase_por_el_escaner(cliente, nuevo_cliente):
     url = f"/api/actividades/{act_id}/entregar"
     _escanear(teo, act_id, "p1", 6, "×", 7, 42)
     assert teo.post(url).status_code == 409
-    _escanear(teo, act_id, "p2", "3/4", "+", "1/2", "4/6")  # mal, pero ya pasó por Kiko
+    _escanear(teo, act_id, "p2", "3/4", "+", "1/2", "4/6")  # mal, pero ya pasó por Mix
     _escanear(teo, act_id, "p3", 17, "÷", 5, 3, 2)
     r = teo.post(url)
     assert r.status_code == 200 and r.json()["entregada"]
@@ -178,3 +178,64 @@ def test_el_panel_del_profe_resume_solo_las_tareas(cliente, nuevo_cliente):
     assert (r["a_la_primera"], r["con_ayuda"], r["sin_corregir"]) == (1, 1, 0)
     assert r["errores"] == [{"id": "sumo", "texto": "sumó en lugar de multiplicar", "veces": 1}]
     assert g["errores_comunes"] == [{"texto": "sumó en lugar de multiplicar", "alumnos": 1, "veces": 1}]
+
+
+# ---------------- Foto de la página completa (25 nov) ----------------
+
+def _pagina_con(monkeypatch, operaciones_leidas):
+    """Claude SIMULADO: lee estas operaciones de la página (no gasta saldo)."""
+    import json
+    from types import SimpleNamespace
+    from app import config, lector
+
+    class Falso:
+        messages = None
+
+        def create(self, **kw):
+            return SimpleNamespace(stop_reason="end_turn", content=[
+                SimpleNamespace(type="text", text=json.dumps({"operaciones": operaciones_leidas}))])
+    f = Falso()
+    f.messages = f
+    monkeypatch.setattr(config, "TUTOR_ACTIVO", True)
+    monkeypatch.setattr(lector, "_cliente_claude", lambda: f)
+    lector.limite.reiniciar_todo()
+
+
+import base64  # noqa: E402
+
+FOTO = "data:image/jpeg;base64," + base64.b64encode(b"\xff\xd8\xff\xe0 pagina de prueba \xff\xd9").decode()
+
+
+def _op(a, op, b, c, residuo=None, dudoso=False):
+    return {"a": a, "op": op, "b": b, "c": c, "residuo": residuo, "dudoso": dudoso}
+
+
+def test_leer_pagina_acomoda_cada_operacion_en_su_problema(cliente, nuevo_cliente, monkeypatch):
+    aula, act_id, (teo,) = _clase(cliente, nuevo_cliente)
+    # En la página: el 17 ÷ 5 primero, el 6 × 7 escrito al revés, una cuenta que no es de la tarea y una sin resultado.
+    _pagina_con(monkeypatch, [_op("17", "÷", "5", "3", "2"), _op("7", "×", "6", "13"), _op("9", "+", "9", "18"),
+                              _op("3/4", "+", "1/2", None, dudoso=True)])
+    r = teo.post(f"/api/actividades/{act_id}/leer-pagina", json={"foto": FOTO})
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert d["origen"] == "claude" and d["otras"] == ["9 + 9"]
+    assert [(e["numero"], e["problema_id"], e["lectura"]["c"]) for e in d["encontrados"]] == [(1, "p1", "13"), (2, "p2", ""), (3, "p3", "3")]
+    assert d["encontrados"][1]["lectura"]["dudoso"] is True
+    # No registra nada hasta que el alumno confirma y se escanea cada una.
+    a = teo.get(f"/api/aulas/{aula['id']}/actividades/{act_id}").json()
+    assert all(p["estado"] == "pendiente" for p in a["problemas"])
+
+
+def test_leer_pagina_sin_ia_regresa_vacio(cliente, nuevo_cliente, monkeypatch):
+    from app import config
+    monkeypatch.setattr(config, "TUTOR_ACTIVO", False)
+    aula, act_id, (teo,) = _clase(cliente, nuevo_cliente)
+    d = teo.post(f"/api/actividades/{act_id}/leer-pagina", json={"foto": FOTO}).json()
+    assert d == {"encontrados": [], "otras": [], "origen": "sin_ia"}
+
+
+def test_leer_pagina_solo_de_su_clase(cliente, nuevo_cliente, monkeypatch):
+    aula, act_id, _ = _clase(cliente, nuevo_cliente)
+    otro = nuevo_cliente()
+    registrar(otro, "ajeno")
+    assert otro.post(f"/api/actividades/{act_id}/leer-pagina", json={"foto": FOTO}).status_code in (403, 404)

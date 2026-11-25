@@ -1,5 +1,5 @@
 // Comprensión por tema (profesor), con lo que cada alumno resolvió en las ACTIVIDADES del aula (escaneadas y
-// revisadas por Kiko). La categoría la decide el código (app/actividades.py), nunca el modelo:
+// revisadas por Mix). La categoría la decide el código (app/actividades.py), nunca el modelo:
 //   dificultad → comprende → domina   (orden de menos a más; rampa azul de un solo tono, validada para daltonismo)
 // Solo apodos, sin rankings: los alumnos van en orden alfabético.
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -64,7 +64,7 @@ export function GraficaComprension({ datos, onAlumno }) {
       <div>
         <h2 className="t-lg" style={{ margin: 0 }}><I n="diana" tamano={24} className="texto-naranja" /> Comprensión del grupo por tema</h2>
         <p className="cuerpo-md texto-suave" style={{ margin: '2px 0 0' }}>
-          Con lo que resolvieron en las actividades (en su cuaderno, revisado por Kiko). Cada barra cuenta alumnos.
+          Con lo que resolvieron en las actividades (en su cuaderno, revisado por Mix). Cada barra cuenta alumnos.
         </p>
       </div>
 
@@ -163,7 +163,7 @@ const ICONO_RESP = { bien: '✓', con_ayuda: '✓', mal: '✗', pendiente: '–'
 export function TutorSugiere({ aulaId, alumnoId }) {
   const [d, setD] = useState(null);
   useEffect(() => { api.comprensionAlumno(aulaId, alumnoId).then(setD).catch(() => setD(false)); }, [aulaId, alumnoId]);
-  if (d === null) return <p className="cuerpo-sm texto-suave">Cargando lo que observó Kiko…</p>;
+  if (d === null) return <p className="cuerpo-sm texto-suave">Cargando lo que observó Mix…</p>;
   if (!d) return null;
   return (
     <div className="pila-md">
@@ -180,7 +180,7 @@ export function TutorSugiere({ aulaId, alumnoId }) {
                   <span className="chip chip-blanco"><span className={`comp-muestra comp-${t.categoria}`} aria-hidden="true" /> <I n={ICONO_CAT[t.categoria]} tamano={12} /> {t.frase}</span>
                 </div>
                 <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>
-                  {t.problemas} problema{t.problemas === 1 ? '' : 's'}: {t.a_la_primera} a la primera, {t.con_ayuda} con ayuda de Kiko
+                  {t.problemas} problema{t.problemas === 1 ? '' : 's'}: {t.a_la_primera} a la primera, {t.con_ayuda} con ayuda de Mix
                   {t.sin_resolver ? `, ${t.sin_resolver} sin corregir` : ''}.
                 </p>
                 {t.error_frecuente && <p className="cuerpo-sm" style={{ margin: 0 }}><b>Se le complica:</b> {t.error_frecuente}.</p>}

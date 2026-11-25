@@ -53,7 +53,7 @@ def test_primero_la_pista_luego_pasitos_que_avanzan_con_aciertos(cliente, claude
     falso = claude(texto="¡Eso es!")
     op = {"a": 7, "op": "×", "b": 8, "c": 54}  # correcto: 56
     r1 = hablar(cliente, "no entiendo", op)
-    assert "PASO 1" in instruccion(falso)                          # pista del error, la escribe Kiko
+    assert "PASO 1" in instruccion(falso)                          # pista del error, la escribe Mix
     r2 = hablar(cliente, "ok", op)
     assert "5 grupos de 8" in r2["respuesta"]                       # pasito 1 (lo escribe el código)
     r3 = hablar(cliente, "40", op)                                  # contesta bien el pasito
@@ -104,7 +104,7 @@ def test_los_mas_pequenos_empiezan_con_algo_concreto(cliente, claude):
 
 
 def test_si_lo_resuelve_ya_no_se_lo_vuelve_a_preguntar(cliente, claude):
-    """25 nov: después de contestar bien, Kiko volvía a empezar los pasitos de la operación escaneada."""
+    """25 nov: después de contestar bien, Mix volvía a empezar los pasitos de la operación escaneada."""
     registrar(cliente)
     falso = claude(texto="¡Muy bien!")
     op = {"a": 7, "op": "×", "b": 8, "c": 54}
@@ -296,7 +296,7 @@ def test_una_cuenta_del_chat_usa_los_pasitos_y_no_se_olvida(cliente, claude):
 
 
 def test_el_codigo_revisa_las_respuestas_del_alumno(cliente, claude):
-    """Haiku le dijo a un alumno que 70 + 7 no era 77 (24 nov). Ahora el código le dice a Kiko si está bien."""
+    """Haiku le dijo a un alumno que 70 + 7 no era 77 (24 nov). Ahora el código le dice a Mix si está bien."""
     registrar(cliente)
     falso = claude(texto="¡Eso es!")
     historial = [{"de": "yo", "texto": "¿qué vale el 7 en 877?"}, {"de": "kiko", "texto": "Vale 70. ¿Cuánto suman 70 y 7?"}]
@@ -308,7 +308,7 @@ def test_el_codigo_revisa_las_respuestas_del_alumno(cliente, claude):
 
 
 def test_una_cuenta_del_chat_resuelta_se_cierra_y_reescrita_empieza_de_cero(cliente, claude):
-    """24 nov: la escalera de una cuenta ya resuelta seguía abierta y Kiko retomaba el último pasito."""
+    """24 nov: la escalera de una cuenta ya resuelta seguía abierta y Mix retomaba el último pasito."""
     registrar(cliente)
     claude(texto="¡Vamos!")
     historial = []
@@ -346,7 +346,7 @@ def test_una_cuenta_con_su_resultado_es_una_respuesta(cliente, claude):
 
 
 def test_la_practica_sigue_hasta_resolverla_aunque_haya_subpreguntas(cliente, claude):
-    """25 nov: con la práctica 245 + 130, Kiko preguntó "¿40 + 30?" y luego tomó el 375 (correcto) como error."""
+    """25 nov: con la práctica 245 + 130, Mix preguntó "¿40 + 30?" y luego tomó el 375 (correcto) como error."""
     registrar(cliente)
     falso = claude(texto="¡Vamos!")
     historial = [{"de": "kiko", "texto": "¿Cómo le harías si tuvieras 245 + 130?"}]
@@ -611,13 +611,77 @@ def test_al_resolver_termina_de_verdad(cliente, claude):
     claude()
     r = cliente.post("/api/tutor", json={"operacion": OP_SUMA, "mensaje": "ya me salió 570"}).json()
     assert r["resuelta"] is True
-    # Después: Kiko ya no recibe "avanza al siguiente paso" aunque conteste una cuenta suya, y no pregunta cuentas.
+    # Después: Mix ya no recibe "avanza al siguiente paso" aunque conteste una cuenta suya, y no pregunta cuentas.
     historial = [{"de": "kiko", "texto": "El 1 y el 5 dan 6, y llevas 1. ¿Cuánto es 6 más 1?"}]
     falso = claude(texto="¡Bien! Ahora dime, ¿cuánto es 300 + 200?")
     r = cliente.post("/api/tutor", json={"operacion": OP_SUMA, "mensaje": "7", "historial": historial}).json()
     datos = falso.llamadas[-1]["system"][1]["text"]
     assert "TERMINADO" in datos and "siguiente paso" not in datos
-    assert r["resuelta"] is True and r["respuesta"] == tutor.CIERRE  # la red de seguridad corta la pregunta
+    # La red de seguridad quita la pregunta de la cuenta, pero deja seguir con dudas.
+    assert r["resuelta"] is True and "300 + 200" not in r["respuesta"] and tutor.SIGUE_DUDAS in r["respuesta"]
+    assert r["cierre"] is False  # la pregunta de cierre sale solo una vez, al resolver
+
+
+# ---------------- Al resolver: "¿te quedó claro?" y puede seguir con dudas (25 nov) ----------------
+
+def test_al_resolver_pregunta_si_quedo_claro(cliente, claude):
+    registrar(cliente)
+    cliente.post("/api/escaner/resultado", json=OP_SUMA)
+    claude(texto="¡Muy bien, lo lograste! ¿Me cuentas cómo lo pensaste?")
+    r = cliente.post("/api/tutor", json={"operacion": OP_SUMA, "mensaje": "ya me salió 570"}).json()
+    assert r["resuelta"] is True and r["cierre"] is True
+    assert r["respuesta"] == f"¡Muy bien, lo lograste! {tutor.PREGUNTA_DUDAS}"  # su pregunta se cambia por la del código
+
+
+def test_al_resolver_sin_ia_tambien_pregunta(cliente, claude, monkeypatch):
+    registrar(cliente)
+    monkeypatch.setattr(config, "TUTOR_ACTIVO", False)
+    r = hablar(cliente, "es 42")
+    assert r["cierre"] is True and r["respuesta"].endswith(tutor.PREGUNTA_DUDAS)
+
+
+def test_botones_de_dudas_los_contesta_el_codigo(cliente, claude):
+    registrar(cliente)
+    falso = claude()
+    hablar(cliente, "es 42")
+    antes = len(falso.llamadas)
+    r = hablar(cliente, "¡Todo claro! 👍")
+    assert r["respuesta"] == tutor.TODO_CLARO and r["resuelta"] is True and r["cierre"] is False
+    assert hablar(cliente, "Tengo una duda 🙋")["respuesta"] == tutor.QUE_DUDA
+    assert len(falso.llamadas) == antes  # sin gastar en Claude
+    # "No me quedó claro" no es "todo claro": va a Claude a explicarle.
+    hablar(cliente, "no me quedó claro por qué son 6 grupos")
+    assert len(falso.llamadas) == antes + 1
+
+
+def test_despues_de_resolver_explica_dudas_con_su_resultado(cliente, claude):
+    registrar(cliente)
+    claude()
+    hablar(cliente, "es 42")
+    falso = claude(texto="Porque 6 × 7 es juntar 6 grupos de 7, y eso da 42. ¿Con eso te quedó más claro?")
+    r = hablar(cliente, "¿por qué se multiplica?")
+    assert "TERMINADO" in falso.llamadas[-1]["system"][1]["text"]
+    assert r["respuesta"] == "Porque 6 × 7 es juntar 6 grupos de 7, y eso da 42. ¿Con eso te quedó más claro?"
+    assert r["origen"] == "claude" and r["resuelta"] is True
+
+
+def test_cuenta_del_chat_resuelta_puede_explicar_su_resultado(cliente, claude):
+    registrar(cliente)
+    claude()
+    historial = [{"de": "yo", "texto": "quiero resolver 47 + 36"}, {"de": "kiko", "texto": "¿Cuánto es 7 + 6?"},
+                 {"de": "yo", "texto": "13, entonces es 83"}, {"de": "kiko", "texto": "¡Lo lograste!"}]
+    falso = claude(texto="Llevas 1 porque 7 + 6 son 13: 1 decena y 3 unidades. Por eso 47 + 36 = 83.")
+    r = cliente.post("/api/tutor", json={"mensaje": "¿por qué llevo 1?", "historial": historial}).json()
+    assert "TERMINADO" in falso.llamadas[-1]["system"][1]["text"] and "47 + 36 = 83" in falso.llamadas[-1]["system"][1]["text"]
+    assert r["origen"] == "claude" and "83" in r["respuesta"]
+
+
+def test_respuesta_de_dudas():
+    assert tutor._respuesta_de_dudas("sí, todo claro") == tutor.TODO_CLARO
+    assert tutor._respuesta_de_dudas("ya entendí, gracias") == tutor.TODO_CLARO
+    assert tutor._respuesta_de_dudas("no entendí todo") is None
+    assert tutor._respuesta_de_dudas("tengo una duda") == tutor.QUE_DUDA
+    assert tutor._respuesta_de_dudas("tengo una duda: por qué llevo 1") is None  # esa ya es la duda: va a Claude
 
 
 def test_sin_resolver_la_respuesta_dice_resuelta_falso(cliente, claude):

@@ -22,7 +22,7 @@ from .tutor import _cliente_claude, limite
 
 log = logging.getLogger("selva.lector")
 
-MAX_BYTES = 600 * 1024   # la app manda menos de 300 KB; esto es margen
+MAX_BYTES = 600 * 1024   # la app manda menos de 300 KB (una página de tarea, menos de 500 KB); esto es margen
 TIPOS = {"image/jpeg", "image/png", "image/webp"}
 _DATA_URL = re.compile(r"^data:(image/[a-z]+);base64,([A-Za-z0-9+/=\s]+)$")
 
@@ -113,38 +113,113 @@ def leer(alumno_id: int, foto: str) -> dict:
     if not limite.permitir(alumno_id):
         log.info("lector: el alumno %s llegó a su límite de mensajes; que escriba la operación a mano", alumno_id)
         return nada
-    try:
-        r = _cliente_claude().messages.create(
-            model=config.LECTOR_MODELO,
-            max_tokens=1024,
-            output_config={"effort": "low", "format": {"type": "json_schema", "schema": ESQUEMA}},
-            system=SISTEMA,
-            messages=[{"role": "user", "content": [
-                {"type": "image", "source": {"type": "base64", "media_type": tipo, "data": datos}},
-                {"type": "text", "text": "Transcribe la operación de esta foto."},
-            ]}],
-        )
-    except anthropic.APIConnectionError:
-        log.warning("lector: sin conexión con Claude")
-        return nada
-    except anthropic.NotFoundError:
-        log.error("lector: el modelo %r no existe. Revisa LECTOR_MODELO en backend/.env (p. ej. claude-haiku-5-5)", config.LECTOR_MODELO)
-        return nada
-    except anthropic.RateLimitError:
-        log.warning("lector: Claude limitó la cuenta (429)")
-        return nada
-    except anthropic.APIStatusError as e:
-        log.warning("lector: Claude respondió %s (request %s)", e.status_code, e.request_id)
-        return nada
-    if r.stop_reason != "end_turn":
-        log.info("lector: Claude no terminó la lectura (%s)", r.stop_reason)
-        return nada
-    try:
-        datos_leidos = json.loads("".join(b.text for b in r.content if b.type == "text"))
-    except ValueError:
-        log.info("lector: Claude no regresó JSON válido")
+    datos_leidos = _pedir_a_claude(tipo, datos, SISTEMA, ESQUEMA, "Transcribe la operación de esta foto.")
+    if datos_leidos is None:
         return nada
     lectura, otro = _limpiar(datos_leidos)
     if lectura is None and otro is None:
         log.info("lector: no encontré un ejercicio en la foto")
     return {"lectura": lectura, "otro": otro, "origen": "claude"}
+
+
+def _pedir_a_claude(tipo: str, datos: str, sistema: str, esquema: dict, pedido: str, max_tokens: int = 1024) -> dict | None:
+    """Manda la foto a Claude y regresa el JSON que leyó, o None si algo falló (la app sigue sin IA)."""
+    try:
+        r = _cliente_claude().messages.create(
+            model=config.LECTOR_MODELO,
+            max_tokens=max_tokens,
+            output_config={"effort": "low", "format": {"type": "json_schema", "schema": esquema}},
+            system=sistema,
+            messages=[{"role": "user", "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": tipo, "data": datos}},
+                {"type": "text", "text": pedido},
+            ]}],
+        )
+    except anthropic.APIConnectionError:
+        log.warning("lector: sin conexión con Claude")
+        return None
+    except anthropic.NotFoundError:
+        log.error("lector: el modelo %r no existe. Revisa LECTOR_MODELO en backend/.env (p. ej. claude-haiku-5-5)", config.LECTOR_MODELO)
+        return None
+    except anthropic.RateLimitError:
+        log.warning("lector: Claude limitó la cuenta (429)")
+        return None
+    except anthropic.APIStatusError as e:
+        log.warning("lector: Claude respondió %s (request %s)", e.status_code, e.request_id)
+        return None
+    if r.stop_reason != "end_turn":
+        log.info("lector: Claude no terminó la lectura (%s)", r.stop_reason)
+        return None
+    try:
+        return json.loads("".join(b.text for b in r.content if b.type == "text"))
+    except ValueError:
+        log.info("lector: Claude no regresó JSON válido")
+        return None
+
+
+# ---------------- Página completa (tareas del aula) ----------------
+
+MAX_EN_PAGINA = 30
+
+SISTEMA_PAGINA = """Lees fotos de una PÁGINA del cuaderno de alumnos de primaria y secundaria, con varios ejercicios de su tarea.
+
+Tu único trabajo es TRANSCRIBIR, exactamente como están, TODAS las operaciones de dos números que veas. Nunca las
+resuelvas ni las corrijas.
+
+- Cada operación: `a op b = c`. Los números pueden ser naturales ("17") o fracciones ("3/4"; un número sobre otro
+  con una raya es una fracción). Pueden estar en renglón o en columna (uno abajo del otro, con la raya y el resultado).
+- `op`: suma (+), resta (−), multiplicación (×) o división (÷). Una "x" o un punto entre números es ×; un guion es −;
+  "÷", ":" o la "casita" de la división es ÷ (en la casita, el de adentro es `a` y el de afuera es `b`).
+- `c`: el resultado que escribió el alumno, AUNQUE ESTÉ MAL. Si no escribió resultado, `c` en null.
+- En una división con residuo (lo que sobra), ponlo en `residuo`.
+- Si un problema con texto está resuelto con una operación, transcribe la operación.
+- Ignora lo que esté tachado, las cuentas auxiliares chiquitas (como las llevadas) y lo que no sea una operación.
+- Ponlas en el orden en que aparecen (de arriba abajo). Si un número es difícil de leer, da tu mejor lectura y marca
+  `dudoso` en true.
+- Si no hay ninguna operación o la foto no es de un cuaderno, regresa la lista vacía.
+- Nunca copies nombres ni otros datos personales que aparezcan en la foto."""
+
+_OPERACION_PAGINA = {
+    "type": "object",
+    "properties": {
+        "a": {"type": "string"},
+        "op": {"type": "string", "enum": ["×", "+", "−", "÷"]},
+        "b": {"type": "string"},
+        "c": _NUMERO_O_NULL,
+        "residuo": _NUMERO_O_NULL,
+        "dudoso": {"type": "boolean"},
+    },
+    "required": ["a", "op", "b", "c", "residuo", "dudoso"],
+    "additionalProperties": False,
+}
+ESQUEMA_PAGINA = {
+    "type": "object",
+    "properties": {"operaciones": {"type": "array", "items": _OPERACION_PAGINA}},
+    "required": ["operaciones"],
+    "additionalProperties": False,
+}
+
+
+def leer_pagina(alumno_id: int, foto: str) -> dict:
+    """Todas las operaciones de una página del cuaderno.
+
+    Contrato: {"operaciones": [{a, op, b, c, residuo, dudoso}], "origen": "claude" | "sin_ia"}. Solo las que el
+    escáner sabe revisar (las demás se descartan); `c` vacío si no escribió resultado. Cuenta como un mensaje del límite.
+    """
+    tipo, datos = decodificar(foto)
+    nada = {"operaciones": [], "origen": "sin_ia"}
+    if not config.TUTOR_ACTIVO:
+        return nada
+    if not limite.permitir(alumno_id):
+        log.info("lector: el alumno %s llegó a su límite de mensajes; que escanee cada problema", alumno_id)
+        return nada
+    leido = _pedir_a_claude(tipo, datos, SISTEMA_PAGINA, ESQUEMA_PAGINA,
+                            "Transcribe todas las operaciones de esta página.", max_tokens=4096)
+    if leido is None:
+        return nada
+    salida = []
+    for d in (leido.get("operaciones") or [])[:MAX_EN_PAGINA]:
+        op = operaciones.validar({k: d.get(k) for k in ("a", "op", "b", "c", "residuo")})
+        if op:
+            salida.append({**op, "dudoso": bool(d.get("dudoso"))})
+    return {"operaciones": salida, "origen": "claude"}

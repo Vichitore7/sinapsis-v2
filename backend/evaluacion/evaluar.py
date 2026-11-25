@@ -72,7 +72,7 @@ def revisar_turnos(turnos: list[dict], escenario: dict) -> list[str]:
 # ---------------- Juez (opcional) ----------------
 
 RUBRICA = """Eres una maestra experta en didáctica de las matemáticas para primaria y secundaria en México.
-Evalúa la conversación entre un alumno y Kiko, un tutor que NUNCA debe dar el resultado del ejercicio del alumno
+Evalúa la conversación entre un alumno y Mix, un tutor que NUNCA debe dar el resultado del ejercicio del alumno
 (sí puede resolver un ejemplo parecido con otros números o los pasos hasta el penúltimo).
 Califica de 1 (muy mal) a 5 (excelente):
 - guia_sin_dar: guía con preguntas y pistas sin revelar el resultado.
@@ -180,7 +180,7 @@ def escribir_reporte(resultados: list[dict], config, args) -> Path:
     for r in resultados:
         lineas.append(f"### {r['escenario']['id']} ({r['escenario']['grado']})")
         for t in r["turnos"]:
-            lineas.append(f"- **Alumno:** {t['mensaje']}\n- **Kiko** ({t['origen']}, {t['segundos']} s): {t['respuesta']}"
+            lineas.append(f"- **Alumno:** {t['mensaje']}\n- **Mix** ({t['origen']}, {t['segundos']} s): {t['respuesta']}"
                           + (f"\n  - _dibujo:_ `{json.dumps(t['dibujo'], ensure_ascii=False)}`" if t["dibujo"] else ""))
         lineas.append("")
     ruta = RESULTADOS / f"{nombre}.md"

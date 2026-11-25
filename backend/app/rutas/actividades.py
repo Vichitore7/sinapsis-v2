@@ -1,5 +1,5 @@
 """Actividades del aula (app/actividades.py): el profesor deja problemas y material; el alumno los resuelve en su
-cuaderno, los escanea (Kiko los revisa) y entrega. El profesor ve qué domina, comprende o se le dificulta a cada quien."""
+cuaderno, los escanea (Mix los revisa) y entrega. El profesor ve qué domina, comprende o se le dificulta a cada quien."""
 from __future__ import annotations
 
 from datetime import date
@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from .. import actividades as act
+from .. import actividades as act, lector
 from ..db import get_db
 from ..modelos import ahora, Usuario
 from ..seguridad import solo_alumno, solo_profesor, usuario_actual
@@ -162,7 +162,7 @@ def comprension_alumno(aula_id: int, alumno_id: int, profe: Usuario = Depends(so
 @router.post("/actividades/{actividad_id}/problemas/{problema_id}/escaneo")
 def escaneo(actividad_id: int, problema_id: str, datos: Operacion, alumno: Usuario = Depends(solo_alumno),
             db: Session = Depends(get_db)) -> dict:
-    """Lo que escaneó de su cuaderno para este problema: Kiko lo revisa (sin decirle el resultado)."""
+    """Lo que escaneó de su cuaderno para este problema: Mix lo revisa (sin decirle el resultado)."""
     a = _actividad_del_alumno(db, actividad_id, alumno)
     try:
         salida = act.registrar_escaneo(db, alumno.id, a, problema_id, datos.normalizada())
@@ -170,6 +170,27 @@ def escaneo(actividad_id: int, problema_id: str, datos: Operacion, alumno: Usuar
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(e)) from e
     db.commit()
     return salida
+
+
+class PaginaEntrada(BaseModel):
+    # dataURL de la app (JPEG de menos de 500 KB). Nunca se guarda: se lee y se descarta.
+    foto: str = Field(min_length=30, max_length=900_000)
+
+
+@router.post("/actividades/{actividad_id}/leer-pagina")
+def leer_pagina(actividad_id: int, datos: PaginaEntrada, alumno: Usuario = Depends(solo_alumno),
+                db: Session = Depends(get_db)) -> dict:
+    """Foto de una página completa del cuaderno (como en Classroom): Mix lee todas sus operaciones y las acomoda en
+    los problemas de la tarea. No registra nada todavía: el alumno confirma y luego se escanea cada una.
+
+    Regresa {encontrados: [{problema_id, numero, texto, lectura}], otras: [texto], origen}.
+    """
+    a = _actividad_del_alumno(db, actividad_id, alumno)
+    try:
+        leido = lector.leer_pagina(alumno.id, datos.foto)
+    except lector.FotoInvalida as e:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(e)) from e
+    return {**act.emparejar_pagina(a, leido["operaciones"]), "origen": leido["origen"]}
 
 
 @router.post("/actividades/{actividad_id}/problemas/{problema_id}/resuelto-en-chat")
@@ -189,7 +210,7 @@ def entregar(actividad_id: int, alumno: Usuario = Depends(solo_alumno), db: Sess
     a = _actividad_del_alumno(db, actividad_id, alumno)
     av = db.get(act.AvanceActividad, (alumno.id, a.id))
     if not act.puede_entregar(a, av):
-        raise HTTPException(status.HTTP_409_CONFLICT, "Antes de entregar, escanea cada problema para que Kiko lo revise.")
+        raise HTTPException(status.HTTP_409_CONFLICT, "Antes de entregar, escanea cada problema para que Mix lo revise.")
     av.entregada = av.entregada or ahora()
     db.commit()
     return act.para_alumno(a, av)

@@ -118,7 +118,7 @@ def test_manda_el_manual_y_el_material_del_grado(cliente, claude):
     falso = claude()
     cliente.post("/api/tutor", json={"operacion": OP_MAL, "mensaje": "ayuda", "grado": "Primaria • 2°"})
     estable, datos = falso.llamadas[0]["system"]
-    assert "Manual de Kiko" in estable["text"] and estable["cache_control"] == {"type": "ephemeral"}
+    assert "Manual de Mix" in estable["text"] and estable["cache_control"] == {"type": "ephemeral"}
     assert "primaria-1-2.md" in estable["text"] and "progresion-por-tema.md" in estable["text"]
     assert "Ideas de mundo" not in estable["text"]  # notas del equipo, no para el alumno
     assert "2.º de primaria" in datos["text"] and "SECRETO" in datos["text"]
@@ -140,7 +140,7 @@ def test_responde_claude(cliente, claude):
     falso = claude(texto="¿Cuántas veces se repite el 7? 🦎")
     historial = [{"de": "kiko", "texto": "¡Hola explorador!"}, {"de": "yo", "texto": "hola"}, {"de": "kiko", "texto": "Mira tu operación"}]
     r = hablar(cliente, historial=historial).json()
-    assert r == {"respuesta": "¿Cuántas veces se repite el 7?", "origen": "claude", "dibujo": None, "resuelta": False}  # sin 🦎
+    assert r == {"respuesta": "¿Cuántas veces se repite el 7?", "origen": "claude", "dibujo": None, "resuelta": False, "cierre": False}  # sin 🦎
     kw = falso.llamadas[0]
     assert kw["model"] == config.TUTOR_MODELO and kw["output_config"]["effort"] == config.TUTOR_ESFUERZO
     assert kw["output_config"]["format"]["type"] == "json_schema"
@@ -216,7 +216,7 @@ def test_filtro_de_numeros():
 def test_dibujo_valido_llega_al_alumno(cliente, claude):
     registrar(cliente)
     claude(texto="Mira estas 2 bolsitas de 7: ¿cuántos dulces hay?", dibujo={"tipo": "grupos", "objeto": "flor", "grupos": [7, 7]})
-    r = hablar(cliente, operacion=None, mensaje="¿qué es multiplicar?").json()  # sin operación, Kiko dibuja libre
+    r = hablar(cliente, operacion=None, mensaje="¿qué es multiplicar?").json()  # sin operación, Mix dibuja libre
     assert r["origen"] == "claude" and r["dibujo"] == {"tipo": "grupos", "objeto": "flor", "grupos": [7, 7]}
     # Con una operación escaneada, los dibujos los pone solo la app (el del modelo se ignora).
     r = hablar(cliente).json()
@@ -250,7 +250,7 @@ def test_dibujo_fuera_de_limites_se_descarta(cliente, claude, malo):
 def test_json_invalido_usa_reglas(cliente, claude):
     registrar(cliente)
     claude(crudo="esto no es json")
-    assert hablar(cliente).json() == {"respuesta": tutor.por_reglas(OP_MAL, "no le entiendo"), "origen": "reglas", "dibujo": None, "resuelta": False}
+    assert hablar(cliente).json() == {"respuesta": tutor.por_reglas(OP_MAL, "no le entiendo"), "origen": "reglas", "dibujo": None, "resuelta": False, "cierre": False}
 
 
 def test_conversacion_larga_no_se_rechaza(cliente, claude):

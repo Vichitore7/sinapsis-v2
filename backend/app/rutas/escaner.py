@@ -1,4 +1,4 @@
-"""Escáner de cuaderno: Kiko lee la foto de una operación."""
+"""Escáner de cuaderno: Mix lee la foto de una operación."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status

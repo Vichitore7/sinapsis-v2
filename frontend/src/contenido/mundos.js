@@ -12,7 +12,7 @@ export const STICKERS = {
   sombrero: { nombre: 'Sombrero del río' },
 };
 
-// Stickers especiales (temáticos): se ven y se le ponen a Kiko en Perfil > Stickers.
+// Stickers especiales (temáticos): se ven y se le ponen a Mix en Perfil > Stickers.
 // Los de traje típico son el regalo de inicio de sesión (al crear la cuenta).
 export const TRAJES = {
   trajinero: { nombre: 'Traje de trajinero', origen: 'Inicio de sesión', detalle: 'Sombrero de palma, camisa de manta, faja tejida y garrocha de bambú.' },

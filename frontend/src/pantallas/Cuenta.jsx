@@ -125,8 +125,8 @@ export default function Cuenta() {
   return (
     <div className="portada portada-simple">
       <div className="portada-kiko">
-        <span className="kiko-cabeza"><Ajolote estado="feliz" tamano={150} cabeza etiqueta="Kiko, el ajolote de Selva Matemática" /></span>
-        <h1 className="logo-texto grande">Selva<small>Matemática</small></h1>
+        <span className="kiko-cabeza"><Ajolote estado="feliz" tamano={150} cabeza etiqueta="Mix, el ajolote" /></span>
+        <h1 className="logo-texto grande">Mix</h1>
       </div>
 
       <section className="tarjeta tarjeta-entrada">

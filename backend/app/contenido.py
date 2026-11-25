@@ -31,7 +31,7 @@ UNIDADES = [
                 "ejemplo": {"a": 2, "b": 5},
                 "entrada": "¡El mercado abre sus puestos! Aquí las cuentas crecen, explorador.",
                 "retos": [
-                    ("m2-r1", "Misión en el mercado", "Kiko quiere comprar 3 mangos. Cada uno cuesta $12. ¿Cuánto paga en total?", 3, 12, "mangos", 1),
+                    ("m2-r1", "Misión en el mercado", "Mix quiere comprar 3 mangos. Cada uno cuesta $12. ¿Cuánto paga en total?", 3, 12, "mangos", 1),
                     ("m2-r2", "El puesto de aguacates", "Sol compra 4 kilos de aguacate. El kilo cuesta $15. ¿Cuánto paga?", 4, 15, "kilos", 2),
                     ("m2-r3", "Pasajes de regreso", "Una familia de 6 toma el camión. Cada pasaje cuesta $9. ¿Cuánto pagan?", 6, 9, "pasajes", 2),
                     ("m2-r4", "La receta de la abuela", "La abuela compra 3 paquetes de tortillas de $22. ¿Cuánto gasta?", 3, 22, "paquetes", 3),

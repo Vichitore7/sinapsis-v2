@@ -1,7 +1,7 @@
 // Mi Aula (alumno), tipo Classroom: el Aula es para ESTUDIAR (el Mapa es para divertirse aprendiendo).
 // #/aula       → mis clases + unirme con código
 // #/aula/:id   → una clase: actividades del profesor, y módulos del año con mi avance y el promedio del grupo
-// #/aula/:id.:actividad → una actividad (problemas para resolver en el cuaderno y escanear con Kiko)
+// #/aula/:id.:actividad → una actividad (problemas para resolver en el cuaderno y escanear con Mix)
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { useJuego } from '../estado/store.jsx';

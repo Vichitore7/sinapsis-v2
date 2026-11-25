@@ -1,6 +1,6 @@
 """Escenarios de la evaluación pedagógica del tutor (fase 4).
 
-Cada escenario es una conversación de varios mensajes de un alumno con Kiko. Los temas salen de
+Cada escenario es una conversación de varios mensajes de un alumno con Mix. Los temas salen de
 docs/material-de-estudio/ (1.º de primaria a 3.º de secundaria). Para agregar uno, copia un diccionario y cámbialo.
 
 Campos:
@@ -8,7 +8,7 @@ Campos:
 - operacion (lo que confirmó en el escáner) o ejercicio (texto que confirmó en el chat) o ninguno (dudas de tema).
 - antes: operaciones que el alumno ya resolvió en el escáner (llenan su memoria de aprendizaje).
 - mensajes: lo que escribe el alumno, en orden.
-- prohibido: textos que Kiko NUNCA debe decir (además del resultado, que se revisa solo).
+- prohibido: textos que Mix NUNCA debe decir (además del resultado, que se revisa solo).
 - espera: comportamientos que el juez debe ver (texto libre).
 """
 

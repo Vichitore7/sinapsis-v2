@@ -1,4 +1,4 @@
-"""Escalera de ayuda (fase 2, versión 2 del 24 nov): el BACKEND decide qué hace Kiko en cada mensaje.
+"""Escalera de ayuda (fase 2, versión 2 del 24 nov): el BACKEND decide qué hace Mix en cada mensaje.
 
 Versión 2 (después de probarla con alumnos de prueba): ya no se cambia de estrategia en cada escalón; se trabaja
 SIEMPRE sobre el ejercicio del alumno, partido en pasitos chiquitos (app/pasitos.py), una idea por mensaje.
@@ -211,7 +211,7 @@ def clasificar(mensaje: str, pasito: pasitos.Pasito) -> str:
     if "?" in texto and _PREGUNTA.search(texto):
         return "pregunta"  # "¿porque pasó a 4/6?" es una duda, aunque traiga números
     if pasito.acierta(quitar_negados(texto)):
-        # En un pasito intermedio, "¿70?" o "creo que 70" cuentan como acierto: Kiko se lo confirma y avanza (insistir
+        # En un pasito intermedio, "¿70?" o "creo que 70" cuentan como acierto: Mix se lo confirma y avanza (insistir
         # desespera al niño). Solo el resultado final necesita que lo afirme (ver tutor._anotar_si_lo_resolvio).
         return "pregunta" if (pasito.final and con_duda(texto)) else "acierto"
     if _PREGUNTA.search(texto):
@@ -267,7 +267,7 @@ ACTIVA_MINUTOS = 60
 def activa(db: Session, alumno_id: int, historial: list[dict]) -> dict | None:
     """El ejercicio que el alumno está trabajando AHORA (escalera abierta, de esta misma conversación).
 
-    Así Kiko sigue con él hasta que lo resuelve, aunque en el chat aparezcan otras cuentas (las sub-preguntas de
+    Así Mix sigue con él hasta que lo resuelve, aunque en el chat aparezcan otras cuentas (las sub-preguntas de
     los pasitos, o lo que el alumno escribe al explicar). Solo cuenta si sus números aparecen en el historial
     (si el alumno reinició el chat, no se retoma).
     """
@@ -388,7 +388,7 @@ def resuelta(db: Session, alumno_id: int, op: dict) -> bool:
 
 
 def siguiente_paso(db: Session, alumno_id: int, op: dict, mensaje: str, grado: str | None = None) -> dict:
-    """Decide qué hace Kiko en este mensaje. Regresa {escalon, instruccion, dibujo, texto_fijo}. No hace commit.
+    """Decide qué hace Mix en este mensaje. Regresa {escalon, instruccion, dibujo, texto_fijo}. No hace commit.
 
     `escalon` (columna de la tabla): 1 = pista del error; 2 en adelante = pasito número escalon − 2.
     """

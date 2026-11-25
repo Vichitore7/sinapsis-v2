@@ -63,7 +63,7 @@ def responder_examen(leccion_id: str, pregunta_id: str, datos: esquemas.Respuest
 
 @router.post("/examenes/{leccion_id}/terminar")
 def terminar_examen(leccion_id: str, u: Usuario = Depends(solo_alumno), db: Session = Depends(get_db)) -> dict:
-    """Certificado + 2 trajes de subculturas. El mundo siguiente se abre al vestir a Kiko con uno de ellos."""
+    """Certificado + 2 trajes de subculturas. El mundo siguiente se abre al vestir a Mix con uno de ellos."""
     bloquear_escritura(db)
     return servicio.terminar_examen(db, u, leccion_id)
 

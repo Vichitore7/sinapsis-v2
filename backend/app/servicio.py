@@ -433,7 +433,7 @@ def responder_examen(db: Session, alumno: Usuario, leccion_id: str, pregunta_id:
 def terminar_examen(db: Session, alumno: Usuario, leccion_id: str) -> dict:
     """Cierra el examen: certificado, estrellas, sticker del mundo y 2 trajes de subculturas (uno de cada estilo).
 
-    No hay calificación mínima: equivocarse no se castiga. El mundo siguiente se abre cuando Kiko se pone uno de los trajes.
+    No hay calificación mínima: equivocarse no se castiga. El mundo siguiente se abre cuando Mix se pone uno de los trajes.
     """
     preguntas = _preguntas_examen(leccion_id)
     est, m = estado_de(db, alumno)

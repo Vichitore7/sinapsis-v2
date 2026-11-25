@@ -1,4 +1,4 @@
-# Imágenes de Selva Matemática
+# Imágenes de Mix
 
 Aquí se guardan **todas las imágenes PNG** del proyecto (stickers, ilustraciones, capturas para presentaciones…), listas para usarse fuera de la app: presentaciones, redes, pósters, documentos.
 
@@ -9,8 +9,8 @@ Una carpeta por tema. Dentro de cada una, los PNG van sueltos y, si existen, sus
 ```
 docs/imagenes/
 ├── README.md
-├── stickers/                 Kiko el ajolote como sticker (fondo transparente, 512 px)
-│   ├── kiko.png                      Kiko sin traje
+├── stickers/                 Mix el ajolote como sticker (fondo transparente, 512 px)
+│   ├── kiko.png                      Mix sin traje
 │   ├── kiko-cabeza.png               Solo la cabecita
 │   ├── kiko-trajinero.png            Traje de trajinero de Xochimilco
 │   ├── kiko-trajinero-cabeza.png
@@ -75,12 +75,12 @@ docs/imagenes/
 
 ## Volver a generar los stickers
 
-Los stickers salen del mismo dibujo de la app: Kiko de `frontend/src/componentes/Ajolote.jsx`, el canal de `frontend/src/componentes/Canal.jsx`, el Centro de `frontend/src/componentes/CDMX.jsx` y la FES de `frontend/src/componentes/FES.jsx`. Por eso un elemento que se repite (una trajinera, un pez, una flor) siempre es el mismo dibujo, en la app y aquí. Si cambia un dibujo o se agrega uno nuevo:
+Los stickers salen del mismo dibujo de la app: Mix de `frontend/src/componentes/Ajolote.jsx`, el canal de `frontend/src/componentes/Canal.jsx`, el Centro de `frontend/src/componentes/CDMX.jsx` y la FES de `frontend/src/componentes/FES.jsx`. Por eso un elemento que se repite (una trajinera, un pez, una flor) siempre es el mismo dibujo, en la app y aquí. Si cambia un dibujo o se agrega uno nuevo:
 
 ```powershell
 cd frontend
 npm run stickers            # todo
-npm run stickers -- kiko    # solo Kiko
+npm run stickers -- kiko    # solo Mix
 npm run stickers -- canal   # solo el canal
 npm run stickers -- cdmx    # solo el Centro
 npm run stickers -- fes     # solo la FES

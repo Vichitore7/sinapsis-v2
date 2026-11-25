@@ -9,6 +9,7 @@ import Ajolote from '../componentes/Ajolote.jsx';
 import { leerArchivo, recortarYComprimir } from '../logica/imagen.js';
 import { leerFoto, pistasEscaner } from '../logica/lector.js';
 import { BannerActividad } from '../componentes/Actividades.jsx';
+import { claveTraspaso } from './EscanerTarea.jsx';
 import { conDuda, diagnosticarOperacion, explicacionResuelta, senderoResuelto, quitarNegados, resolvioEnChat, esFraccion, pistasGenerales, tipoDe, validar, yaLoDijo } from '../logica/operaciones.js';
 import { ejemploParecido } from '../logica/pistas.js';
 import { hoy } from '../logica/juego.js';
@@ -59,7 +60,7 @@ function Captura({ onFoto, pendientes, enLinea, onLeerPendiente, historial }) {
           <span className="visor-op">3 × 6 = <b>?</b></span>
           <span className="cuerpo-sm texto-suave">Así se ve una buena captura</span>
         </div>
-        <span className="visor-listo"><I n="checkCirculo" tamano={16} className="texto-selva" /> Listo para resolver con Kiko</span>
+        <span className="visor-listo"><I n="checkCirculo" tamano={16} className="texto-selva" /> Listo para resolver con Mix</span>
       </div>
       <div className="rejilla-2 apretada">
         <button className="btn btn-verde btn-grande" onClick={() => camara.current.click()}><I n="camara" tamano={24} /> Tomar foto ahora</button>
@@ -287,14 +288,14 @@ function pistasDe(op, d) {
 function Diagnostico({ operacion, pista, onOtra, resuelta = false }) {
   const diag = diagnosticarOperacion(operacion);
   if (!diag.correcto && resuelta) {
-    // La resolvió platicando con Kiko: el sendero se endereza y queda como terminado.
+    // La resolvió platicando con Mix: el sendero se endereza y queda como terminado.
     return (
       <div className="pila">
         <div className="centro"><Ajolote estado="celebrando" tamano={110} /></div>
         <SendaPasos pasos={senderoResuelto(operacion)} numeroPista={0} />
         <div className="sm-acierto" role="status">
           <h2 className="titulo" style={{ margin: '0 0 var(--espacio-2)' }}>✓ ¡Lo resolviste!</h2>
-          <p className="cuerpo" style={{ margin: '0 0 var(--espacio-3)' }}>Encontraste el resultado pensando con Kiko. Corrígelo en tu cuaderno cuando quieras.</p>
+          <p className="cuerpo" style={{ margin: '0 0 var(--espacio-3)' }}>Encontraste el resultado pensando con Mix. Corrígelo en tu cuaderno cuando quieras.</p>
           <button className="sm-btn" onClick={onOtra}>Escanear otro ejercicio</button>
         </div>
       </div>
@@ -317,7 +318,7 @@ function Diagnostico({ operacion, pista, onOtra, resuelta = false }) {
   return (
     <div className="pila">
       <SendaPasos pasos={diag.pasos} pregunta={pistas[Math.min(pista, 3) - 1]} numeroPista={Math.min(pista, 3)} />
-      <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Platica con Kiko en el chat para pedir más pistas.</p>
+      <p className="cuerpo-sm texto-suave" style={{ margin: 0 }}>Platica con Mix en el chat para pedir más pistas.</p>
       <button className="sm-btn sm-btn-suave" onClick={onOtra}>Corregí mi cuaderno: escanear otra vez</button>
     </div>
   );
@@ -339,7 +340,12 @@ function gradoDe(usuario) {
 const VISITA = (globalThis.crypto?.randomUUID?.() ?? `${Date.now()}${Math.random().toString(36).slice(2)}`).replace(/[^\w-]/g, '').slice(0, 36);
 let contadorTurnos = 0;
 
-function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacion, pistasActivas = hayOperacion, onReiniciar, onConfirmarOtro }) {
+// Pregunta al resolver (la misma que pone el backend en PREGUNTA_DUDAS) y sus dos botones.
+const PREGUNTA_DUDAS = '¿Te quedó todo claro o tienes alguna duda de lo que vimos? 💬';
+const TODO_CLARO = '¡Todo claro! 👍';
+const TENGO_DUDA = 'Tengo una duda 🙋';
+
+function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacion, pistasActivas = hayOperacion, onReiniciar, onConfirmarOtro, onDudas }) {
   const [texto, setTexto] = useState('');
   const fin = useRef(null);
   const camara = useRef(null);
@@ -350,12 +356,12 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
     if (f) onFoto(f);
   };
   // El chat tiene altura fija: al llegar un mensaje, se baja dentro del chat (sin mover la página).
-  // Depende de `mensajes` y no de su largo: "Kiko está pensando" se reemplaza por la respuesta sin cambiar el largo.
+  // Depende de `mensajes` y no de su largo: "Mix está pensando" se reemplaza por la respuesta sin cambiar el largo.
   useEffect(() => {
     const lista = fin.current?.parentElement;
     if (lista) lista.scrollTo({ top: lista.scrollHeight, behavior: 'smooth' });
   }, [mensajes]);
-  // Un mensaje a la vez: mientras Kiko piensa (o lee una foto) no se manda otro. Así las respuestas no llegan
+  // Un mensaje a la vez: mientras Mix piensa (o lee una foto) no se manda otro. Así las respuestas no llegan
   // desordenadas y la escalera de pistas del servidor no avanza dos veces.
   const ocupado = mensajes.some((m) => m.pensando);
   const enviar = (e) => {
@@ -365,11 +371,11 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
     setTexto('');
   };
   return (
-    <section className="chat-tutor" aria-label="Chat con Kiko">
+    <section className="chat-tutor" aria-label="Chat con Mix">
       <header className="chat-cabecera">
         <span className="chat-avatar"><Ajolote estado="feliz" tamano={46} /><span className="punto punto-verde" /></span>
         <div style={{ flex: 1 }}>
-          <b className="t-md">Kiko el Ajolote <span className="chip chip-verde-fuerte">Tutor</span></b>
+          <b className="t-md">Mix el Ajolote <span className="chip chip-verde-fuerte">Tutor</span></b>
           <small>¡Te ayudo a pensar por ti mismo!</small>
         </div>
         <button className="boton-redondo translucido" onClick={onReiniciar} disabled={ocupado} aria-label="Reiniciar conversación"><I n="recargar" /></button>
@@ -380,7 +386,7 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
             <div key={i} className="msg msg-kiko">
               <span className="msg-icono"><I n="cerebro" tamano={18} /></span>
               <div>
-                <span className="msg-autor">Kiko Pensador{m.premio && <span className="texto-selva"> ★ {m.premio}</span>}</span>
+                <span className="msg-autor">Mix Pensador{m.premio && <span className="texto-selva"> ★ {m.premio}</span>}</span>
                 <div className="msg-globo">
                   {m.op && <div className="msg-op">{m.op}</div>}
                   {m.texto}
@@ -391,6 +397,12 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
                       <button type="button" className="chip-sug" onClick={() => onConfirmarOtro(i, false)}>✏️ No</button>
                     </div>
                   )}
+                  {m.dudas && !m.respondido && (
+                    <div className="msg-botones">
+                      <button type="button" className="chip-sug" disabled={ocupado} onClick={() => onDudas(i, true)}>{TODO_CLARO}</button>
+                      <button type="button" className="chip-sug" disabled={ocupado} onClick={() => onDudas(i, false)}>{TENGO_DUDA}</button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -398,7 +410,7 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
             <div key={i} className="msg msg-yo">
               <span className="msg-autor">Tú</span>
               <div className={`msg-globo${m.foto ? ' msg-foto' : ''}`}>
-                {m.foto ? <img src={m.foto} alt="Foto que enviaste a Kiko" /> : m.texto}
+                {m.foto ? <img src={m.foto} alt="Foto que enviaste a Mix" /> : m.texto}
               </div>
             </div>
           )
@@ -410,11 +422,11 @@ function ChatTutor({ mensajes, onEnviar, onFoto, onPista, onEjemplo, hayOperacio
         <button className="chip-sug" onClick={onEjemplo} disabled={!hayOperacion}>🧩 Dibújalo con bloques</button>
       </div>
       <form className="chat-entrada" onSubmit={enviar}>
-        <button type="button" className="boton-redondo" onClick={() => camara.current.click()} disabled={ocupado} aria-label="Tomar foto para Kiko"><I n="camara" /></button>
-        <button type="button" className="boton-redondo" onClick={() => galeria.current.click()} disabled={ocupado} aria-label="Subir imagen para Kiko"><I n="galeria" /></button>
+        <button type="button" className="boton-redondo" onClick={() => camara.current.click()} disabled={ocupado} aria-label="Tomar foto para Mix"><I n="camara" /></button>
+        <button type="button" className="boton-redondo" onClick={() => galeria.current.click()} disabled={ocupado} aria-label="Subir imagen para Mix"><I n="galeria" /></button>
         <input ref={camara} type="file" accept="image/*" capture="environment" hidden onChange={elegirFoto} />
         <input ref={galeria} type="file" accept="image/*" hidden onChange={elegirFoto} />
-        <input className="entrada" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe tu deducción a Kiko…" aria-label="Mensaje para Kiko" maxLength={200} />
+        <input className="entrada" value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escribe tu deducción a Mix…" aria-label="Mensaje para Mix" maxLength={200} />
         <button className="btn btn-naranja btn-cuadrado" aria-label="Enviar" disabled={ocupado}><I n="enviar" /></button>
       </form>
     </section>
@@ -465,7 +477,7 @@ export default function Escaner({ retoId }) {
     setMensajes((xs) => xs.filter((m) => !m.pensando));
   };
   const registrar = (op) => api.registrarEscaneo(op).then(() => true, () => false);
-  // Modo actividad: el escaneo cuenta para el problema (y el servidor también lo registra para Kiko).
+  // Modo actividad: el escaneo cuenta para el problema (y el servidor también lo registra para Mix).
   const escanearParaActividad = (op) => api.escaneoActividad(ctxAct.actividad, ctxAct.problema, op).then((r) => {
     if (!r.coincide) {
       decir({ de: 'kiko', texto: `Ojo: esta no es la operación del problema (${r.problema}). Revisa tu foto o tu cuaderno y escanéalo otra vez. 🔍` });
@@ -544,13 +556,15 @@ export default function Escaner({ retoId }) {
     await leer(p.foto);
   };
 
-  const confirmar = (op) => {
+  // `yaRegistrada`: viene de la foto de la página completa (EscanerTarea), que ya la registró en su problema.
+  const confirmar = (op, yaRegistrada = false) => {
     setFoto(null); // La foto se borra apenas se confirma la lectura.
     setEjercicio(null);
     setOperacion(op);
     nuevoEjercicio(); // una respuesta pendiente de la cuenta anterior se descarta
-    // Memoria de aprendizaje en el servidor (así Kiko recuerda entre sesiones). Si falla, la app sigue igual.
-    registro.current = enLinea ? { op, ok: ctxAct ? escanearParaActividad(op) : registrar(op) } : null;
+    // Memoria de aprendizaje en el servidor (así Mix recuerda entre sesiones). Si falla, la app sigue igual.
+    registro.current = yaRegistrada ? { op, ok: Promise.resolve(true) }
+      : enLinea ? { op, ok: ctxAct ? escanearParaActividad(op) : registrar(op) } : null;
     setPista(1);
     setResuelta(false); // intento nuevo, aunque sea la misma cuenta
     const d = diagnosticarOperacion(op);
@@ -570,7 +584,25 @@ export default function Escaner({ retoId }) {
     setPaso('diagnostico');
   };
 
+  // Viene de "Revisar con Mix" en la tarea completa: abre directo con la operación de su página (sin otra foto).
+  useEffect(() => {
+    if (!ctxAct) return;
+    const clave = claveTraspaso(ctxAct.aula, ctxAct.actividad, ctxAct.problema);
+    let op = null;
+    try {
+      op = validar(JSON.parse(sessionStorage.getItem(clave) || 'null') || {});
+      sessionStorage.removeItem(clave);
+    } catch { op = null; }
+    if (op && op.c !== '') confirmar(op, true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const YA_RESUELTA = '¡Ese ejercicio ya lo resolviste! 🌟 Cuéntame cómo lo pensaste, o escanea otro para seguir practicando.';
+
+  // Al resolver, Mix pregunta si quedó claro: "¡Todo claro!" cierra y "Tengo una duda" sigue la plática.
+  const responderDudas = (indice, claro) => {
+    setMensajes((xs) => xs.map((m, i) => (i === indice ? { ...m, respondido: true } : m)));
+    alEscribir(claro ? TODO_CLARO : TENGO_DUDA);
+  };
 
   const otraPista = () => {
     if (!operacion) return;
@@ -613,7 +645,7 @@ export default function Escaner({ retoId }) {
     decir({ de: 'kiko', op: `${e.suma} = ${e.total}`, texto: `Mira este ejemplo parecido: ${e.a} bloques de ${e.b} son ${e.total}. Usa la misma idea con tu operación en el cuaderno.` });
   };
 
-  // Foto enviada desde el chat: se comprime, se muestra como mensaje y Kiko responde.
+  // Foto enviada desde el chat: se comprime, se muestra como mensaje y Mix responde.
   // La foto vive solo en la conversación abierta: no se guarda en el dispositivo ni en el servidor.
   const alFoto = async (archivo) => {
     let comprimida;
@@ -650,22 +682,23 @@ export default function Escaner({ retoId }) {
     columnaEscaner.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  // Kiko contesta con el tutor de IA del backend (Claude). Si no hay internet o el servidor falla,
+  // Mix contesta con el tutor de IA del backend (Claude). Si no hay internet o el servidor falla,
   // contesta aquí mismo con las pistas por reglas de siempre.
   // `contexto` sirve cuando el estado todavía no se actualiza (p. ej. justo al confirmar un ejercicio en el chat).
   const alEscribir = async (texto, contexto = { operacion, ejercicio }) => {
-    // Solo los últimos mensajes: Kiko no necesita toda la plática y la petición queda chica.
+    // Solo los últimos mensajes: Mix no necesita toda la plática y la petición queda chica.
     const historial = mensajes.filter((m) => m.texto && !m.pensando).slice(-12).map((m) => ({ de: m.de, texto: m.texto }));
-    decir({ de: 'yo', texto });
+    // Si escribe en lugar de usar los botones de "¿te quedó claro?", esos botones ya no van.
+    setMensajes((xs) => [...xs.map((m) => (m.dudas && !m.respondido ? { ...m, respondido: true } : m)), { de: 'yo', texto }]);
     if (contexto.operacion && contexto.operacion === operacion && resolvioEnChat(operacion, texto)) setResuelta(true);
-    // Kiko también contesta dudas sin operación escaneada ("¿qué es una fracción?").
+    // Mix también contesta dudas sin operación escaneada ("¿qué es una fracción?").
     if (enLinea) {
       const id = ++peticion.current;
       const turno = `${VISITA}:${++contadorTurnos}`;
-      decir({ de: 'kiko', texto: 'Kiko está pensando… 🤔', pensando: id });
+      decir({ de: 'kiko', texto: 'Mix está pensando… 🤔', pensando: id });
       const sinPensando = (xs) => xs.filter((m) => m.pensando !== id);
       const mia = conversacion.current;
-      // Reiniciaron la plática o confirmaron otro ejercicio mientras Kiko pensaba: esta respuesta ya no va.
+      // Reiniciaron la plática o confirmaron otro ejercicio mientras Mix pensaba: esta respuesta ya no va.
       const vieja = () => {
         if (mia === conversacion.current) return false;
         setMensajes(sinPensando);
@@ -692,7 +725,9 @@ export default function Escaner({ retoId }) {
         ultimoRecibido.current = turno; // esta respuesta sí se muestra: el próximo mensaje lo confirma al servidor
         // El servidor dice que su ejercicio quedó resuelto: "Tu sendero" se marca como terminado y se apagan las pistas.
         if (r.resuelta && contexto.operacion && contexto.operacion === operacion) setResuelta(true);
-        setMensajes((xs) => [...sinPensando(xs), { de: 'kiko', texto: r.respuesta, dibujo: r.dibujo }]);
+        // Lo acaba de resolver: "¡Lo lograste!" y los botones de "¿te quedó claro?" (puede seguir con sus dudas).
+        const cierre = r.cierre ? { premio: '¡Lo lograste!', dudas: true } : {};
+        setMensajes((xs) => [...sinPensando(xs), { de: 'kiko', texto: r.respuesta, dibujo: r.dibujo, ...cierre }]);
         return;
       } catch {
         if (vieja()) return;
@@ -713,15 +748,23 @@ export default function Escaner({ retoId }) {
     }
     if (resuelta) {
       // Ya la resolvió: no más pistas, pero si pide que le expliquen, se le explica (aunque no haya conexión).
-      const pideExplicacion = /por ?qu[eé]|c[oó]mo|expl[ií]ca|no entiend|no le entiend/i.test(texto);
-      decir({ de: 'kiko', texto: pideExplicacion ? `Claro, te explico: ${explicacionResuelta(operacion)} ¿Qué parte quieres que veamos otra vez?` : YA_RESUELTA });
+      const pideExplicacion = /por ?qu[eé]|c[oó]mo|expl[ií]ca|no entiend|no le entiend|no (me )?qued[oó] claro/i.test(texto);
+      if (pideExplicacion) {
+        decir({ de: 'kiko', texto: `Claro, te explico: ${explicacionResuelta(operacion)} ¿Con eso te quedó más claro?` });
+      } else if (texto === TODO_CLARO || /todo claro|ya entend[ií]|ninguna duda|no tengo (ninguna )?duda/i.test(texto)) {
+        decir({ de: 'kiko', texto: '¡Qué bien! 🌟 Me gustó mucho cómo lo trabajaste. Cuando quieras, escanea otro ejercicio y seguimos.' });
+      } else if (texto === TENGO_DUDA || /^\W*(s[ií],?\s*)?tengo (una |alguna )?dudas?\W*$/iu.test(texto)) {
+        decir({ de: 'kiko', texto: '¡Claro! ¿Qué parte quieres que veamos otra vez? Puede ser un paso, el porqué de algo o una palabra que no te quedó clara. 🔍' });
+      } else {
+        decir({ de: 'kiko', texto: YA_RESUELTA });
+      }
       return;
     }
     const d = diagnosticarOperacion(operacion);
     if (!d.correcto && yaLoDijo(operacion, quitarNegados(texto)) && conDuda(texto)) {
       decir({ de: 'kiko', texto: '¿Cómo llegaste a ese número? Cuéntame tus pasos y lo comprobamos juntos. 🔍' });
     } else if (resolvioEnChat(operacion, texto)) {
-      decir({ de: 'kiko', texto: '¡Exacto, explorador! 🌟 Ahora corrígelo en tu cuaderno y escanéalo otra vez para ver tu sendero derecho.', premio: '+ Puntos de lógica' });
+      decir({ de: 'kiko', texto: `¡Lo lograste! 🌟 Corrígelo en tu cuaderno para que tu sendero quede derecho. ${PREGUNTA_DUDAS}`, premio: '¡Lo lograste!', dudas: true });
     } else if (d.correcto) {
       decir({ de: 'kiko', texto: '¡Tu operación ya estaba bien! Explícame cómo lo pensaste: eso también es aprender.' });
     } else {
@@ -733,7 +776,7 @@ export default function Escaner({ retoId }) {
     <div className="pila-lg">
       <section className="tarjeta banda-pedagogia">
         <span className="icono-caja ic-crema chica"><I n="cerebro" tamano={18} /></span>
-        <p className="cuerpo-md" style={{ margin: 0, flex: 1 }}><b>Pedagogía Guiada:</b> Kiko nunca te da la solución servida, ¡te entrena paso a paso como un verdadero explorador!</p>
+        <p className="cuerpo-md" style={{ margin: 0, flex: 1 }}><b>Pedagogía Guiada:</b> Mix nunca te da la solución servida, ¡te entrena paso a paso como un verdadero explorador!</p>
         <span className="chip chip-verde"><I n="escudo" tamano={14} /> Modo Seguro Escolar</span>
       </section>
       {!enLinea && <div className="aviso-red etiqueta">Sin internet: la app sigue funcionando.</div>}
@@ -772,6 +815,7 @@ export default function Escaner({ retoId }) {
             pistasActivas={!!operacion && !resuelta}
             onReiniciar={() => { conversacion.current += 1; setMensajes([SALUDO]); setEjercicio(null); reiniciar(); }}
             onConfirmarOtro={confirmarOtro}
+            onDudas={responderDudas}
           />
         </div>
       </div>

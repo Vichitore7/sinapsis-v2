@@ -1,4 +1,4 @@
-// Dibujos que pide Kiko en el chat (backend/app/dibujos.py). Claude no genera imágenes: manda datos y aquí se dibujan
+// Dibujos que pide Mix en el chat (backend/app/dibujos.py). Claude no genera imágenes: manda datos y aquí se dibujan
 // con SVG ligero, en el estilo sticker del juego. Cada dibujo trae su descripción en texto (role="img" + aria-label)
 // para lectores de pantalla y para quien no pueda verlo.
 //

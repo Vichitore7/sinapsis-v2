@@ -3,9 +3,9 @@
 La llena el CÓDIGO (no el modelo) desde tres lugares:
 - los retos del mapa (`servicio.registrar_intento`);
 - las operaciones que el alumno confirma en el escáner (`POST /api/escaner/resultado`);
-- el chat con Kiko (qué dibujo usó y si después el alumno lo resolvió).
+- el chat con Mix (qué dibujo usó y si después el alumno lo resolvió).
 
-Guarda solo conteos y etiquetas por concepto, nunca el texto del chat. A Kiko le llega un resumen corto en cada
+Guarda solo conteos y etiquetas por concepto, nunca el texto del chat. A Mix le llega un resumen corto en cada
 mensaje (`resumen_para_tutor`), así se adapta al alumno y lo recuerda entre sesiones sin mandarle historiales largos.
 
 "Dominado" lo decide una regla de código (`estado`), no el modelo: nunca por un solo acierto.
@@ -56,7 +56,7 @@ class Aprendizaje(Base):
     aciertos_ayuda: Mapped[int] = mapped_column(Integer, default=0)
     errores: Mapped[int] = mapped_column(Integer, default=0)
     tipos_error: Mapped[dict] = mapped_column(JSON, default=dict)        # {"sumo_denominadores": 2}
-    ayudas_tutor: Mapped[int] = mapped_column(Integer, default=0)       # mensajes de Kiko sobre este concepto
+    ayudas_tutor: Mapped[int] = mapped_column(Integer, default=0)       # mensajes de Mix sobre este concepto
     representaciones: Mapped[dict] = mapped_column(JSON, default=dict)  # {"grupos": {"usada": 3, "ayudo": 2}}
     ultima_representacion: Mapped[str | None] = mapped_column(String(20), nullable=True)
     recientes: Mapped[list] = mapped_column(JSON, default=list)         # ["error", "ayuda", "solo", …]
@@ -127,7 +127,7 @@ def registrar_resultado(db: Session, alumno_id: int, concepto: str, nombre: str,
             f.aciertos_ayuda += 1
         if firma_ in f.pendientes:
             f.pendientes = [p for p in f.pendientes if p != firma_]
-        # La última representación que usó Kiko antes de este acierto cuenta como "le ayudó".
+        # La última representación que usó Mix antes de este acierto cuenta como "le ayudó".
         if f.ultima_representacion:
             r = f.representaciones.get(f.ultima_representacion, {"usada": 0, "ayudo": 0})
             f.representaciones = {**f.representaciones, f.ultima_representacion: {**r, "ayudo": r.get("ayudo", 0) + 1}}
@@ -137,7 +137,7 @@ def registrar_resultado(db: Session, alumno_id: int, concepto: str, nombre: str,
 
 
 def registrar_ayuda_tutor(db: Session, alumno_id: int, concepto: str, nombre: str, dibujo_tipo: str | None) -> None:
-    """Kiko ayudó con este concepto (y quizá con un dibujo). No hace commit."""
+    """Mix ayudó con este concepto (y quizá con un dibujo). No hace commit."""
     f = _fila(db, alumno_id, concepto, nombre)
     f.ayudas_tutor += 1
     if dibujo_tipo:
@@ -195,7 +195,7 @@ def _linea(f: Aprendizaje) -> str:
 
 
 def resumen_para_tutor(db: Session, alumno_id: int, concepto_actual: str | None = None, maximo: int = 4) -> str:
-    """Unas líneas para Kiko: el concepto de ahora primero y luego los más recientes. Vacío si no hay datos."""
+    """Unas líneas para Mix: el concepto de ahora primero y luego los más recientes. Vacío si no hay datos."""
     filas = db.scalars(select(Aprendizaje).where(Aprendizaje.alumno_id == alumno_id)
                        .order_by(Aprendizaje.actualizado.desc())).all()
     if not filas:
