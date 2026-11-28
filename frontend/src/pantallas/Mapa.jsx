@@ -410,7 +410,6 @@ export default function Mapa() {
               <div className="barra-prog naranja" style={{ margin: '6px 0 10px' }}><span style={{ width: bonoPendiente ? '0%' : '100%' }} /></div>
               <div className="chips">
                 <span className="chip chip-gris"><I n="estrella" tamano={14} className="texto-selva" /> +5 Estrellas</span>
-                <span className="chip chip-gris"><I n="gema" tamano={14} className="texto-naranja" /> +XP</span>
               </div>
             </section>
 
