@@ -147,8 +147,8 @@ export default function App() {
           {alumno ? (
             <>
               <span className="pastilla" title="Días seguidos jugando"><I n="fuego" tamano={16} className="c-fuego" /> <span className="solo-ancho">Racha: </span>{estado.rachaDias} día{estado.rachaDias === 1 ? '' : 's'}</span>
-              <span className="pastilla" title="Experiencia acumulada"><I n="gema" tamano={16} className="c-gema" /> {estado.xp}</span>
-              <button className="pastilla pastilla-estrellas solo-movil" onClick={() => ir('/habitacion')} aria-label={`${estado.estrellas} estrellas`}><I n="estrella" tamano={16} /> {estado.estrellas}</button>
+              {/* Una sola medida: las estrellas que gana (y gasta en la Habitación). Antes aquí iba la experiencia con una gema. */}
+              <button className="pastilla pastilla-estrellas" onClick={() => ir('/habitacion')} title="Tus estrellas" aria-label={`${estado.estrellas} estrellas. Ir a la habitación`}><I n="estrella" tamano={16} /> {estado.estrellas}</button>
             </>
           ) : (
             <span className="pastilla"><I n="wifi" tamano={16} className="texto-selva" /> <span className="solo-ancho">Sincronizado</span></span>
