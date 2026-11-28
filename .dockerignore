@@ -1,0 +1,18 @@
+# Nada de secretos, bases locales ni dependencias instaladas dentro de la imagen
+**/.env
+**/.env.*
+!**/.env.example
+**/*.db
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+frontend/dist
+backend/evaluacion
+backend/tests
+.git
+.github
+*.md
+!docs/material-de-estudio/**
+docs/imagenes
+docs/selva-matematica
