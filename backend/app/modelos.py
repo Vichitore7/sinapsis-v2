@@ -125,7 +125,7 @@ class Leccion(Base):
     orden: Mapped[int] = mapped_column(Integer)
     nombre: Mapped[str] = mapped_column(String(60))
     entrada: Mapped[str] = mapped_column(Text)  # frase épica al entrar al mundo
-    concepto: Mapped[str] = mapped_column(String(80))
+    concepto: Mapped[str] = mapped_column(String(160))  # SQLite no revisa el largo, Postgres sí
     sticker: Mapped[str] = mapped_column(String(30))  # premio del cofre
     estado_revision: Mapped[str] = mapped_column(String(20), default="borrador")  # borrador | verificado | revisado | publicado
 

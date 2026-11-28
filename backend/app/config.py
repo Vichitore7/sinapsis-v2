@@ -23,6 +23,10 @@ def _cargar_env() -> None:
 _cargar_env()
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./selva.db")
+# Los servicios de Postgres (Foundathyon, Neon…) dan "postgres://" o "postgresql://"; SQLAlchemy usa psycopg 3 con "postgresql+psycopg://".
+for _prefijo in ("postgres://", "postgresql://"):
+    if DATABASE_URL.startswith(_prefijo):
+        DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL.removeprefix(_prefijo)
 ENTORNO = os.environ.get("ENTORNO", "desarrollo")  # desarrollo | produccion
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "")
@@ -48,3 +52,6 @@ TUTOR_LIMITE_DIA = int(os.environ.get("TUTOR_LIMITE_DIA", "150"))
 # Material de estudio que lee el tutor junto con su manual (app/agente.md). Por defecto, el de docs/ del repo.
 MATERIAL_DIR = Path(os.environ.get("MATERIAL_DIR", Path(__file__).resolve().parents[2] / "docs" / "material-de-estudio"))
 COOKIE_SEGURA = ENTORNO == "produccion"  # cookie solo por HTTPS en producción
+# Frontend ya construido (npm run build). Si existe, el backend lo sirve en "/" y todo queda en un mismo dominio (deploy).
+FRONTEND_DIR = Path(os.environ.get("FRONTEND_DIR", Path(__file__).resolve().parents[2] / "frontend" / "dist"))
+SERVIR_FRONTEND = os.environ.get("SERVIR_FRONTEND", "1" if ENTORNO == "produccion" else "0") == "1"

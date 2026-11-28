@@ -11,6 +11,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import update
 
 from . import config
@@ -46,6 +47,10 @@ app = FastAPI(
     version="0.1.0",
     description="Backend de Mix: cuentas sin correo, retos validados en el servidor, progreso, ajolote y aulas.",
     lifespan=ciclo,
+    # En producción no se publica la documentación de la API (Swagger, ReDoc ni el esquema).
+    docs_url=None if config.ENTORNO == "produccion" else "/docs",
+    redoc_url=None if config.ENTORNO == "produccion" else "/redoc",
+    openapi_url=None if config.ENTORNO == "produccion" else "/openapi.json",
 )
 
 app.add_middleware(
@@ -85,3 +90,8 @@ def salud() -> dict:
 
 for r in (auth.router, juego.router, aulas.router, diagnostico.router, ajustes.router, tutor.router, habitacion.router, escaner.router, actividades.router):
     app.include_router(r, prefix="/api")
+
+# Deploy en un solo servicio: el frontend construido se sirve en "/" (el router es por hash, basta index.html).
+# Va al final para que /api y /salud tengan prioridad.
+if config.SERVIR_FRONTEND and config.FRONTEND_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=config.FRONTEND_DIR, html=True), name="frontend")
