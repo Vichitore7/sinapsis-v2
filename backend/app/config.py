@@ -55,3 +55,5 @@ COOKIE_SEGURA = ENTORNO == "produccion"  # cookie solo por HTTPS en producción
 # Frontend ya construido (npm run build). Si existe, el backend lo sirve en "/" y todo queda en un mismo dominio (deploy).
 FRONTEND_DIR = Path(os.environ.get("FRONTEND_DIR", Path(__file__).resolve().parents[2] / "frontend" / "dist"))
 SERVIR_FRONTEND = os.environ.get("SERVIR_FRONTEND", "1" if ENTORNO == "produccion" else "0") == "1"
+# Cuentas de demostración (app/demo.py): se crean al arrancar solo si hay contraseña. Nunca se escribe en el código.
+DEMO_PASSWORD = os.environ.get("DEMO_PASSWORD", "").strip()
