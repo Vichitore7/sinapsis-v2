@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import update
 
-from . import config
+from . import config, demo
 from .db import Base, SesionLocal, engine, migrar_columnas
 from .modelos import Mascota
 from .rutas import actividades, ajustes, auth, aulas, diagnostico, juego, tutor, habitacion, escaner
@@ -39,6 +39,8 @@ async def ciclo(_: FastAPI):
         # 25 nov: el ajolote se llamaba Kiko por defecto (y un rato Mih); ahora es Mix. El que le puso otro nombre lo conserva.
         db.execute(update(Mascota).where(Mascota.nombre.in_(["Kiko", "Mih"])).values(nombre="Mix"))
         db.commit()
+        if len(config.DEMO_PASSWORD) >= 6:  # app publicada: cuentas demo con una contraseña que solo sabe el equipo
+            demo.crear(db, config.DEMO_PASSWORD)
     yield
 
 
