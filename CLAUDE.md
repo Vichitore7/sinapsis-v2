@@ -1,6 +1,6 @@
 # CLAUDE.md: Mix (ThinkLoop), sinapsis-v2
 
-Contexto para Claude Code. Léelo al retomar el trabajo. Última actualización: **25 nov 2026**.
+Contexto para Claude Code. Léelo al retomar el trabajo. Última actualización: **28 nov 2026**.
 
 ## Qué es
 
@@ -30,13 +30,13 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
 - **Backend:** FastAPI + SQLAlchemy + SQLite, con `uv`, en `backend/`.
   - `uv run uvicorn app.main:app --port 8000 --reload`
   - Datos de prueba: `uv run python -m app.semilla --demo`
-  - Pruebas: `uv run pytest` (243). Si falla todo, revisa que no esté exportada una `DATABASE_URL` vieja.
+  - Pruebas: `uv run pytest` (244). Si falla todo, revisa que no esté exportada una `DATABASE_URL` vieja.
 - **Seguridad:**
   - Contraseñas con argon2, sesión con JWT en cookie httpOnly y freno a intentos repetidos.
   - Código de recuperación guardado con HMAC.
   - **Las respuestas se validan en el servidor** y nunca llegan al navegador.
 - **Al arrancar**, `create_all` + `migrar_columnas()` (en `db.py`) agregan las columnas nuevas, y `cargar_contenido` se puede correr varias veces sin duplicar.
-- **Usuarios demo** (contraseña `selva123`): `profe_demo`, `teo_demo`, `luna_demo`, `sol_demo`.
+- **Usuarios demo en local** (contraseña `selva123`): `profe_demo`, `teo_demo`, `luna_demo`, `sol_demo`. En la app publicada son otros (ver "Deploy").
 - **Capturas de pantalla:** playwright-core con `/usr/bin/google-chrome`. Usa cuentas temporales y bórralas al terminar.
 
 ## Pantallas actuales
@@ -87,14 +87,16 @@ App web para aprender matemáticas de 1.º de primaria a 3.º de secundaria (Mé
   - Antes de subir: `git pull origin dev`.
 - Hacer commit o push solo cuando quien está trabajando lo pida.
 
-### Cambios sin subir a propósito (solo en la compu de Victor: NO subir ni descartar)
+### Deploy en Foundathyon (28 nov)
 
-Preparativos para una base PostgreSQL compartida. Por ahora cada quien usa su **SQLite local**; Victor quiere conservarlos para más adelante.
-- `backend/pyproject.toml` + `uv.lock`: agregan `psycopg[binary]`.
-- `backend/app/db.py`: `DEFAULT FALSE` en lugar de `0`, para que funcione en Postgres.
-- `backend/.env.example`: comentarios para Neon o Supabase.
-
-Al hacer commit de otra cosa, agrega solo las rutas de ese cambio. Si hay que tocar `pyproject.toml` o `uv.lock`, arma el commit desde la versión de `HEAD` con solo la dependencia nueva (`uv add --no-sync <paquete>`) y después vuelve a agregar `psycopg[binary]` encima.
+La app está publicada en **https://mix-sinapsis.foundathyon.dev** (Foundathyon, plan Starter de cortesía del hack hasta el 26 feb 2027; organización "Sinapsis", proyecto "Mix", app `sinapsis-v2`).
+- **Se publica sola con cada push a `main`** (workflow `.github/workflows/foundathyon.yml`, lo escribe Foundathyon: no editarlo a mano). El camino es el de siempre: `victor` → PR a `dev` → PR a `main`.
+- **Un solo servicio** (256 MB; usa ≈120 MB): el `Dockerfile` de la raíz construye el frontend y FastAPI lo sirve en `/` junto con `/api`. Mismo dominio, así que la cookie y CORS no necesitan nada extra. En producción `/docs` está apagado. Ruta de salud: `/salud`.
+- **Base:** Postgres administrado `mix-db` (sin respaldos que se puedan restaurar). Lo que se hace en la app publicada vive ahí, aparte de los SQLite locales. `config.py` convierte la `DATABASE_URL` de la plataforma a `postgresql+psycopg://`.
+- **Variables** (Environment de la app): `DATABASE_URL`, `ENTORNO=produccion`, `SECRET_KEY`, `ANTHROPIC_API_KEY` y `DEMO_PASSWORD`. Nunca van en el repo.
+- **Cuentas demo** (`app/demo.py`, se crean al arrancar si existe `DEMO_PASSWORD`, solo la primera vez): `profe_mix` (grupo "3.º A" con 4 tareas y 7 alumnos), `nuevo_mix` (recién llegado), `experto_mix` (terminó todo el Mapa) y `luna_mix`, `sol_mix`, `rio_mix`, `ame_mix`, `leo_mix`. La contraseña es la de `DEMO_PASSWORD`; cambiar la variable no cambia la de las cuentas ya creadas.
+- **Ojo:** SQLite no revisa el largo de los `VARCHAR` y Postgres sí. Antes de subir contenido con textos largos, revisa el largo de la columna (`lecciones.concepto` pasó de 80 a 160 por eso).
+- **No probar inicios de sesión fallidos contra la app publicada:** el freno bloquea la cuenta y la IP 10 minutos (se borra con "Reiniciar" en Foundathyon).
 
 ## Tutor de IA (Victor)
 
@@ -169,9 +171,7 @@ Al hacer commit de otra cosa, agrega solo las rutas de ese cambio. Si hay que to
 Prioridades para la entrega:
 1. **IA real:** el tutor y la lectura de la foto ya usan Claude; falta probar con fotos reales y comparar Haiku contra Sonnet.
 2. **Contenido:** cerrar un grado completo (3.º de primaria: multiplicación + división + fracciones, unos 12 retos por mundo). El Mundo 3 (FES, 3.º) ya está; el **diagnóstico según el grado** ya está (Samuel, 25 nov).
-3. **Publicarla:**
-   - Frontend en Vercel o Netlify, y backend en Render o Railway, con Postgres (ahí sirven los cambios guardados de arriba).
-   - GitHub Actions que corra las pruebas en cada push.
+3. **Publicarla:** ✓ ya está en Foundathyon (ver "Deploy"). Falta un GitHub Actions que corra las pruebas en cada push.
 4. **Presentación:** video de respaldo de la demo y pasar `dev` a `main`.
 
 Limpieza (baja prioridad):
